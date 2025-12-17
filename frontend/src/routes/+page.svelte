@@ -1,0 +1,941 @@
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
+	import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '$lib/components/ui/card';
+	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import QuoteLine from '$lib/components/QuoteLine.svelte';
+	import { fetchProducts, fetchMetadata, syncPricing, createQuote, fetchRegions, type Product, type PricingMetadata, type Region } from '$lib/api';
+	import { formatCurrency, parsePrice } from '$lib/utils';
+
+	interface LineItem {
+		id: string;
+		product: Product | null;
+		quantity: number;
+	}
+
+	let products: Product[] = [];
+	let metadata: PricingMetadata | null = null;
+	let regions: Record<string, Region> = {};
+	let selectedRegion = 'us1';
+	let lines: LineItem[] = [{ id: crypto.randomUUID(), product: null, quantity: 1 }];
+	let quoteName = '';
+	let loading = false;
+	let syncing = false;
+	let saving = false;
+	let error = '';
+	let success = '';
+	let shareUrl = '';
+	let shareMenuOpen = false;
+	let filterMenuOpen = false;
+	
+	// Column visibility toggles
+	let showAnnual = true;
+	let showMonthly = true;
+	let showOnDemand = true;
+
+	$: lastSyncFormatted = metadata?.last_sync
+		? new Date(metadata.last_sync).toLocaleString('en-US', {
+				month: 'short',
+				day: 'numeric',
+				year: 'numeric',
+				hour: '2-digit',
+				minute: '2-digit'
+		  })
+		: null;
+
+	$: validLines = lines.filter((l) => l.product !== null);
+
+	// Compute all billing totals simultaneously
+	$: totals = validLines.reduce(
+		(acc, line) => {
+			if (!line.product) return acc;
+			const annualPrice = parsePrice(line.product.billed_annually);
+			const monthlyPrice = parsePrice(line.product.billed_month_to_month);
+			const onDemandPrice = parsePrice(line.product.on_demand);
+			
+			return {
+				annually: acc.annually + annualPrice * line.quantity,
+				monthly: acc.monthly + monthlyPrice * line.quantity,
+				on_demand: acc.on_demand + onDemandPrice * line.quantity
+			};
+		},
+		{ annually: 0, monthly: 0, on_demand: 0 }
+	);
+
+	// Calculate annual costs for comparison
+	$: annualCosts = {
+		annually: totals.annually * 12,
+		monthly: totals.monthly * 12,
+		on_demand: totals.on_demand * 12
+	};
+
+	// Calculate savings between visible options
+	$: savingsVsMonthly = annualCosts.monthly - annualCosts.annually;
+	$: savingsVsOnDemand = annualCosts.on_demand - annualCosts.annually;
+	$: savingsMonthlyVsOnDemand = annualCosts.on_demand - annualCosts.monthly;
+	$: savingsPercentVsMonthly = annualCosts.monthly > 0 ? (savingsVsMonthly / annualCosts.monthly) * 100 : 0;
+	$: savingsPercentVsOnDemand = annualCosts.on_demand > 0 ? (savingsVsOnDemand / annualCosts.on_demand) * 100 : 0;
+	$: savingsPercentMonthlyVsOnDemand = annualCosts.on_demand > 0 ? (savingsMonthlyVsOnDemand / annualCosts.on_demand) * 100 : 0;
+
+	// Determine best value and savings based on visible columns
+	$: bestValueOption = (() => {
+		const visible = [];
+		if (showAnnual) visible.push({ key: 'annual', cost: annualCosts.annually });
+		if (showMonthly) visible.push({ key: 'monthly', cost: annualCosts.monthly });
+		if (showOnDemand) visible.push({ key: 'ondemand', cost: annualCosts.on_demand });
+		if (visible.length < 2) return null;
+		return visible.reduce((min, curr) => curr.cost < min.cost ? curr : min);
+	})();
+
+	$: worstValueOption = (() => {
+		const visible = [];
+		if (showAnnual) visible.push({ key: 'annual', cost: annualCosts.annually });
+		if (showMonthly) visible.push({ key: 'monthly', cost: annualCosts.monthly });
+		if (showOnDemand) visible.push({ key: 'ondemand', cost: annualCosts.on_demand });
+		if (visible.length < 2) return null;
+		return visible.reduce((max, curr) => curr.cost > max.cost ? curr : max);
+	})();
+
+	$: dynamicSavings = bestValueOption && worstValueOption && bestValueOption.key !== worstValueOption.key
+		? worstValueOption.cost - bestValueOption.cost
+		: 0;
+
+	$: dynamicSavingsPercent = worstValueOption && worstValueOption.cost > 0
+		? (dynamicSavings / worstValueOption.cost) * 100
+		: 0;
+
+	$: bestValueLabel = bestValueOption?.key === 'annual' ? 'annual' : bestValueOption?.key === 'monthly' ? 'monthly' : 'on-demand';
+	$: worstValueLabel = worstValueOption?.key === 'annual' ? 'annual' : worstValueOption?.key === 'monthly' ? 'monthly' : 'on-demand';
+
+	onMount(async () => {
+		await loadRegions();
+		await loadProducts();
+		
+		// Check for clone parameter
+		const cloneParam = $page.url.searchParams.get('clone');
+		if (cloneParam) {
+			try {
+				const cloneData = JSON.parse(decodeURIComponent(cloneParam));
+				await loadClonedQuote(cloneData);
+				// Remove the clone param from URL
+				goto('/', { replaceState: true });
+			} catch (e) {
+				console.error('Failed to parse clone data:', e);
+			}
+		}
+	});
+
+	async function loadClonedQuote(cloneData: { name: string; items: { product: string; quantity: number }[] }) {
+		quoteName = cloneData.name ? `${cloneData.name} (Copy)` : '';
+		
+		// Map cloned items to lines
+		const newLines: LineItem[] = [];
+		for (const item of cloneData.items) {
+			const matchedProduct = products.find(p => p.product === item.product);
+			if (matchedProduct) {
+				newLines.push({
+					id: crypto.randomUUID(),
+					product: matchedProduct,
+					quantity: item.quantity
+				});
+			}
+		}
+		
+		if (newLines.length > 0) {
+			lines = newLines;
+			success = 'Quote cloned successfully! You can now edit it.';
+			setTimeout(() => success = '', 5000);
+		}
+	}
+
+	async function loadRegions() {
+		try {
+			regions = await fetchRegions();
+		} catch (e) {
+			console.error('Failed to load regions:', e);
+		}
+	}
+
+	async function loadProducts() {
+		loading = true;
+		error = '';
+		try {
+			[products, metadata] = await Promise.all([
+				fetchProducts(selectedRegion),
+				fetchMetadata(selectedRegion)
+			]);
+			if (products.length === 0) {
+				error = 'No products found. Click "Sync Pricing" to fetch the latest data.';
+			}
+		} catch (e) {
+			error = 'Failed to load products. Make sure the backend is running.';
+		} finally {
+			loading = false;
+		}
+	}
+
+	async function handleSync() {
+		syncing = true;
+		error = '';
+		success = '';
+		try {
+			const result = await syncPricing(selectedRegion);
+			if (result.success) {
+				success = result.message;
+				await loadProducts();
+				metadata = await fetchMetadata(selectedRegion);
+			} else {
+				error = result.message;
+			}
+		} catch (e) {
+			error = 'Failed to sync pricing data';
+		} finally {
+			syncing = false;
+		}
+	}
+
+	async function handleRegionChange() {
+		// Reset metadata to show loading state
+		metadata = null;
+		
+		// Store current line selections (product names and quantities)
+		const previousSelections = lines.map(line => ({
+			id: line.id,
+			productName: line.product?.product || null,
+			quantity: line.quantity
+		}));
+		
+		// Load new region's products
+		await loadProducts();
+		
+		// Restore line selections by matching product names to new region's products
+		lines = previousSelections.map(selection => {
+			const matchedProduct = selection.productName 
+				? products.find(p => p.product === selection.productName) || null
+				: null;
+			return {
+				id: selection.id,
+				product: matchedProduct,
+				quantity: selection.quantity
+			};
+		});
+	}
+
+	function addLine() {
+		lines = [...lines, { id: crypto.randomUUID(), product: null, quantity: 1 }];
+	}
+
+	function removeLine(id: string) {
+		if (lines.length > 1) {
+			lines = lines.filter((l) => l.id !== id);
+		}
+	}
+
+	function updateLine(id: string, product: Product | null, quantity: number) {
+		lines = lines.map((l) => (l.id === id ? { ...l, product, quantity } : l));
+	}
+
+	async function handleShare() {
+		if (validLines.length === 0) {
+			error = 'Please add at least one product to share';
+			return;
+		}
+
+		saving = true;
+		error = '';
+
+		try {
+			const items = validLines.map((l) => ({
+				product: l.product!.product,
+				quantity: l.quantity
+			}));
+
+			const quote = await createQuote(quoteName || null, 'annually', items);
+			shareUrl = `${window.location.origin}/quote/${quote.id}`;
+			shareMenuOpen = false;
+			success = 'Quote saved!';
+			setTimeout(() => success = '', 3000);
+		} catch (e) {
+			error = 'Failed to save quote';
+		} finally {
+			saving = false;
+		}
+	}
+
+	function copyShareUrl() {
+		navigator.clipboard.writeText(shareUrl);
+		success = 'URL copied to clipboard!';
+		shareMenuOpen = false;
+		setTimeout(() => success = '', 3000);
+	}
+
+	function downloadPDF() {
+		// Create a printable version
+		const printContent = generatePrintContent();
+		const printWindow = window.open('', '_blank');
+		if (printWindow) {
+			printWindow.document.write(printContent);
+			printWindow.document.close();
+			printWindow.onload = () => {
+				printWindow.print();
+			};
+		}
+		shareMenuOpen = false;
+	}
+
+	function downloadCSV() {
+		const headers = ['Product', 'Billing Unit', 'Quantity', 'Annual (Monthly)', 'Monthly (Monthly)', 'On-Demand (Monthly)', 'Annual (Yearly)', 'Monthly (Yearly)', 'On-Demand (Yearly)'];
+		
+		const rows = validLines.map(line => [
+			`"${line.product?.product || ''}"`,
+			`"${line.product?.billing_unit || ''}"`,
+			line.quantity,
+			parsePrice(line.product?.billed_annually) * line.quantity,
+			parsePrice(line.product?.billed_month_to_month) * line.quantity,
+			parsePrice(line.product?.on_demand) * line.quantity,
+			parsePrice(line.product?.billed_annually) * line.quantity * 12,
+			parsePrice(line.product?.billed_month_to_month) * line.quantity * 12,
+			parsePrice(line.product?.on_demand) * line.quantity * 12
+		]);
+
+		// Add totals row
+		rows.push([
+			'"TOTAL"',
+			'""',
+			'',
+			totals.annually,
+			totals.monthly,
+			totals.on_demand,
+			annualCosts.annually,
+			annualCosts.monthly,
+			annualCosts.on_demand
+		]);
+
+		const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+		
+		const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+		const link = document.createElement('a');
+		const url = URL.createObjectURL(blob);
+		link.setAttribute('href', url);
+		link.setAttribute('download', `datadog-quote${quoteName ? '-' + quoteName.replace(/\s+/g, '-') : ''}.csv`);
+		link.style.visibility = 'hidden';
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		
+		shareMenuOpen = false;
+		success = 'CSV exported successfully!';
+		setTimeout(() => success = '', 3000);
+	}
+
+	function generatePrintContent() {
+		const date = new Date().toLocaleDateString('en-US', { 
+			year: 'numeric', 
+			month: 'long', 
+			day: 'numeric' 
+		});
+		
+		const rows = validLines.map(line => `
+			<tr>
+				<td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">${line.product?.product}</td>
+				<td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${line.quantity}</td>
+				<td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: right; color: #3ecfa8;">${formatCurrency(parsePrice(line.product?.billed_annually) * line.quantity)}</td>
+				<td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: right; color: #632ca6;">${formatCurrency(parsePrice(line.product?.billed_month_to_month) * line.quantity)}</td>
+				<td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: right; color: #ff6f00;">${formatCurrency(parsePrice(line.product?.on_demand) * line.quantity)}</td>
+			</tr>
+		`).join('');
+
+		return `
+			<!DOCTYPE html>
+			<html>
+			<head>
+				<title>Datadog Pricing Quote${quoteName ? ` - ${quoteName}` : ''}</title>
+				<style>
+					body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 40px; color: #333; }
+					h1 { color: #632ca6; margin-bottom: 8px; }
+					.date { color: #666; margin-bottom: 32px; }
+					table { width: 100%; border-collapse: collapse; margin-bottom: 32px; }
+					th { background: #f5f5f5; padding: 12px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+					.totals { display: flex; gap: 24px; margin-bottom: 32px; }
+					.total-card { flex: 1; padding: 20px; border-radius: 12px; }
+					.total-card.annual { background: rgba(62, 207, 168, 0.1); border: 1px solid rgba(62, 207, 168, 0.3); }
+					.total-card.monthly { background: rgba(99, 44, 166, 0.1); border: 1px solid rgba(99, 44, 166, 0.3); }
+					.total-card.ondemand { background: rgba(255, 111, 0, 0.1); border: 1px solid rgba(255, 111, 0, 0.3); }
+					.total-label { font-size: 14px; color: #666; margin-bottom: 8px; }
+					.total-value { font-size: 24px; font-weight: bold; }
+					.total-card.annual .total-value { color: #3ecfa8; }
+					.total-card.monthly .total-value { color: #632ca6; }
+					.total-card.ondemand .total-value { color: #ff6f00; }
+					.savings { background: linear-gradient(135deg, rgba(62, 207, 168, 0.1), rgba(99, 44, 166, 0.1)); padding: 20px; border-radius: 12px; }
+					.footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e5e5; color: #666; font-size: 12px; }
+					@media print { body { padding: 20px; } }
+				</style>
+			</head>
+			<body>
+				<h1>Datadog Pricing Quote${quoteName ? `: ${quoteName}` : ''}</h1>
+				<p class="date">Generated on ${date}</p>
+				
+				<table>
+					<thead>
+						<tr>
+							<th>Product</th>
+							<th style="text-align: center;">Qty</th>
+							<th style="text-align: right;">Annual</th>
+							<th style="text-align: right;">Monthly</th>
+							<th style="text-align: right;">On-Demand</th>
+						</tr>
+					</thead>
+					<tbody>
+						${rows}
+					</tbody>
+					<tfoot>
+						<tr style="font-weight: bold;">
+							<td style="padding: 12px;" colspan="2">Monthly Total</td>
+							<td style="padding: 12px; text-align: right; color: #3ecfa8;">${formatCurrency(totals.annually)}</td>
+							<td style="padding: 12px; text-align: right; color: #632ca6;">${formatCurrency(totals.monthly)}</td>
+							<td style="padding: 12px; text-align: right; color: #ff6f00;">${formatCurrency(totals.on_demand)}</td>
+						</tr>
+						<tr style="color: #666;">
+							<td style="padding: 12px;" colspan="2">Annual Cost (×12)</td>
+							<td style="padding: 12px; text-align: right;">${formatCurrency(annualCosts.annually)}</td>
+							<td style="padding: 12px; text-align: right;">${formatCurrency(annualCosts.monthly)}</td>
+							<td style="padding: 12px; text-align: right;">${formatCurrency(annualCosts.on_demand)}</td>
+						</tr>
+					</tfoot>
+				</table>
+
+				<div class="totals">
+					<div class="total-card annual">
+						<div class="total-label">Annual Billing</div>
+						<div class="total-value">${formatCurrency(totals.annually)}/mo</div>
+						<div style="color: #666; font-size: 14px;">${formatCurrency(annualCosts.annually)}/year</div>
+					</div>
+					<div class="total-card monthly">
+						<div class="total-label">Monthly Billing</div>
+						<div class="total-value">${formatCurrency(totals.monthly)}/mo</div>
+						<div style="color: #666; font-size: 14px;">${formatCurrency(annualCosts.monthly)}/year</div>
+					</div>
+					<div class="total-card ondemand">
+						<div class="total-label">On-Demand</div>
+						<div class="total-value">${formatCurrency(totals.on_demand)}/mo</div>
+						<div style="color: #666; font-size: 14px;">${formatCurrency(annualCosts.on_demand)}/year</div>
+					</div>
+				</div>
+
+				${savingsVsOnDemand > 0 ? `
+					<div class="savings">
+						<strong>Potential Annual Savings:</strong> ${formatCurrency(savingsVsOnDemand)} per year (${savingsPercentVsOnDemand.toFixed(1)}% savings) by choosing annual billing over on-demand.
+					</div>
+				` : ''}
+
+				<div class="footer">
+					<p>Pricing data sourced from datadoghq.com/pricing/list/</p>
+					${shareUrl ? `<p>Quote URL: ${shareUrl}</p>` : ''}
+				</div>
+			</body>
+			</html>
+		`;
+	}
+
+	function handleClickOutside(event: MouseEvent) {
+		const target = event.target as HTMLElement;
+		if (!target.closest('.share-menu-container')) {
+			shareMenuOpen = false;
+		}
+		if (!target.closest('.filter-menu-container')) {
+			filterMenuOpen = false;
+		}
+	}
+</script>
+
+<svelte:head>
+	<title>Datadog Pricing Calculator</title>
+</svelte:head>
+
+<svelte:window on:click={handleClickOutside} />
+
+<div class="container mx-auto max-w-7xl px-4 py-8">
+	<!-- Header with Share Button -->
+	<header class="mb-8">
+		<div class="flex items-start justify-between gap-4">
+			<div class="text-center flex-1">
+				<div class="mb-4 inline-flex items-center gap-3">
+					<div class="flex h-12 w-12 items-center justify-center rounded-xl bg-datadog-purple shadow-lg shadow-datadog-purple/30">
+						<svg class="h-7 w-7 text-white" viewBox="0 0 24 24" fill="currentColor">
+							<path d="M12.13 2C6.54 2 2 6.54 2 12.13c0 5.59 4.54 10.13 10.13 10.13 5.59 0 10.13-4.54 10.13-10.13C22.26 6.54 17.72 2 12.13 2zm5.41 14.35c-.31.31-.82.31-1.13 0l-3.07-3.07-1.17 1.17 3.07 3.07c.31.31.31.82 0 1.13-.31.31-.82.31-1.13 0l-3.07-3.07-1.93 1.93c-.31.31-.82.31-1.13 0-.31-.31-.31-.82 0-1.13l1.93-1.93-3.07-3.07c-.31-.31-.31-.82 0-1.13.31-.31.82-.31 1.13 0l3.07 3.07 1.17-1.17-3.07-3.07c-.31-.31-.31-.82 0-1.13.31-.31.82-.31 1.13 0l3.07 3.07 1.93-1.93c.31-.31.82-.31 1.13 0 .31.31.31.82 0 1.13l-1.93 1.93 3.07 3.07c.31.31.31.82 0 1.13z"/>
+						</svg>
+					</div>
+					<h1 class="text-4xl font-bold tracking-tight">
+						<span class="text-datadog-purple">Datadog</span> Pricing Calculator
+					</h1>
+				</div>
+			</div>
+
+			<!-- Share Button with Dropdown -->
+			<div class="share-menu-container relative">
+				<Button
+					on:click={() => shareMenuOpen = !shareMenuOpen}
+					disabled={validLines.length === 0}
+					class="gap-2"
+				>
+					<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" />
+					</svg>
+					Share
+					<svg class="h-3 w-3 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M6 9l6 6 6-6" />
+					</svg>
+				</Button>
+
+				<!-- Dropdown Menu -->
+				{#if shareMenuOpen}
+					<div class="absolute right-0 top-full mt-2 w-56 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
+						<button
+							type="button"
+							class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
+							on:click={handleShare}
+							disabled={saving}
+						>
+							{#if saving}
+								<svg class="h-4 w-4 animate-spin text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<path d="M21 12a9 9 0 11-6.219-8.56" />
+								</svg>
+							{:else}
+								<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+									<path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+								</svg>
+							{/if}
+							<span>{saving ? 'Creating...' : 'Create Public URL'}</span>
+						</button>
+						<button
+							type="button"
+							class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
+							on:click={downloadCSV}
+						>
+							<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+								<polyline points="14 2 14 8 20 8" />
+								<path d="M8 13h2M8 17h2M14 13h2M14 17h2" />
+							</svg>
+							<span>Export CSV</span>
+						</button>
+						<button
+							type="button"
+							class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
+							on:click={downloadPDF}
+						>
+							<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+								<polyline points="14 2 14 8 20 8" />
+								<line x1="12" y1="18" x2="12" y2="12" />
+								<line x1="9" y1="15" x2="15" y2="15" />
+							</svg>
+							<span>Download PDF</span>
+						</button>
+					</div>
+				{/if}
+			</div>
+		</div>
+	</header>
+
+	<!-- Sync Button & Status -->
+	<div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+		<div class="flex items-start gap-3">
+			<!-- Region Selector -->
+			<div>
+				<select
+					bind:value={selectedRegion}
+					on:change={handleRegionChange}
+					class="h-10 rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-datadog-purple focus:ring-offset-2 cursor-pointer"
+				>
+					{#each Object.entries(regions) as [id, region]}
+						<option value={id}>{region.name}</option>
+					{/each}
+				</select>
+				<div class="mt-2 text-xs text-muted-foreground">
+					{#if metadata?.site}
+						<span>{metadata.site}</span>
+					{/if}
+				</div>
+			</div>
+
+			<!-- Sync Button -->
+			<div>
+				<Button
+					variant="outline"
+					on:click={handleSync}
+					disabled={syncing}
+					class="gap-2"
+				>
+					{#if syncing}
+						<svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M21 12a9 9 0 11-6.219-8.56" />
+						</svg>
+						Syncing...
+					{:else}
+						<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+						</svg>
+						Sync Pricing
+					{/if}
+				</Button>
+				<div class="mt-2 text-xs text-muted-foreground">
+					{#if loading}
+						<span class="text-muted-foreground/50">Loading...</span>
+					{:else if products.length > 0}
+						<span>{products.length} products</span>
+						{#if lastSyncFormatted}
+							<span class="mx-1">·</span>
+							<span>Last synced: {lastSyncFormatted}</span>
+						{/if}
+					{:else if !lastSyncFormatted}
+						<span class="text-datadog-orange">Not synced yet</span>
+					{/if}
+				</div>
+			</div>
+		</div>
+
+		<!-- Column Visibility Dropdown -->
+		<div class="filter-menu-container relative">
+			<Button
+				variant="outline"
+				on:click={() => filterMenuOpen = !filterMenuOpen}
+				class="gap-2"
+			>
+				<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M3 6h18M7 12h10M10 18h4" />
+				</svg>
+				Columns
+				<div class="flex items-center gap-1 ml-1">
+					{#if showAnnual}<span class="w-2 h-2 rounded-full bg-datadog-green"></span>{/if}
+					{#if showMonthly}<span class="w-2 h-2 rounded-full bg-datadog-purple"></span>{/if}
+					{#if showOnDemand}<span class="w-2 h-2 rounded-full bg-datadog-orange"></span>{/if}
+				</div>
+				<svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M6 9l6 6 6-6" />
+				</svg>
+			</Button>
+
+			{#if filterMenuOpen}
+				<div class="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
+					<button
+						type="button"
+						class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
+						on:click={() => showAnnual = !showAnnual}
+					>
+						<span class="w-4 h-4 rounded border flex items-center justify-center {showAnnual ? 'bg-datadog-green border-datadog-green' : 'border-muted-foreground/30'}">
+							{#if showAnnual}
+								<svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+									<path d="M20 6L9 17l-5-5" />
+								</svg>
+							{/if}
+						</span>
+						<span class="text-datadog-green font-medium">Annual</span>
+					</button>
+					<button
+						type="button"
+						class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
+						on:click={() => showMonthly = !showMonthly}
+					>
+						<span class="w-4 h-4 rounded border flex items-center justify-center {showMonthly ? 'bg-datadog-purple border-datadog-purple' : 'border-muted-foreground/30'}">
+							{#if showMonthly}
+								<svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+									<path d="M20 6L9 17l-5-5" />
+								</svg>
+							{/if}
+						</span>
+						<span class="text-datadog-purple font-medium">Monthly</span>
+					</button>
+					<button
+						type="button"
+						class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
+						on:click={() => showOnDemand = !showOnDemand}
+					>
+						<span class="w-4 h-4 rounded border flex items-center justify-center {showOnDemand ? 'bg-datadog-orange border-datadog-orange' : 'border-muted-foreground/30'}">
+							{#if showOnDemand}
+								<svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+									<path d="M20 6L9 17l-5-5" />
+								</svg>
+							{/if}
+						</span>
+						<span class="text-datadog-orange font-medium">On-Demand</span>
+					</button>
+				</div>
+			{/if}
+		</div>
+	</div>
+
+	<!-- Alerts -->
+	{#if error}
+		<div class="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
+			{error}
+		</div>
+	{/if}
+
+	{#if success}
+		<div class="mb-6 rounded-lg border border-datadog-green/50 bg-datadog-green/10 p-4 text-datadog-green">
+			{success}
+		</div>
+	{/if}
+
+	<!-- Quote Lines -->
+	<Card class="mb-6 overflow-visible">
+		<CardHeader>
+			<div class="flex flex-wrap items-start justify-between gap-4">
+				<div>
+					<CardTitle>Quote Items</CardTitle>
+					<CardDescription>Add products and specify quantities — prices shown for all billing options</CardDescription>
+				</div>
+				<div class="w-full max-w-xs">
+					<Input
+						bind:value={quoteName}
+						placeholder="Quote name (optional)"
+						class="text-sm"
+					/>
+				</div>
+			</div>
+		</CardHeader>
+		<CardContent>
+			{#if loading}
+				<div class="flex items-center justify-center py-12">
+					<svg class="h-8 w-8 animate-spin text-datadog-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M21 12a9 9 0 11-6.219-8.56" />
+					</svg>
+				</div>
+			{:else}
+				<div class="space-y-3 overflow-visible">
+					{#each lines as line, index (line.id)}
+						<QuoteLine
+							{products}
+							{index}
+							{showAnnual}
+							{showMonthly}
+							{showOnDemand}
+							selectedProduct={line.product}
+							quantity={line.quantity}
+							on:update={(e) => updateLine(line.id, e.detail.product, e.detail.quantity)}
+							on:remove={() => removeLine(line.id)}
+						/>
+					{/each}
+				</div>
+
+				<Button
+					variant="outline"
+					class="mt-4 w-full py-6 border-2 border-dashed border-border hover:border-foreground/30 hover:bg-muted transition-all"
+					on:click={addLine}
+				>
+					<svg class="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+						<path d="M12 5v14M5 12h14" />
+					</svg>
+					<span class="font-semibold">Add Product</span>
+				</Button>
+			{/if}
+		</CardContent>
+	</Card>
+
+	<!-- Share URL Display -->
+	{#if shareUrl}
+		<div class="mb-4 flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 px-4 py-3">
+			<span class="text-sm text-muted-foreground">Public URL:</span>
+			<a 
+				href={shareUrl} 
+				target="_blank"
+				class="flex-1 truncate font-mono text-sm text-datadog-purple hover:underline"
+			>
+				{shareUrl}
+			</a>
+			<button
+				type="button"
+				class="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+				on:click={copyShareUrl}
+				title="Copy URL"
+			>
+				<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<rect x="9" y="9" width="13" height="13" rx="2" />
+					<path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+				</svg>
+			</button>
+			<button
+				type="button"
+				class="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+				on:click={() => shareUrl = ''}
+				title="Dismiss"
+			>
+				<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M18 6L6 18M6 6l12 12" />
+				</svg>
+			</button>
+		</div>
+	{/if}
+
+	<!-- Summary Section -->
+	{#if validLines.length > 0}
+		<Card class="mb-6">
+			<CardHeader>
+				<CardTitle class="flex items-center gap-2">
+					<svg class="h-5 w-5 text-datadog-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+					</svg>
+					Pricing Summary
+				</CardTitle>
+				<CardDescription>Compare costs across all billing options</CardDescription>
+			</CardHeader>
+			<CardContent>
+				<!-- Totals Grid -->
+				<div class="grid gap-4 mb-6" style="grid-template-columns: repeat({[showAnnual, showMonthly, showOnDemand].filter(Boolean).length}, 1fr);">
+					{#if showAnnual}
+						<!-- Annual -->
+						<div class="relative rounded-xl border-2 border-datadog-green/50 bg-datadog-green/10 p-5 shadow-lg shadow-datadog-green/10">
+							{#if bestValueOption?.key === 'annual' && dynamicSavings > 0}
+								<div class="absolute -top-2.5 right-3 rounded-full bg-datadog-green px-2.5 py-0.5 text-xs font-bold text-white shadow">
+									Best Value
+								</div>
+							{/if}
+							<div class="text-sm font-medium text-datadog-green mb-2">Annual Billing</div>
+							<div class="text-3xl font-bold text-datadog-green mb-1">
+								{formatCurrency(annualCosts.annually)}
+								<span class="text-sm font-normal text-muted-foreground">/year</span>
+							</div>
+							<div class="text-sm text-muted-foreground mb-3">
+								{formatCurrency(totals.annually)}/month
+							</div>
+							{#if bestValueOption?.key === 'annual' && dynamicSavings > 0}
+								<div class="flex items-center gap-1.5 text-sm font-medium text-datadog-green">
+									<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<path d="M12 19V5M5 12l7-7 7 7" />
+									</svg>
+									Save {formatCurrency(dynamicSavings)}/yr
+								</div>
+							{:else if bestValueOption && bestValueOption.key !== 'annual'}
+								<div class="flex items-center gap-1.5 text-sm text-muted-foreground">
+									<svg class="h-4 w-4 text-datadog-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<path d="M12 5v14M5 12l7 7 7-7" />
+									</svg>
+									+{((annualCosts.annually - bestValueOption.cost) / bestValueOption.cost * 100).toFixed(0)}% vs {bestValueLabel}
+								</div>
+							{/if}
+						</div>
+					{/if}
+
+					{#if showMonthly}
+						<!-- Monthly -->
+						<div class="relative rounded-xl border border-datadog-purple/30 bg-datadog-purple/5 p-5">
+							{#if bestValueOption?.key === 'monthly' && dynamicSavings > 0}
+								<div class="absolute -top-2.5 right-3 rounded-full bg-datadog-purple px-2.5 py-0.5 text-xs font-bold text-white shadow">
+									Best Value
+								</div>
+							{/if}
+							<div class="text-sm font-medium text-datadog-purple mb-2">Monthly Billing</div>
+							<div class="text-3xl font-bold text-datadog-purple mb-1">
+								{formatCurrency(annualCosts.monthly)}
+								<span class="text-sm font-normal text-muted-foreground">/year</span>
+							</div>
+							<div class="text-sm text-muted-foreground mb-3">
+								{formatCurrency(totals.monthly)}/month
+							</div>
+							{#if bestValueOption?.key === 'monthly' && dynamicSavings > 0}
+								<div class="flex items-center gap-1.5 text-sm font-medium text-datadog-purple">
+									<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<path d="M12 19V5M5 12l7-7 7 7" />
+									</svg>
+									Save {formatCurrency(dynamicSavings)}/yr
+								</div>
+							{:else if bestValueOption && bestValueOption.key !== 'monthly'}
+								<div class="flex items-center gap-1.5 text-sm text-muted-foreground">
+									<svg class="h-4 w-4 text-datadog-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<path d="M12 5v14M5 12l7 7 7-7" />
+									</svg>
+									+{((annualCosts.monthly - bestValueOption.cost) / bestValueOption.cost * 100).toFixed(0)}% vs {bestValueLabel}
+								</div>
+							{/if}
+						</div>
+					{/if}
+
+					{#if showOnDemand}
+						<!-- On-Demand -->
+						<div class="relative rounded-xl border border-datadog-orange/30 bg-datadog-orange/5 p-5">
+							{#if bestValueOption?.key === 'ondemand' && dynamicSavings > 0}
+								<div class="absolute -top-2.5 right-3 rounded-full bg-datadog-orange px-2.5 py-0.5 text-xs font-bold text-white shadow">
+									Best Value
+								</div>
+							{/if}
+							<div class="text-sm font-medium text-datadog-orange mb-2">On-Demand</div>
+							<div class="text-3xl font-bold text-datadog-orange mb-1">
+								{formatCurrency(annualCosts.on_demand)}
+								<span class="text-sm font-normal text-muted-foreground">/year</span>
+							</div>
+							<div class="text-sm text-muted-foreground mb-3">
+								{formatCurrency(totals.on_demand)}/month
+							</div>
+							{#if bestValueOption?.key === 'ondemand' && dynamicSavings > 0}
+								<div class="flex items-center gap-1.5 text-sm font-medium text-datadog-orange">
+									<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<path d="M12 19V5M5 12l7-7 7 7" />
+									</svg>
+									Save {formatCurrency(dynamicSavings)}/yr
+								</div>
+							{:else if bestValueOption && bestValueOption.key !== 'ondemand'}
+								<div class="flex items-center gap-1.5 text-sm text-muted-foreground">
+									<svg class="h-4 w-4 text-destructive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<path d="M12 5v14M5 12l7 7 7-7" />
+									</svg>
+									+{((annualCosts.on_demand - bestValueOption.cost) / bestValueOption.cost * 100).toFixed(0)}% vs {bestValueLabel}
+								</div>
+							{/if}
+						</div>
+					{/if}
+				</div>
+
+				<!-- Savings Highlight -->
+				{#if dynamicSavings > 0 && bestValueOption && worstValueOption}
+					<div class="rounded-xl bg-gradient-to-r from-datadog-green/15 to-datadog-purple/15 border border-datadog-green/20 p-5">
+						<div class="flex flex-wrap items-center justify-between gap-4">
+							<div class="flex items-center gap-3">
+								<div class="flex h-12 w-12 items-center justify-center rounded-full bg-datadog-green/20">
+									<svg class="h-6 w-6 text-datadog-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+									</svg>
+								</div>
+								<div>
+									<div class="text-lg font-semibold">Potential Annual Savings</div>
+									<div class="text-sm text-muted-foreground">By choosing {bestValueLabel} billing over {worstValueLabel}</div>
+								</div>
+							</div>
+							<div class="text-right">
+								<div class="text-3xl font-bold text-datadog-green">{formatCurrency(dynamicSavings)}</div>
+								<div class="text-sm text-muted-foreground">per year ({dynamicSavingsPercent.toFixed(1)}% savings)</div>
+							</div>
+						</div>
+					</div>
+				{/if}
+			</CardContent>
+		</Card>
+	{/if}
+
+	<!-- Footer -->
+	<footer class="mt-8 text-center text-sm text-muted-foreground">
+		<p>
+			Pricing data sourced from 
+			<a href="https://www.datadoghq.com/pricing/list/" target="_blank" rel="noopener noreferrer" class="text-datadog-purple hover:underline">
+				Datadog Pricing
+			</a>
+		</p>
+	</footer>
+</div>
+
+
+<style>
+	@keyframes fadeIn {
+		from {
+			opacity: 0;
+			transform: translateX(-10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateX(0);
+		}
+	}
+</style>

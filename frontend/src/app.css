@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	:root {
+		--background: 250 25% 6%;
+		--foreground: 0 0% 95%;
+		--card: 250 20% 9%;
+		--card-foreground: 0 0% 95%;
+		--popover: 250 25% 8%;
+		--popover-foreground: 0 0% 95%;
+		--primary: 270 60% 55%;
+		--primary-foreground: 0 0% 100%;
+		--secondary: 250 15% 14%;
+		--secondary-foreground: 0 0% 95%;
+		--muted: 250 15% 14%;
+		--muted-foreground: 250 10% 55%;
+		--accent: 250 15% 14%;
+		--accent-foreground: 0 0% 95%;
+		--destructive: 0 72% 51%;
+		--destructive-foreground: 0 0% 100%;
+		--border: 250 15% 16%;
+		--input: 250 15% 16%;
+		--ring: 270 60% 55%;
+		--radius: 0.75rem;
+	}
+}
+
+@layer base {
+	* {
+		@apply border-border;
+	}
+
+	body {
+		@apply bg-background text-foreground;
+	}
+}
+
+/* Gradient background - dark theme */
+.gradient-bg {
+	background: 
+		radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 44, 166, 0.25), transparent),
+		radial-gradient(ellipse 60% 40% at 100% 0%, rgba(62, 207, 168, 0.12), transparent),
+		radial-gradient(ellipse 50% 30% at 0% 100%, rgba(99, 44, 166, 0.15), transparent),
+		hsl(var(--background));
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background: hsl(var(--muted-foreground) / 0.3);
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Selection color */
+::selection {
+	background: rgba(99, 44, 166, 0.3);
+}
+
+/* Number input arrows */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+	opacity: 1;
+}
+

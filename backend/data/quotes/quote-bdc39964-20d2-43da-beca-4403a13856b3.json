@@ -1,0 +1,24 @@
+{
+  "id": "bdc39964-20d2-43da-beca-4403a13856b3",
+  "name": "Quote bdc39964",
+  "billing_type": "annually",
+  "items": [
+    {
+      "product": "Infrastructure DevSecOps Pro",
+      "billing_unit": "Per infra host, per month",
+      "quantity": 1,
+      "unit_price": 22.0,
+      "total_price": 22.0
+    },
+    {
+      "product": "Custom Events*",
+      "billing_unit": "Per 100K custom events, per month",
+      "quantity": 1,
+      "unit_price": 2.0,
+      "total_price": 2.0
+    }
+  ],
+  "total": 24.0,
+  "created_at": "2025-12-17T22:09:05.986260",
+  "updated_at": "2025-12-17T22:09:05.986260"
+}

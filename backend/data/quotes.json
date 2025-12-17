@@ -1,0 +1,77 @@
+{
+  "4eabd3ff-a423-435a-8d9b-a9c8f1b78189": {
+    "id": "4eabd3ff-a423-435a-8d9b-a9c8f1b78189",
+    "name": "Quote 4eabd3ff",
+    "billing_type": "annually",
+    "items": [
+      {
+        "product": "Infrastructure DevSecOps Pro",
+        "billing_unit": "Per infra host, per month",
+        "quantity": 2,
+        "unit_price": 22.0,
+        "total_price": 44.0
+      },
+      {
+        "product": "Wireless Access Point Monitoring",
+        "billing_unit": "Per device, per month",
+        "quantity": 1,
+        "unit_price": 4.0,
+        "total_price": 4.0
+      }
+    ],
+    "total": 48.0,
+    "created_at": "2025-12-17T21:27:14.981899",
+    "updated_at": "2025-12-17T21:27:14.981899"
+  },
+  "cd0f6fe7-964f-4a89-bf4c-d688c0af4b98": {
+    "id": "cd0f6fe7-964f-4a89-bf4c-d688c0af4b98",
+    "name": "Quote cd0f6fe7",
+    "billing_type": "annually",
+    "items": [
+      {
+        "product": "Infrastructure DevSecOps Pro",
+        "billing_unit": "Per infra host, per month",
+        "quantity": 1,
+        "unit_price": 22.0,
+        "total_price": 22.0
+      }
+    ],
+    "total": 22.0,
+    "created_at": "2025-12-17T21:29:36.039528",
+    "updated_at": "2025-12-17T21:29:36.039528"
+  },
+  "efe647f0-269e-4a50-9e19-d249af8cd14f": {
+    "id": "efe647f0-269e-4a50-9e19-d249af8cd14f",
+    "name": "Quote efe647f0",
+    "billing_type": "annually",
+    "items": [
+      {
+        "product": "Infrastructure Enterprise",
+        "billing_unit": "Per infra host, per month",
+        "quantity": 1,
+        "unit_price": 23.0,
+        "total_price": 23.0
+      }
+    ],
+    "total": 23.0,
+    "created_at": "2025-12-17T21:35:07.247879",
+    "updated_at": "2025-12-17T21:35:07.247879"
+  },
+  "1ba167a0-b093-40af-ad4c-7599fe4bcd1d": {
+    "id": "1ba167a0-b093-40af-ad4c-7599fe4bcd1d",
+    "name": "test",
+    "billing_type": "annually",
+    "items": [
+      {
+        "product": "Infrastructure Enterprise",
+        "billing_unit": "Per infra host, per month",
+        "quantity": 1,
+        "unit_price": 23.0,
+        "total_price": 23.0
+      }
+    ],
+    "total": 23.0,
+    "created_at": "2025-12-17T21:37:30.925606",
+    "updated_at": "2025-12-17T21:37:30.925606"
+  }
+}
