@@ -34,6 +34,8 @@
 	let shareUrl = '';
 	let shareMenuOpen = false;
 	let filterMenuOpen = false;
+	let importModalOpen = false;
+	let isDragging = false;
 	
 	// Column visibility toggles
 	let showAnnual = true;
@@ -51,6 +53,14 @@
 		: null;
 
 	$: validLines = lines.filter((l) => l.product !== null);
+
+	// Calculate total allotted quantity for each product from allotment lines
+	function getTotalAllottedForProduct(productName: string | undefined): number {
+		if (!productName) return 0;
+		return lines
+			.filter(l => l.isAllotment && l.product?.product === productName)
+			.reduce((sum, l) => sum + (l.includedQuantity || 0), 0);
+	}
 
 	// Compute all billing totals simultaneously (considering allotments)
 	$: totals = validLines.reduce(
@@ -324,10 +334,25 @@
 		error = '';
 
 		try {
-			const items = validLines.map((l) => ({
-				product: l.product!.product,
-				quantity: l.quantity
-			}));
+			// Build items with allotment info
+			const items = validLines
+				.filter(l => !l.isAllotment) // Only parent products
+				.map((l) => {
+					// Find allotments for this line
+					const lineAllotments = lines
+						.filter(al => al.isAllotment && al.parentLineId === l.id)
+						.map(al => ({
+							allotted_product: al.product!.product,
+							quantity_included: al.includedQuantity || 0,
+							allotted_unit: al.allotmentInfo?.allotted_unit || 'units'
+						}));
+					
+					return {
+						product: l.product!.product,
+						quantity: l.quantity,
+						allotments: lineAllotments
+					};
+				});
 
 			const quote = await createQuote(quoteName || null, 'annually', items);
 			shareUrl = `${window.location.origin}/quote/${quote.id}`;
@@ -525,6 +550,154 @@
 			filterMenuOpen = false;
 		}
 	}
+
+	function exportJSON() {
+		const exportData = {
+			name: quoteName || 'Datadog Quote',
+			region: selectedRegion,
+			created_at: new Date().toISOString(),
+			items: validLines
+				.filter(l => !l.isAllotment)
+				.map(line => {
+					const lineAllotments = lines
+						.filter(al => al.isAllotment && al.parentLineId === line.id)
+						.map(al => ({
+							product: al.product?.product || '',
+							quantity_included: al.includedQuantity || 0,
+							unit: al.allotmentInfo?.allotted_unit || 'units'
+						}));
+					
+					return {
+						product: line.product?.product || '',
+						billing_unit: line.product?.billing_unit || '',
+						quantity: line.quantity,
+						prices: {
+							annual: line.product?.billed_annually || '',
+							monthly: line.product?.billed_month_to_month || '',
+							on_demand: line.product?.on_demand || ''
+						},
+						allotments: lineAllotments
+					};
+				}),
+			totals: {
+				monthly: totals,
+				yearly: annualCosts
+			}
+		};
+
+		const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+		const url = URL.createObjectURL(blob);
+		const link = document.createElement('a');
+		link.href = url;
+		link.download = `datadog-quote-${new Date().toISOString().split('T')[0]}.json`;
+		link.style.visibility = 'hidden';
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		URL.revokeObjectURL(url);
+		
+		shareMenuOpen = false;
+		success = 'JSON exported successfully!';
+		setTimeout(() => success = '', 3000);
+	}
+
+	function handleDragOver(event: DragEvent) {
+		event.preventDefault();
+		isDragging = true;
+	}
+
+	function handleDragLeave(event: DragEvent) {
+		event.preventDefault();
+		isDragging = false;
+	}
+
+	function handleDrop(event: DragEvent) {
+		event.preventDefault();
+		isDragging = false;
+		
+		const files = event.dataTransfer?.files;
+		if (files && files.length > 0) {
+			processImportFile(files[0]);
+		}
+	}
+
+	function handleFileSelect(event: Event) {
+		const input = event.target as HTMLInputElement;
+		if (input.files && input.files.length > 0) {
+			processImportFile(input.files[0]);
+		}
+	}
+
+	async function processImportFile(file: File) {
+		if (!file.name.endsWith('.json')) {
+			error = 'Please select a JSON file';
+			return;
+		}
+
+		try {
+			const text = await file.text();
+			const data = JSON.parse(text);
+			
+			// Validate structure
+			if (!data.items || !Array.isArray(data.items)) {
+				error = 'Invalid JSON format: missing items array';
+				return;
+			}
+
+			// Set quote name if present
+			if (data.name) {
+				quoteName = data.name;
+			}
+
+			// Set region if present and valid
+			if (data.region && ['us1', 'us3', 'us5', 'eu1', 'ap1', 'us1-fed'].includes(data.region)) {
+				if (data.region !== selectedRegion) {
+					selectedRegion = data.region;
+					await loadProducts();
+				}
+			}
+
+			// Clear existing lines
+			lines = [];
+
+			// Import items
+			for (const item of data.items) {
+				if (!item.product) continue;
+				
+				// Find matching product in current products list
+				const matchingProduct = products.find(p => p.product === item.product);
+				
+				const newLine: LineItem = {
+					id: crypto.randomUUID(),
+					product: matchingProduct || null,
+					quantity: item.quantity || 1,
+					isAllotment: false
+				};
+				
+				lines = [...lines, newLine];
+
+				// Handle allotments if present
+				if (matchingProduct && Array.isArray(item.allotments)) {
+					for (const allotment of item.allotments) {
+						// This will be handled by the updateLine reactive logic
+					}
+				}
+			}
+
+			// Trigger allotment loading for imported lines
+			for (const line of lines) {
+				if (line.product) {
+					updateLine(line.id, line.product, line.quantity);
+				}
+			}
+
+			importModalOpen = false;
+			success = `Imported ${data.items.length} products successfully!`;
+			setTimeout(() => success = '', 3000);
+		} catch (e) {
+			error = 'Failed to parse JSON file';
+		}
+	}
 </script>
 
 <svelte:head>
@@ -549,6 +722,18 @@
 					</h1>
 				</div>
 			</div>
+
+			<!-- Import Button -->
+			<Button
+				variant="outline"
+				on:click={() => importModalOpen = true}
+				class="gap-2"
+			>
+				<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+				</svg>
+				Import
+			</Button>
 
 			<!-- Share Button with Dropdown -->
 			<div class="share-menu-container relative">
@@ -598,6 +783,18 @@
 								<path d="M8 13h2M8 17h2M14 13h2M14 17h2" />
 							</svg>
 							<span>Export CSV</span>
+						</button>
+						<button
+							type="button"
+							class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
+							on:click={exportJSON}
+						>
+							<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+								<polyline points="14 2 14 8 20 8" />
+								<path d="M10 12l-2 2 2 2M14 12l2 2-2 2" />
+							</svg>
+							<span>Export JSON</span>
 						</button>
 						<button
 							type="button"
@@ -796,6 +993,7 @@
 							isAllotment={line.isAllotment || false}
 							includedQuantity={line.includedQuantity || 0}
 							allotmentInfo={line.allotmentInfo || null}
+							totalAllottedForProduct={!line.isAllotment ? getTotalAllottedForProduct(line.product?.product) : 0}
 							on:update={(e) => updateLine(line.id, e.detail.product, e.detail.quantity)}
 							on:remove={() => removeLine(line.id)}
 						/>
@@ -1005,6 +1203,72 @@
 		</p>
 	</footer>
 </div>
+
+<!-- Import Modal -->
+{#if importModalOpen}
+	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+	<div 
+		class="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+		on:click|self={() => importModalOpen = false}
+		on:keydown={(e) => e.key === 'Escape' && (importModalOpen = false)}
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
+	>
+		<div class="relative w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl">
+			<!-- Close Button -->
+			<button
+				type="button"
+				class="absolute right-4 top-4 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+				on:click={() => importModalOpen = false}
+			>
+				<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M18 6L6 18M6 6l12 12" />
+				</svg>
+			</button>
+
+			<h2 class="mb-2 text-xl font-semibold">Import Quote</h2>
+			<p class="mb-6 text-sm text-muted-foreground">
+				Drop a JSON file or click to select one
+			</p>
+
+			<!-- Drop Zone -->
+			<div
+				class="relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-12 transition-colors {isDragging ? 'border-datadog-purple bg-datadog-purple/10' : 'border-border hover:border-muted-foreground'}"
+				on:dragover={handleDragOver}
+				on:dragleave={handleDragLeave}
+				on:drop={handleDrop}
+				role="button"
+				tabindex="0"
+			>
+				<input
+					type="file"
+					accept=".json"
+					class="absolute inset-0 cursor-pointer opacity-0"
+					on:change={handleFileSelect}
+				/>
+				
+				<div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
+					<svg class="h-8 w-8 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+						<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+						<polyline points="14 2 14 8 20 8" />
+						<path d="M10 12l-2 2 2 2M14 12l2 2-2 2" />
+					</svg>
+				</div>
+				
+				<p class="text-center text-sm">
+					<span class="font-medium text-datadog-purple">Click to upload</span>
+					<span class="text-muted-foreground"> or drag and drop</span>
+				</p>
+				<p class="mt-1 text-xs text-muted-foreground">JSON files only</p>
+			</div>
+
+			{#if error}
+				<p class="mt-4 text-sm text-red-500">{error}</p>
+			{/if}
+		</div>
+	</div>
+{/if}
 
 
 <style>

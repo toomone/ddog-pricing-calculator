@@ -282,6 +282,72 @@ MANUAL_ALLOTMENTS = [
         "per_parent_unit": "host",
         "frequency": "month"
     },
+    # Infrastructure DevSecOps Pro (same as Infrastructure Pro)
+    {
+        "parent_product": "Infrastructure DevSecOps Pro",
+        "allotted_product": "Custom Metrics",
+        "quantity_per_parent": 100,
+        "allotted_unit": "custom metrics",
+        "per_parent_unit": "host",
+        "frequency": "month"
+    },
+    {
+        "parent_product": "Infrastructure DevSecOps Pro",
+        "allotted_product": "Ingested Custom Metrics",
+        "quantity_per_parent": 100,
+        "allotted_unit": "ingested custom metrics",
+        "per_parent_unit": "host",
+        "frequency": "month"
+    },
+    {
+        "parent_product": "Infrastructure DevSecOps Pro",
+        "allotted_product": "Containers",
+        "quantity_per_parent": 5,
+        "allotted_unit": "containers",
+        "per_parent_unit": "host",
+        "frequency": "hour"
+    },
+    {
+        "parent_product": "Infrastructure DevSecOps Pro",
+        "allotted_product": "Custom Events",
+        "quantity_per_parent": 500,
+        "allotted_unit": "custom events",
+        "per_parent_unit": "host",
+        "frequency": "month"
+    },
+    # Infrastructure DevSecOps Enterprise (same as Infrastructure Enterprise)
+    {
+        "parent_product": "Infrastructure DevSecOps Enterprise",
+        "allotted_product": "Custom Metrics",
+        "quantity_per_parent": 200,
+        "allotted_unit": "custom metrics",
+        "per_parent_unit": "host",
+        "frequency": "month"
+    },
+    {
+        "parent_product": "Infrastructure DevSecOps Enterprise",
+        "allotted_product": "Ingested Custom Metrics",
+        "quantity_per_parent": 200,
+        "allotted_unit": "ingested custom metrics",
+        "per_parent_unit": "host",
+        "frequency": "month"
+    },
+    {
+        "parent_product": "Infrastructure DevSecOps Enterprise",
+        "allotted_product": "Containers",
+        "quantity_per_parent": 10,
+        "allotted_unit": "containers",
+        "per_parent_unit": "host",
+        "frequency": "hour"
+    },
+    {
+        "parent_product": "Infrastructure DevSecOps Enterprise",
+        "allotted_product": "Custom Events",
+        "quantity_per_parent": 1000,
+        "allotted_unit": "custom events",
+        "per_parent_unit": "host",
+        "frequency": "month"
+    },
     # APM
     {
         "parent_product": "APM",
@@ -315,6 +381,31 @@ MANUAL_ALLOTMENTS = [
         "per_parent_unit": "APM host",
         "frequency": "hour"
     },
+    # APM Pro (based on pricing page screenshot)
+    {
+        "parent_product": "APM Pro",
+        "allotted_product": "Indexed Spans",
+        "quantity_per_parent": 1000000,
+        "allotted_unit": "indexed spans",
+        "per_parent_unit": "APM host",
+        "frequency": "month"
+    },
+    {
+        "parent_product": "APM Pro",
+        "allotted_product": "Ingested Spans",
+        "quantity_per_parent": 150,
+        "allotted_unit": "GB",
+        "per_parent_unit": "APM host",
+        "frequency": "month"
+    },
+    {
+        "parent_product": "APM Pro",
+        "allotted_product": "Data Streams Monitoring",
+        "quantity_per_parent": 1,
+        "allotted_unit": "DSM host",
+        "per_parent_unit": "APM host",
+        "frequency": "month"
+    },
     # APM Enterprise
     {
         "parent_product": "APM Enterprise",
@@ -331,6 +422,30 @@ MANUAL_ALLOTMENTS = [
         "allotted_unit": "GB",
         "per_parent_unit": "APM host",
         "frequency": "month"
+    },
+    {
+        "parent_product": "APM Enterprise",
+        "allotted_product": "Data Streams Monitoring",
+        "quantity_per_parent": 1,
+        "allotted_unit": "DSM host",
+        "per_parent_unit": "APM host",
+        "frequency": "month"
+    },
+    {
+        "parent_product": "APM Enterprise",
+        "allotted_product": "Continuous Profiler",
+        "quantity_per_parent": 1,
+        "allotted_unit": "profiled host",
+        "per_parent_unit": "APM host",
+        "frequency": "month"
+    },
+    {
+        "parent_product": "APM Enterprise",
+        "allotted_product": "Profiled Containers",
+        "quantity_per_parent": 4,
+        "allotted_unit": "profiled containers",
+        "per_parent_unit": "APM host",
+        "frequency": "hour"
     },
     # Database Monitoring
     {

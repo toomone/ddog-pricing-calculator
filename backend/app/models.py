@@ -12,12 +12,20 @@ class PricingItem(BaseModel):
     on_demand: Optional[str] = None
 
 
+class AllotmentInfo(BaseModel):
+    allotted_product: str
+    quantity_included: int
+    allotted_unit: str
+
+
 class QuoteLineItem(BaseModel):
     product: str
     billing_unit: str
     quantity: int
     unit_price: float
     total_price: float
+    is_allotment: bool = False
+    allotments: list[AllotmentInfo] = []
 
 
 class Quote(BaseModel):
