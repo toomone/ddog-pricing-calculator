@@ -7,8 +7,13 @@
 	export let selectedProduct: Product | null = null;
 	export let placeholder: string = 'Search products...';
 
-	let searchQuery = '';
+	let searchQuery = selectedProduct?.product || '';
 	let isOpen = false;
+
+	// Sync searchQuery when selectedProduct changes externally
+	$: if (selectedProduct && searchQuery !== selectedProduct.product) {
+		searchQuery = selectedProduct.product;
+	}
 	let highlightedIndex = 0;
 	let inputElement: HTMLInputElement;
 
