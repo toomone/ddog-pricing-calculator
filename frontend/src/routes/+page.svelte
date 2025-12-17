@@ -657,37 +657,66 @@
 				}
 			}
 
+			// Make sure products are loaded
+			if (products.length === 0) {
+				await loadProducts();
+			}
+
+			// Also load allotments if not already loaded
+			if (allotments.length === 0) {
+				await loadAllotments();
+			}
+
 			// Clear existing lines
 			lines = [];
 
-			// Import items
+			// Import items one by one and trigger allotment loading
 			for (const item of data.items) {
 				if (!item.product) continue;
 				
 				// Find matching product in current products list
 				const matchingProduct = products.find(p => p.product === item.product);
 				
+				if (!matchingProduct) {
+					console.warn(`Product not found: ${item.product}`);
+					continue;
+				}
+				
+				const lineId = crypto.randomUUID();
 				const newLine: LineItem = {
-					id: crypto.randomUUID(),
-					product: matchingProduct || null,
+					id: lineId,
+					product: matchingProduct,
 					quantity: item.quantity || 1,
 					isAllotment: false
 				};
 				
 				lines = [...lines, newLine];
-
-				// Handle allotments if present
-				if (matchingProduct && Array.isArray(item.allotments)) {
-					for (const allotment of item.allotments) {
-						// This will be handled by the updateLine reactive logic
+				
+				// Find and add allotments for this product
+				const productAllotments = allotments.filter(a => 
+					a.parent_product.toLowerCase().includes(matchingProduct.product.toLowerCase()) ||
+					matchingProduct.product.toLowerCase().includes(a.parent_product.toLowerCase())
+				);
+				
+				for (const allotment of productAllotments) {
+					const allottedProduct = products.find(p => 
+						p.product.toLowerCase().includes(allotment.allotted_product.toLowerCase()) ||
+						allotment.allotted_product.toLowerCase().includes(p.product.toLowerCase())
+					);
+					
+					if (allottedProduct) {
+						const includedQty = allotment.quantity_per_parent * (item.quantity || 1);
+						const allotmentLine: LineItem = {
+							id: crypto.randomUUID(),
+							product: allottedProduct,
+							quantity: includedQty,
+							isAllotment: true,
+							parentLineId: lineId,
+							allotmentInfo: allotment,
+							includedQuantity: includedQty
+						};
+						lines = [...lines, allotmentLine];
 					}
-				}
-			}
-
-			// Trigger allotment loading for imported lines
-			for (const line of lines) {
-				if (line.product) {
-					updateLine(line.id, line.product, line.quantity);
 				}
 			}
 
