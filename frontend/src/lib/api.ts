@@ -56,6 +56,15 @@ export interface SyncResponse {
 	products_count: number;
 }
 
+export interface Allotment {
+	parent_product: string;
+	allotted_product: string;
+	quantity_per_parent: number;
+	allotted_unit: string;
+	per_parent_unit: string;
+	frequency: string;
+}
+
 export async function fetchRegions(): Promise<Record<string, Region>> {
 	const response = await fetch(`${API_BASE}/regions`);
 	if (!response.ok) throw new Error('Failed to fetch regions');
@@ -122,6 +131,24 @@ export async function updateQuote(
 		body: JSON.stringify({ name, billing_type, items })
 	});
 	if (!response.ok) throw new Error('Failed to update quote');
+	return response.json();
+}
+
+export async function fetchAllotments(): Promise<Allotment[]> {
+	const response = await fetch(`${API_BASE}/allotments`);
+	if (!response.ok) throw new Error('Failed to fetch allotments');
+	return response.json();
+}
+
+export async function fetchProductAllotments(productName: string): Promise<Allotment[]> {
+	const response = await fetch(`${API_BASE}/allotments/product/${encodeURIComponent(productName)}`);
+	if (!response.ok) throw new Error('Failed to fetch product allotments');
+	return response.json();
+}
+
+export async function initAllotments(): Promise<{ success: boolean; message: string }> {
+	const response = await fetch(`${API_BASE}/allotments/init`, { method: 'POST' });
+	if (!response.ok) throw new Error('Failed to initialize allotments');
 	return response.json();
 }
 

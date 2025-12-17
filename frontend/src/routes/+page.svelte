@@ -6,18 +6,23 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import QuoteLine from '$lib/components/QuoteLine.svelte';
-	import { fetchProducts, fetchMetadata, syncPricing, createQuote, fetchRegions, type Product, type PricingMetadata, type Region } from '$lib/api';
+	import { fetchProducts, fetchMetadata, syncPricing, createQuote, fetchRegions, fetchAllotments, initAllotments, type Product, type PricingMetadata, type Region, type Allotment } from '$lib/api';
 	import { formatCurrency, parsePrice } from '$lib/utils';
 
 	interface LineItem {
 		id: string;
 		product: Product | null;
 		quantity: number;
+		isAllotment?: boolean;
+		parentLineId?: string;
+		allotmentInfo?: Allotment;
+		includedQuantity?: number;
 	}
 
 	let products: Product[] = [];
 	let metadata: PricingMetadata | null = null;
 	let regions: Record<string, Region> = {};
+	let allotments: Allotment[] = [];
 	let selectedRegion = 'us1';
 	let lines: LineItem[] = [{ id: crypto.randomUUID(), product: null, quantity: 1 }];
 	let quoteName = '';
@@ -47,7 +52,7 @@
 
 	$: validLines = lines.filter((l) => l.product !== null);
 
-	// Compute all billing totals simultaneously
+	// Compute all billing totals simultaneously (considering allotments)
 	$: totals = validLines.reduce(
 		(acc, line) => {
 			if (!line.product) return acc;
@@ -55,10 +60,15 @@
 			const monthlyPrice = parsePrice(line.product.billed_month_to_month);
 			const onDemandPrice = parsePrice(line.product.on_demand);
 			
+			// For allotments, only charge for quantity exceeding included amount
+			const chargeableQty = line.isAllotment 
+				? Math.max(0, line.quantity - (line.includedQuantity || 0))
+				: line.quantity;
+			
 			return {
-				annually: acc.annually + annualPrice * line.quantity,
-				monthly: acc.monthly + monthlyPrice * line.quantity,
-				on_demand: acc.on_demand + onDemandPrice * line.quantity
+				annually: acc.annually + annualPrice * chargeableQty,
+				monthly: acc.monthly + monthlyPrice * chargeableQty,
+				on_demand: acc.on_demand + onDemandPrice * chargeableQty
 			};
 		},
 		{ annually: 0, monthly: 0, on_demand: 0 }
@@ -111,6 +121,7 @@
 
 	onMount(async () => {
 		await loadRegions();
+		await loadAllotments();
 		await loadProducts();
 		
 		// Check for clone parameter
@@ -126,6 +137,19 @@
 			}
 		}
 	});
+
+	async function loadAllotments() {
+		try {
+			allotments = await fetchAllotments();
+			if (allotments.length === 0) {
+				// Initialize with manual allotments
+				await initAllotments();
+				allotments = await fetchAllotments();
+			}
+		} catch (e) {
+			console.error('Failed to load allotments:', e);
+		}
+	}
 
 	async function loadClonedQuote(cloneData: { name: string; items: { product: string; quantity: number }[] }) {
 		quoteName = cloneData.name ? `${cloneData.name} (Copy)` : '';
@@ -228,13 +252,66 @@
 	}
 
 	function removeLine(id: string) {
-		if (lines.length > 1) {
-			lines = lines.filter((l) => l.id !== id);
+		// Don't allow removing the last non-allotment line
+		const nonAllotmentLines = lines.filter(l => !l.isAllotment);
+		if (nonAllotmentLines.length <= 1 && !lines.find(l => l.id === id)?.isAllotment) {
+			return;
 		}
+		// Remove the line and any associated allotment lines
+		lines = lines.filter((l) => l.id !== id && l.parentLineId !== id);
 	}
 
 	function updateLine(id: string, product: Product | null, quantity: number) {
+		const existingLine = lines.find(l => l.id === id);
+		const previousProduct = existingLine?.product;
+		
+		// Update the line
 		lines = lines.map((l) => (l.id === id ? { ...l, product, quantity } : l));
+		
+		// If product changed, handle allotments
+		if (product && product.product !== previousProduct?.product) {
+			// Remove old allotment lines for this parent
+			lines = lines.filter(l => l.parentLineId !== id);
+			
+			// Find allotments for this product
+			const productAllotments = allotments.filter(a => 
+				a.parent_product.toLowerCase().includes(product.product.toLowerCase()) ||
+				product.product.toLowerCase().includes(a.parent_product.toLowerCase())
+			);
+			
+			// Add allotment lines
+			for (const allotment of productAllotments) {
+				// Find the allotted product in our products list
+				const allottedProduct = products.find(p => 
+					p.product.toLowerCase().includes(allotment.allotted_product.toLowerCase()) ||
+					allotment.allotted_product.toLowerCase().includes(p.product.toLowerCase())
+				);
+				
+				if (allottedProduct) {
+					const includedQty = allotment.quantity_per_parent * quantity;
+					lines = [...lines, {
+						id: crypto.randomUUID(),
+						product: allottedProduct,
+						quantity: includedQty,
+						isAllotment: true,
+						parentLineId: id,
+						allotmentInfo: allotment,
+						includedQuantity: includedQty
+					}];
+				}
+			}
+		}
+		
+		// If quantity changed on a parent, update allotment included quantities
+		if (quantity !== existingLine?.quantity) {
+			lines = lines.map(l => {
+				if (l.parentLineId === id && l.allotmentInfo) {
+					const newIncluded = l.allotmentInfo.quantity_per_parent * quantity;
+					return { ...l, includedQuantity: newIncluded };
+				}
+				return l;
+			});
+		}
 	}
 
 	async function handleShare() {
@@ -716,6 +793,9 @@
 							{showOnDemand}
 							selectedProduct={line.product}
 							quantity={line.quantity}
+							isAllotment={line.isAllotment || false}
+							includedQuantity={line.includedQuantity || 0}
+							allotmentInfo={line.allotmentInfo || null}
 							on:update={(e) => updateLine(line.id, e.detail.product, e.detail.quantity)}
 							on:remove={() => removeLine(line.id)}
 						/>

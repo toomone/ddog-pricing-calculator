@@ -9,6 +9,11 @@ from .scraper import (
     get_all_regions, get_regions_status, sync_all_regions, DEFAULT_REGION
 )
 from .quotes import create_quote, get_quote, update_quote, delete_quote, list_quotes
+from .allotments_scraper import (
+    load_allotments_data, load_allotments_metadata, sync_allotments, 
+    ensure_allotments_data, get_allotments_for_product, save_manual_allotments,
+    get_manual_allotments
+)
 
 
 @asynccontextmanager
@@ -147,3 +152,49 @@ async def delete_existing_quote(quote_id: str):
     if not success:
         raise HTTPException(status_code=404, detail="Quote not found")
     return {"message": "Quote deleted successfully"}
+
+
+# Allotments endpoints
+@app.get("/api/allotments")
+async def get_allotments():
+    """Get all allotments data."""
+    data = load_allotments_data()
+    if not data:
+        # Use manual allotments as fallback
+        data = get_manual_allotments()
+    return data
+
+
+@app.get("/api/allotments/metadata")
+async def get_allotments_metadata():
+    """Get allotments metadata."""
+    return load_allotments_metadata()
+
+
+@app.get("/api/allotments/product/{product_name}")
+async def get_product_allotments(product_name: str):
+    """Get allotments for a specific parent product."""
+    allotments = get_allotments_for_product(product_name)
+    if not allotments:
+        # Try manual allotments
+        manual = get_manual_allotments()
+        allotments = [a for a in manual if a["parent_product"].lower() == product_name.lower()]
+    return allotments
+
+
+@app.post("/api/allotments/sync")
+async def sync_allotments_data():
+    """Sync allotments data."""
+    success, message, count = sync_allotments()
+    if not success:
+        # Fall back to saving manual allotments
+        save_manual_allotments()
+        return {"success": True, "message": f"Using manual allotments data ({len(get_manual_allotments())} items)", "count": len(get_manual_allotments())}
+    return {"success": success, "message": message, "count": count}
+
+
+@app.post("/api/allotments/init")
+async def init_allotments():
+    """Initialize allotments with manual data."""
+    save_manual_allotments()
+    return {"success": True, "message": f"Initialized {len(get_manual_allotments())} manual allotments"}

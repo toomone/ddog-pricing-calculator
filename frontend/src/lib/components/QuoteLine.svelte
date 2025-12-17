@@ -4,7 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
 	import { formatCurrency, parsePrice } from '$lib/utils';
-	import type { Product } from '$lib/api';
+	import type { Product, Allotment } from '$lib/api';
 
 	export let products: Product[] = [];
 	export let selectedProduct: Product | null = null;
@@ -13,6 +13,9 @@
 	export let showAnnual: boolean = true;
 	export let showMonthly: boolean = true;
 	export let showOnDemand: boolean = true;
+	export let isAllotment: boolean = false;
+	export let includedQuantity: number = 0;
+	export let allotmentInfo: Allotment | null = null;
 
 	const dispatch = createEventDispatcher<{
 		update: { product: Product | null; quantity: number };
@@ -24,10 +27,13 @@
 	$: monthlyPrice = selectedProduct ? parsePrice(selectedProduct.billed_month_to_month) : 0;
 	$: onDemandPrice = selectedProduct ? parsePrice(selectedProduct.on_demand) : 0;
 
-	// Calculate totals for all 3
-	$: annualTotal = annualPrice * quantity;
-	$: monthlyTotal = monthlyPrice * quantity;
-	$: onDemandTotal = onDemandPrice * quantity;
+	// For allotments, only charge for quantity exceeding the included amount
+	$: chargeableQuantity = isAllotment ? Math.max(0, quantity - includedQuantity) : quantity;
+
+	// Calculate totals for all 3 (only for chargeable quantity)
+	$: annualTotal = annualPrice * chargeableQuantity;
+	$: monthlyTotal = monthlyPrice * chargeableQuantity;
+	$: onDemandTotal = onDemandPrice * chargeableQuantity;
 
 	$: visibleColumns = [showAnnual, showMonthly, showOnDemand].filter(Boolean).length;
 
@@ -46,31 +52,72 @@
 </script>
 
 <div
-	class="group relative rounded-xl border border-border/50 bg-card/50 p-4 transition-all hover:border-datadog-purple/30 hover:bg-card/80"
+	class="group relative rounded-xl border p-4 transition-all {isAllotment 
+		? 'border-datadog-green/30 bg-datadog-green/5 ml-8' 
+		: 'border-border/50 bg-card/50 hover:border-foreground/20 hover:bg-card/80'}"
 	style="animation: slideIn 0.3s ease-out {index * 0.05}s both;"
 >
+	{#if isAllotment}
+		<div class="absolute -left-6 top-1/2 -translate-y-1/2 text-datadog-green">
+			<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<path d="M9 18l6-6-6-6" />
+			</svg>
+		</div>
+	{/if}
+
 	<div class="flex flex-col gap-4 lg:flex-row lg:items-start">
-		<!-- Product Search -->
+		<!-- Product Search / Display -->
 		<div class="flex-1 min-w-0">
-			<label class="mb-1.5 block text-xs font-medium text-muted-foreground">Product</label>
-			<ProductSearch {products} {selectedProduct} on:select={handleProductSelect} />
-			{#if selectedProduct}
-				<Badge variant="outline" class="mt-2 text-xs">
-					{selectedProduct.billing_unit}
-				</Badge>
+			<div class="flex items-center gap-2 mb-1.5">
+				<label class="block text-xs font-medium text-muted-foreground">
+					{isAllotment ? 'Included Product' : 'Product'}
+				</label>
+				{#if isAllotment}
+					<Badge variant="outline" class="text-[10px] bg-datadog-green/10 text-datadog-green border-datadog-green/30">
+						Allotment
+					</Badge>
+				{/if}
+			</div>
+			{#if isAllotment}
+				<div class="flex h-10 w-full items-center rounded-lg border border-datadog-green/30 bg-datadog-green/5 px-3 py-2 text-sm">
+					{selectedProduct?.product || 'Unknown product'}
+				</div>
+				{#if allotmentInfo}
+					<div class="mt-1.5 text-[10px] text-muted-foreground">
+						{allotmentInfo.quantity_per_parent} {allotmentInfo.allotted_unit} per {allotmentInfo.per_parent_unit}
+					</div>
+				{/if}
+			{:else}
+				<ProductSearch {products} {selectedProduct} on:select={handleProductSelect} />
+				{#if selectedProduct}
+					<Badge variant="outline" class="mt-2 text-xs">
+						{selectedProduct.billing_unit}
+					</Badge>
+				{/if}
 			{/if}
 		</div>
 
 		<!-- Quantity -->
-		<div class="w-20 shrink-0">
-			<label class="mb-1.5 block text-xs font-medium text-muted-foreground">Qty</label>
+		<div class="w-24 shrink-0">
+			<label class="mb-1.5 block text-xs font-medium text-muted-foreground">
+				{isAllotment ? 'Usage' : 'Qty'}
+			</label>
 			<input
 				type="number"
-				min="1"
+				min="0"
 				bind:value={quantity}
 				on:change={handleQuantityChange}
-				class="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-center font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-datadog-purple focus-visible:ring-offset-2 focus-visible:border-datadog-purple disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200"
+				class="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-center font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200"
 			/>
+			{#if isAllotment}
+				<div class="mt-1 text-[10px] text-center {chargeableQuantity > 0 ? 'text-datadog-orange' : 'text-datadog-green'}">
+					{#if chargeableQuantity > 0}
+						{includedQuantity} included, {chargeableQuantity} charged
+					{:else}
+						{includedQuantity} included
+					{/if}
+				</div>
+			{/if}
 		</div>
 
 		<!-- Price Columns - Dynamic based on visibility -->
@@ -80,11 +127,19 @@
 					<label class="mb-1.5 block text-xs font-medium text-datadog-green">Annual</label>
 					<div class="rounded-lg bg-datadog-green/10 border border-datadog-green/20 px-2 py-2">
 						<div class="font-mono text-sm font-semibold text-datadog-green truncate">
-							{selectedProduct ? formatCurrency(annualTotal) : '-'}
+							{#if isAllotment && chargeableQuantity === 0}
+								$0
+							{:else}
+								{selectedProduct ? formatCurrency(annualTotal) : '-'}
+							{/if}
 						</div>
-						{#if selectedProduct && annualPrice > 0}
+						{#if selectedProduct && annualPrice > 0 && (!isAllotment || chargeableQuantity > 0)}
 							<div class="text-[10px] text-muted-foreground mt-0.5 truncate">
 								{formatCurrency(annualPrice)}/ea
+							</div>
+						{:else if isAllotment && chargeableQuantity === 0}
+							<div class="text-[10px] text-datadog-green mt-0.5">
+								Included
 							</div>
 						{/if}
 					</div>
@@ -96,11 +151,19 @@
 					<label class="mb-1.5 block text-xs font-medium text-datadog-purple">Monthly</label>
 					<div class="rounded-lg bg-datadog-purple/10 border border-datadog-purple/20 px-2 py-2">
 						<div class="font-mono text-sm font-semibold text-datadog-purple truncate">
-							{selectedProduct ? formatCurrency(monthlyTotal) : '-'}
+							{#if isAllotment && chargeableQuantity === 0}
+								$0
+							{:else}
+								{selectedProduct ? formatCurrency(monthlyTotal) : '-'}
+							{/if}
 						</div>
-						{#if selectedProduct && monthlyPrice > 0}
+						{#if selectedProduct && monthlyPrice > 0 && (!isAllotment || chargeableQuantity > 0)}
 							<div class="text-[10px] text-muted-foreground mt-0.5 truncate">
 								{formatCurrency(monthlyPrice)}/ea
+							</div>
+						{:else if isAllotment && chargeableQuantity === 0}
+							<div class="text-[10px] text-datadog-green mt-0.5">
+								Included
 							</div>
 						{/if}
 					</div>
@@ -112,11 +175,19 @@
 					<label class="mb-1.5 block text-xs font-medium text-datadog-orange">On-Demand</label>
 					<div class="rounded-lg bg-datadog-orange/10 border border-datadog-orange/20 px-2 py-2">
 						<div class="font-mono text-sm font-semibold text-datadog-orange truncate">
-							{selectedProduct ? formatCurrency(onDemandTotal) : '-'}
+							{#if isAllotment && chargeableQuantity === 0}
+								$0
+							{:else}
+								{selectedProduct ? formatCurrency(onDemandTotal) : '-'}
+							{/if}
 						</div>
-						{#if selectedProduct && onDemandPrice > 0}
+						{#if selectedProduct && onDemandPrice > 0 && (!isAllotment || chargeableQuantity > 0)}
 							<div class="text-[10px] text-muted-foreground mt-0.5 truncate">
 								{formatCurrency(onDemandPrice)}/ea
+							</div>
+						{:else if isAllotment && chargeableQuantity === 0}
+							<div class="text-[10px] text-datadog-green mt-0.5">
+								Included
 							</div>
 						{/if}
 					</div>
