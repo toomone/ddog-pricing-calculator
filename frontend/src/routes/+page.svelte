@@ -889,7 +889,6 @@
 		<div class="flex items-center gap-4">
 			<!-- Region Selector Group -->
 			<div class="flex items-center gap-2">
-				<label class="text-sm text-muted-foreground whitespace-nowrap">Pricing region:</label>
 				<div class="flex items-center rounded-lg border border-input bg-background">
 					<select
 						bind:value={selectedRegion}
@@ -1033,7 +1032,7 @@
 						</svg>
 						Quote Items
 					</CardTitle>
-					<CardDescription>Add products and specify quantities — prices shown for all billing options</CardDescription>
+					<CardDescription>Add products and specify quantities</CardDescription>
 				</div>
 				<div class="w-full max-w-xs">
 					<Input
