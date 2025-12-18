@@ -297,13 +297,16 @@
 
 	function updateLine(id: string, product: Product | null, quantity: number) {
 		const existingLine = lines.find(l => l.id === id);
-		const previousProduct = existingLine?.product;
+		const previousProductId = existingLine?.product?.id;
+		
+		// Check if product changed (using ID for reliable comparison)
+		const productChanged = product?.id !== previousProductId;
 		
 		// Update the line
 		lines = lines.map((l) => (l.id === id ? { ...l, product, quantity } : l));
 		
 		// If product changed, handle allotments
-		if (product && product.product !== previousProduct?.product) {
+		if (product && productChanged) {
 			// Remove old allotment lines for this parent
 			lines = lines.filter(l => l.parentLineId !== id);
 			
@@ -313,7 +316,8 @@
 				product.product.toLowerCase().includes(a.parent_product.toLowerCase())
 			);
 			
-			// Add allotment lines
+			// Add all allotment lines at once
+			const newAllotmentLines: LineItem[] = [];
 			for (const allotment of productAllotments) {
 				// Find the allotted product in our products list
 				const allottedProduct = products.find(p => 
@@ -323,7 +327,7 @@
 				
 				if (allottedProduct) {
 					const includedQty = allotment.quantity_per_parent * quantity;
-					lines = [...lines, {
+					newAllotmentLines.push({
 						id: crypto.randomUUID(),
 						product: allottedProduct,
 						quantity: includedQty,
@@ -331,13 +335,18 @@
 						parentLineId: id,
 						allotmentInfo: allotment,
 						includedQuantity: includedQty
-					}];
+					});
 				}
+			}
+			
+			// Add all allotments at once
+			if (newAllotmentLines.length > 0) {
+				lines = [...lines, ...newAllotmentLines];
 			}
 		}
 		
-		// If quantity changed on a parent, update allotment included quantities
-		if (quantity !== existingLine?.quantity) {
+		// If quantity changed on a parent (and product didn't change), update allotment included quantities
+		if (!productChanged && quantity !== existingLine?.quantity) {
 			lines = lines.map(l => {
 				if (l.parentLineId === id && l.allotmentInfo) {
 					const newIncluded = l.allotmentInfo.quantity_per_parent * quantity;
