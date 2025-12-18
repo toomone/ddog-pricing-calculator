@@ -118,8 +118,9 @@ def scrape_pricing_data(region: str = DEFAULT_REGION) -> list[dict]:
                         if billing_unit and billing_unit in product_name:
                             product_name = product_name.replace(billing_unit, '').strip()
                         
-                        clean_product = product_name.strip()
-                        clean_billing_unit = billing_unit.strip() if billing_unit else "per unit"
+                        # Remove asterisks and clean whitespace
+                        clean_product = product_name.replace('*', '').strip()
+                        clean_billing_unit = billing_unit.replace('*', '').strip() if billing_unit else "per unit"
                         
                         item = {
                             "id": generate_product_id(clean_product, clean_billing_unit),

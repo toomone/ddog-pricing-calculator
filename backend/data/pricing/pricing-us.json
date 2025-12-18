@@ -36,45 +36,45 @@
     "on_demand": "$41"
   },
   {
-    "id": "d59028c5f403",
+    "id": "e18ee40ccffe",
     "region": "us",
-    "product": "Container Monitoring*",
+    "product": "Container Monitoring",
     "billing_unit": "Per container, per month",
     "billed_annually": "$1",
     "billed_month_to_month": "$1",
     "on_demand": null
   },
   {
-    "id": "fed3e314168e",
+    "id": "1284f2fa45a3",
     "region": "us",
-    "product": "Container Monitoring*",
+    "product": "Container Monitoring",
     "billing_unit": "Per container hour, per hour",
     "billed_annually": null,
     "billed_month_to_month": null,
     "on_demand": "$0.002"
   },
   {
-    "id": "fab30a2db493",
+    "id": "cc7ca9648401",
     "region": "us",
-    "product": "Custom Metrics* **",
+    "product": "Custom Metrics",
     "billing_unit": "Per 100 custom metrics, per month",
     "billed_annually": "$5",
     "billed_month_to_month": "$5",
     "on_demand": "$5"
   },
   {
-    "id": "22c539185ec8",
+    "id": "7dcbb4c88af0",
     "region": "us",
-    "product": "Ingested Custom Metrics*",
+    "product": "Ingested Custom Metrics",
     "billing_unit": "Per 100 ingested custom metrics, per month",
     "billed_annually": "$0.10",
     "billed_month_to_month": "$0.10",
     "on_demand": "$0.10"
   },
   {
-    "id": "e54044a25400",
+    "id": "1c1562b3039e",
     "region": "us",
-    "product": "Custom Events*",
+    "product": "Custom Events",
     "billing_unit": "Per 100K custom events, per month",
     "billed_annually": "$2",
     "billed_month_to_month": "$2.40",
@@ -324,36 +324,36 @@
     "on_demand": "$36"
   },
   {
-    "id": "eeb9a9267f82",
+    "id": "9037fb7521b2",
     "region": "us",
-    "product": "APM Ingestion*",
+    "product": "APM Ingestion",
     "billing_unit": "Per ingested GB, per month",
     "billed_annually": "$0.10",
     "billed_month_to_month": "$0.10",
     "on_demand": "$0.10"
   },
   {
-    "id": "fc5301430d98",
+    "id": "39d0e3a55334",
     "region": "us",
-    "product": "APM - Indexed Spans*",
+    "product": "APM - Indexed Spans",
     "billing_unit": "Per 1M indexed spans (7-day retention), per month",
     "billed_annually": "$1.27",
     "billed_month_to_month": "$1.52",
     "on_demand": "$1.91"
   },
   {
-    "id": "1d11af43a354",
+    "id": "efebf7d0a731",
     "region": "us",
-    "product": "APM - Indexed Spans*",
+    "product": "APM - Indexed Spans",
     "billing_unit": "Per 1M indexed spans (15-day retention), per month",
     "billed_annually": "$1.70",
     "billed_month_to_month": "$2.04",
     "on_demand": "$2.55"
   },
   {
-    "id": "61ec68ceb9e3",
+    "id": "fd4cd99b3744",
     "region": "us",
-    "product": "APM - Indexed Spans*",
+    "product": "APM - Indexed Spans",
     "billing_unit": "Per 1M indexed spans (30-day retention), per month",
     "billed_annually": "$2.50",
     "billed_month_to_month": "$3",
@@ -432,18 +432,18 @@
     "on_demand": "$1.70"
   },
   {
-    "id": "23974d9b3d46",
+    "id": "ef908b80f876",
     "region": "us",
-    "product": "Continuous Profiler - Containers*",
+    "product": "Continuous Profiler - Containers",
     "billing_unit": "Per profiled container, per month",
     "billed_annually": "$2",
     "billed_month_to_month": "$2",
     "on_demand": null
   },
   {
-    "id": "1f045fa6ddc1",
+    "id": "15b9f298d574",
     "region": "us",
-    "product": "Continuous Profiler - Containers*",
+    "product": "Continuous Profiler - Containers",
     "billing_unit": "Per profiled container, per hour",
     "billed_annually": null,
     "billed_month_to_month": null,
@@ -495,18 +495,18 @@
     "on_demand": "$12"
   },
   {
-    "id": "f722587f5597",
+    "id": "ea594db72b75",
     "region": "us",
-    "product": "Cloud Security Management (CSM) Pro Containers*",
+    "product": "Cloud Security Management (CSM) Pro Containers",
     "billing_unit": "Per container, per month",
     "billed_annually": "$.50",
     "billed_month_to_month": "$.50",
     "on_demand": null
   },
   {
-    "id": "c97083d3c291",
+    "id": "41c07962f677",
     "region": "us",
-    "product": "Cloud Security Management (CSM) Pro Containers*",
+    "product": "Cloud Security Management (CSM) Pro Containers",
     "billing_unit": "Per container hour, per hour",
     "billed_annually": null,
     "billed_month_to_month": null,
@@ -522,18 +522,18 @@
     "on_demand": "$30"
   },
   {
-    "id": "2e96de282116",
+    "id": "a2399d0e9c75",
     "region": "us",
-    "product": "Cloud Security Management (CSM) Enterprise Containers*",
+    "product": "Cloud Security Management (CSM) Enterprise Containers",
     "billing_unit": "Per container, per month",
     "billed_annually": "$1",
     "billed_month_to_month": "$1",
     "on_demand": null
   },
   {
-    "id": "5c4c56f95795",
+    "id": "028acf1f0be1",
     "region": "us",
-    "product": "Cloud Security Management (CSM) Enterprise Containers*",
+    "product": "Cloud Security Management (CSM) Enterprise Containers",
     "billing_unit": "Per container hour, per hour",
     "billed_annually": null,
     "billed_month_to_month": null,
@@ -549,18 +549,18 @@
     "on_demand": "$18"
   },
   {
-    "id": "700d78de752c",
+    "id": "d9b61e12e0ee",
     "region": "us",
-    "product": "Workload Protection Containers*",
+    "product": "Workload Protection Containers",
     "billing_unit": "Per container, per month",
     "billed_annually": "$1",
     "billed_month_to_month": "$1",
     "on_demand": null
   },
   {
-    "id": "56f5583b0bfd",
+    "id": "dd178f8f7a39",
     "region": "us",
-    "product": "Workload Protection Containers*",
+    "product": "Workload Protection Containers",
     "billing_unit": "Per container hour, per hour",
     "billed_annually": null,
     "billed_month_to_month": null,
