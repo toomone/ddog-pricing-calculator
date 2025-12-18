@@ -125,6 +125,11 @@
 							<div class="font-mono text-sm font-semibold text-datadog-green truncate">
 								{selectedProduct ? formatCurrency(annualTotal) : '-'}
 							</div>
+							{#if selectedProduct && annualPrice > 0}
+								<div class="font-mono text-[10px] text-datadog-green/60 mt-0.5">
+									{formatCurrency(annualPrice)}/ea
+								</div>
+							{/if}
 						</div>
 					</div>
 				{/if}
@@ -136,6 +141,11 @@
 							<div class="font-mono text-sm font-semibold text-datadog-purple truncate">
 								{selectedProduct ? formatCurrency(monthlyTotal) : '-'}
 							</div>
+							{#if selectedProduct && monthlyPrice > 0}
+								<div class="font-mono text-[10px] text-datadog-purple/60 mt-0.5">
+									{formatCurrency(monthlyPrice)}/ea
+								</div>
+							{/if}
 						</div>
 					</div>
 				{/if}
@@ -147,6 +157,11 @@
 							<div class="font-mono text-sm font-semibold text-datadog-orange truncate">
 								{selectedProduct ? formatCurrency(onDemandTotal) : '-'}
 							</div>
+							{#if selectedProduct && onDemandPrice > 0}
+								<div class="font-mono text-[10px] text-datadog-orange/60 mt-0.5">
+									{formatCurrency(onDemandPrice)}/ea
+								</div>
+							{/if}
 						</div>
 					</div>
 				{/if}
