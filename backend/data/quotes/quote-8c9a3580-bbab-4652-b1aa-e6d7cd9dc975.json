@@ -1,0 +1,46 @@
+{
+  "id": "8c9a3580-bbab-4652-b1aa-e6d7cd9dc975",
+  "name": "Quote 8c9a3580",
+  "billing_type": "annually",
+  "items": [
+    {
+      "product": "Infrastructure Pro",
+      "billing_unit": "Per infra host, per month",
+      "quantity": 1,
+      "unit_price": 15.0,
+      "total_price": 15.0,
+      "is_allotment": false,
+      "allotments": []
+    },
+    {
+      "product": "Infrastructure Enterprise",
+      "billing_unit": "Per infra host, per month",
+      "quantity": 1,
+      "unit_price": 23.0,
+      "total_price": 23.0,
+      "is_allotment": false,
+      "allotments": []
+    },
+    {
+      "product": "Custom Metrics* **",
+      "billing_unit": "Per 100 custom metrics, per month",
+      "quantity": 1,
+      "unit_price": 5.0,
+      "total_price": 5.0,
+      "is_allotment": false,
+      "allotments": []
+    },
+    {
+      "product": "NetFlow Monitoring",
+      "billing_unit": "Per million aggregated NetFlow records (15-day retention), per month",
+      "quantity": 200,
+      "unit_price": 0.6,
+      "total_price": 120.0,
+      "is_allotment": false,
+      "allotments": []
+    }
+  ],
+  "total": 163.0,
+  "created_at": "2025-12-17T23:20:57.681396",
+  "updated_at": "2025-12-17T23:20:57.681396"
+}

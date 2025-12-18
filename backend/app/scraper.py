@@ -3,8 +3,18 @@ import pandas as pd
 from bs4 import BeautifulSoup
 import json
 import re
+import hashlib
 from pathlib import Path
 from datetime import datetime
+
+
+def generate_product_id(product_name: str, billing_unit: str) -> str:
+    """Generate a unique, deterministic ID for a product based on name and billing unit."""
+    # Create a consistent string to hash
+    id_string = f"{product_name.lower().strip()}|{billing_unit.lower().strip()}"
+    # Use SHA-256 and take first 12 characters for a short but unique ID
+    hash_obj = hashlib.sha256(id_string.encode('utf-8'))
+    return hash_obj.hexdigest()[:12]
 
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -110,10 +120,14 @@ def scrape_pricing_data(region: str = DEFAULT_REGION) -> list[dict]:
                         if billing_unit and billing_unit in product_name:
                             product_name = product_name.replace(billing_unit, '').strip()
                         
+                        clean_product = product_name.strip()
+                        clean_billing_unit = billing_unit.strip() if billing_unit else "per unit"
+                        
                         item = {
+                            "id": generate_product_id(clean_product, clean_billing_unit),
                             "region": region,
-                            "product": product_name.strip(),
-                            "billing_unit": billing_unit.strip() if billing_unit else "per unit",
+                            "product": clean_product,
+                            "billing_unit": clean_billing_unit,
                             "billed_annually": str(row.iloc[2]).strip() if len(row) > 2 and pd.notna(row.iloc[2]) else None,
                             "billed_month_to_month": str(row.iloc[3]).strip() if len(row) > 3 and pd.notna(row.iloc[3]) else None,
                             "on_demand": str(row.iloc[4]).strip() if len(row) > 4 and pd.notna(row.iloc[4]) else None,

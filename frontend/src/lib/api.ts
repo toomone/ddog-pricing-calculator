@@ -1,6 +1,7 @@
 const API_BASE = '/api';
 
 export interface Product {
+	id: string;
 	product: string;
 	billing_unit: string;
 	billed_annually: string | null;

@@ -553,7 +553,7 @@
 
 	function exportJSON() {
 		const exportData = {
-			name: quoteName || 'Datadog Quote',
+			name: quoteName || 'PriceHound Quote',
 			region: selectedRegion,
 			created_at: new Date().toISOString(),
 			items: validLines
@@ -562,12 +562,14 @@
 					const lineAllotments = lines
 						.filter(al => al.isAllotment && al.parentLineId === line.id)
 						.map(al => ({
+							id: al.product?.id || '',
 							product: al.product?.product || '',
 							quantity_included: al.includedQuantity || 0,
 							unit: al.allotmentInfo?.allotted_unit || 'units'
 						}));
 					
 					return {
+						id: line.product?.id || '',
 						product: line.product?.product || '',
 						billing_unit: line.product?.billing_unit || '',
 						quantity: line.quantity,
@@ -589,7 +591,7 @@
 		const url = URL.createObjectURL(blob);
 		const link = document.createElement('a');
 		link.href = url;
-		link.download = `datadog-quote-${new Date().toISOString().split('T')[0]}.json`;
+		link.download = `pricehound-quote-${new Date().toISOString().split('T')[0]}.json`;
 		link.style.visibility = 'hidden';
 		document.body.appendChild(link);
 		link.click();
@@ -672,13 +674,20 @@
 
 			// Import items one by one and trigger allotment loading
 			for (const item of data.items) {
-				if (!item.product) continue;
+				if (!item.product && !item.id) continue;
 				
-				// Find matching product in current products list
-				const matchingProduct = products.find(p => p.product === item.product);
+				// Find matching product - try by ID first, then by name
+				let matchingProduct = item.id 
+					? products.find(p => p.id === item.id)
+					: null;
+				
+				// Fallback to name matching if ID not found
+				if (!matchingProduct) {
+					matchingProduct = products.find(p => p.product === item.product);
+				}
 				
 				if (!matchingProduct) {
-					console.warn(`Product not found: ${item.product}`);
+					console.warn(`Product not found: ${item.product} (id: ${item.id})`);
 					continue;
 				}
 				
