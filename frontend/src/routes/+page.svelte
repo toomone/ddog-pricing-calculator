@@ -1022,7 +1022,14 @@
 		<CardHeader>
 			<div class="flex flex-wrap items-start justify-between gap-4">
 				<div>
-					<CardTitle>Quote Items</CardTitle>
+					<CardTitle class="flex items-center gap-2">
+						<svg class="h-5 w-5 text-datadog-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<circle cx="9" cy="21" r="1" />
+							<circle cx="20" cy="21" r="1" />
+							<path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+						</svg>
+						Quote Items
+					</CardTitle>
 					<CardDescription>Add products and specify quantities — prices shown for all billing options</CardDescription>
 				</div>
 				<div class="w-full max-w-xs">
