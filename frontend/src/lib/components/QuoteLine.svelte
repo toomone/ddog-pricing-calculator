@@ -127,7 +127,7 @@
 							</div>
 							{#if selectedProduct && annualPrice > 0}
 								<div class="font-mono text-[10px] text-datadog-green/60 mt-0.5">
-									{formatCurrency(annualPrice)}/ea
+									{formatCurrency(annualPrice)}/unit
 								</div>
 							{/if}
 						</div>
@@ -143,7 +143,7 @@
 							</div>
 							{#if selectedProduct && monthlyPrice > 0}
 								<div class="font-mono text-[10px] text-datadog-purple/60 mt-0.5">
-									{formatCurrency(monthlyPrice)}/ea
+									{formatCurrency(monthlyPrice)}/unit
 								</div>
 							{/if}
 						</div>
@@ -159,7 +159,7 @@
 							</div>
 							{#if selectedProduct && onDemandPrice > 0}
 								<div class="font-mono text-[10px] text-datadog-orange/60 mt-0.5">
-									{formatCurrency(onDemandPrice)}/ea
+									{formatCurrency(onDemandPrice)}/unit
 								</div>
 							{/if}
 						</div>
