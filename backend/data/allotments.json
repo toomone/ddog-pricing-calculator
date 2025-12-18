@@ -5,7 +5,9 @@
     "quantity_per_parent": 100,
     "allotted_unit": "custom metrics",
     "per_parent_unit": "host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "cc7ca9648401",
+    "parent_product_id": "a2feb43e353a"
   },
   {
     "parent_product": "Infrastructure Pro",
@@ -13,7 +15,9 @@
     "quantity_per_parent": 100,
     "allotted_unit": "ingested custom metrics",
     "per_parent_unit": "host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "7dcbb4c88af0",
+    "parent_product_id": "a2feb43e353a"
   },
   {
     "parent_product": "Infrastructure Pro",
@@ -21,7 +25,9 @@
     "quantity_per_parent": 5,
     "allotted_unit": "containers",
     "per_parent_unit": "host",
-    "frequency": "hour"
+    "frequency": "hour",
+    "allotted_product_id": "ef908b80f876",
+    "parent_product_id": "a2feb43e353a"
   },
   {
     "parent_product": "Infrastructure Pro",
@@ -29,7 +35,9 @@
     "quantity_per_parent": 500,
     "allotted_unit": "custom events",
     "per_parent_unit": "host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "1c1562b3039e",
+    "parent_product_id": "a2feb43e353a"
   },
   {
     "parent_product": "Infrastructure Enterprise",
@@ -37,7 +45,9 @@
     "quantity_per_parent": 200,
     "allotted_unit": "custom metrics",
     "per_parent_unit": "host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "cc7ca9648401",
+    "parent_product_id": "3ba3107a08f0"
   },
   {
     "parent_product": "Infrastructure Enterprise",
@@ -45,7 +55,9 @@
     "quantity_per_parent": 200,
     "allotted_unit": "ingested custom metrics",
     "per_parent_unit": "host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "7dcbb4c88af0",
+    "parent_product_id": "3ba3107a08f0"
   },
   {
     "parent_product": "Infrastructure Enterprise",
@@ -53,7 +65,9 @@
     "quantity_per_parent": 10,
     "allotted_unit": "containers",
     "per_parent_unit": "host",
-    "frequency": "hour"
+    "frequency": "hour",
+    "allotted_product_id": "ef908b80f876",
+    "parent_product_id": "3ba3107a08f0"
   },
   {
     "parent_product": "Infrastructure Enterprise",
@@ -61,7 +75,9 @@
     "quantity_per_parent": 1000,
     "allotted_unit": "custom events",
     "per_parent_unit": "host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "1c1562b3039e",
+    "parent_product_id": "3ba3107a08f0"
   },
   {
     "parent_product": "Infrastructure DevSecOps Pro",
@@ -69,7 +85,9 @@
     "quantity_per_parent": 100,
     "allotted_unit": "custom metrics",
     "per_parent_unit": "host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "cc7ca9648401",
+    "parent_product_id": "c3ac091b3b12"
   },
   {
     "parent_product": "Infrastructure DevSecOps Pro",
@@ -77,7 +95,9 @@
     "quantity_per_parent": 100,
     "allotted_unit": "ingested custom metrics",
     "per_parent_unit": "host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "7dcbb4c88af0",
+    "parent_product_id": "c3ac091b3b12"
   },
   {
     "parent_product": "Infrastructure DevSecOps Pro",
@@ -85,7 +105,9 @@
     "quantity_per_parent": 5,
     "allotted_unit": "containers",
     "per_parent_unit": "host",
-    "frequency": "hour"
+    "frequency": "hour",
+    "allotted_product_id": "ef908b80f876",
+    "parent_product_id": "c3ac091b3b12"
   },
   {
     "parent_product": "Infrastructure DevSecOps Pro",
@@ -93,7 +115,9 @@
     "quantity_per_parent": 500,
     "allotted_unit": "custom events",
     "per_parent_unit": "host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "1c1562b3039e",
+    "parent_product_id": "c3ac091b3b12"
   },
   {
     "parent_product": "Infrastructure DevSecOps Enterprise",
@@ -101,7 +125,9 @@
     "quantity_per_parent": 200,
     "allotted_unit": "custom metrics",
     "per_parent_unit": "host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "cc7ca9648401",
+    "parent_product_id": "41721fa9e184"
   },
   {
     "parent_product": "Infrastructure DevSecOps Enterprise",
@@ -109,7 +135,9 @@
     "quantity_per_parent": 200,
     "allotted_unit": "ingested custom metrics",
     "per_parent_unit": "host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "7dcbb4c88af0",
+    "parent_product_id": "41721fa9e184"
   },
   {
     "parent_product": "Infrastructure DevSecOps Enterprise",
@@ -117,7 +145,9 @@
     "quantity_per_parent": 10,
     "allotted_unit": "containers",
     "per_parent_unit": "host",
-    "frequency": "hour"
+    "frequency": "hour",
+    "allotted_product_id": "ef908b80f876",
+    "parent_product_id": "41721fa9e184"
   },
   {
     "parent_product": "Infrastructure DevSecOps Enterprise",
@@ -125,7 +155,9 @@
     "quantity_per_parent": 1000,
     "allotted_unit": "custom events",
     "per_parent_unit": "host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "1c1562b3039e",
+    "parent_product_id": "41721fa9e184"
   },
   {
     "parent_product": "APM",
@@ -133,7 +165,9 @@
     "quantity_per_parent": 1000000,
     "allotted_unit": "indexed spans",
     "per_parent_unit": "APM host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "39d0e3a55334",
+    "parent_product_id": "cdf4c8acc0ec"
   },
   {
     "parent_product": "APM",
@@ -141,7 +175,8 @@
     "quantity_per_parent": 150,
     "allotted_unit": "GB",
     "per_parent_unit": "APM host",
-    "frequency": "month"
+    "frequency": "month",
+    "parent_product_id": "cdf4c8acc0ec"
   },
   {
     "parent_product": "APM",
@@ -149,7 +184,8 @@
     "quantity_per_parent": 1,
     "allotted_unit": "profiled host",
     "per_parent_unit": "APM host",
-    "frequency": "month"
+    "frequency": "month",
+    "parent_product_id": "cdf4c8acc0ec"
   },
   {
     "parent_product": "APM",
@@ -157,7 +193,8 @@
     "quantity_per_parent": 4,
     "allotted_unit": "profiled containers",
     "per_parent_unit": "APM host",
-    "frequency": "hour"
+    "frequency": "hour",
+    "parent_product_id": "cdf4c8acc0ec"
   },
   {
     "parent_product": "APM Pro",
@@ -165,7 +202,9 @@
     "quantity_per_parent": 1000000,
     "allotted_unit": "indexed spans",
     "per_parent_unit": "APM host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "39d0e3a55334",
+    "parent_product_id": "cdf4c8acc0ec"
   },
   {
     "parent_product": "APM Pro",
@@ -173,7 +212,8 @@
     "quantity_per_parent": 150,
     "allotted_unit": "GB",
     "per_parent_unit": "APM host",
-    "frequency": "month"
+    "frequency": "month",
+    "parent_product_id": "cdf4c8acc0ec"
   },
   {
     "parent_product": "APM Pro",
@@ -181,7 +221,9 @@
     "quantity_per_parent": 1,
     "allotted_unit": "DSM host",
     "per_parent_unit": "APM host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "4335a2769d9e",
+    "parent_product_id": "cdf4c8acc0ec"
   },
   {
     "parent_product": "APM Enterprise",
@@ -189,7 +231,9 @@
     "quantity_per_parent": 1000000,
     "allotted_unit": "indexed spans",
     "per_parent_unit": "APM host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "39d0e3a55334",
+    "parent_product_id": "cdf4c8acc0ec"
   },
   {
     "parent_product": "APM Enterprise",
@@ -197,7 +241,8 @@
     "quantity_per_parent": 150,
     "allotted_unit": "GB",
     "per_parent_unit": "APM host",
-    "frequency": "month"
+    "frequency": "month",
+    "parent_product_id": "cdf4c8acc0ec"
   },
   {
     "parent_product": "APM Enterprise",
@@ -205,7 +250,9 @@
     "quantity_per_parent": 1,
     "allotted_unit": "DSM host",
     "per_parent_unit": "APM host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "4335a2769d9e",
+    "parent_product_id": "cdf4c8acc0ec"
   },
   {
     "parent_product": "APM Enterprise",
@@ -213,7 +260,9 @@
     "quantity_per_parent": 1,
     "allotted_unit": "profiled host",
     "per_parent_unit": "APM host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "d491c490c08e",
+    "parent_product_id": "cdf4c8acc0ec"
   },
   {
     "parent_product": "APM Enterprise",
@@ -221,7 +270,8 @@
     "quantity_per_parent": 4,
     "allotted_unit": "profiled containers",
     "per_parent_unit": "APM host",
-    "frequency": "hour"
+    "frequency": "hour",
+    "parent_product_id": "cdf4c8acc0ec"
   },
   {
     "parent_product": "Database Monitoring",
@@ -229,7 +279,8 @@
     "quantity_per_parent": 200,
     "allotted_unit": "queries",
     "per_parent_unit": "database host",
-    "frequency": "month"
+    "frequency": "month",
+    "parent_product_id": "27edcf50c1e4"
   },
   {
     "parent_product": "Continuous Profiler",
@@ -237,7 +288,8 @@
     "quantity_per_parent": 4,
     "allotted_unit": "profiled containers",
     "per_parent_unit": "profiled host",
-    "frequency": "hour"
+    "frequency": "hour",
+    "parent_product_id": "d491c490c08e"
   },
   {
     "parent_product": "Cloud Security Management Pro",
@@ -245,7 +297,9 @@
     "quantity_per_parent": 5,
     "allotted_unit": "containers",
     "per_parent_unit": "CSM host",
-    "frequency": "hour"
+    "frequency": "hour",
+    "allotted_product_id": "ea594db72b75",
+    "parent_product_id": "6eec176f9f8a"
   },
   {
     "parent_product": "Cloud Security Management Pro",
@@ -253,7 +307,9 @@
     "quantity_per_parent": 5,
     "allotted_unit": "executions",
     "per_parent_unit": "CSM host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "184eb0df7ab4",
+    "parent_product_id": "6eec176f9f8a"
   },
   {
     "parent_product": "Cloud Security Management Enterprise",
@@ -261,7 +317,9 @@
     "quantity_per_parent": 20,
     "allotted_unit": "containers",
     "per_parent_unit": "CSM host",
-    "frequency": "hour"
+    "frequency": "hour",
+    "allotted_product_id": "a2399d0e9c75",
+    "parent_product_id": "98770a518711"
   },
   {
     "parent_product": "Cloud Security Management Enterprise",
@@ -269,7 +327,9 @@
     "quantity_per_parent": 20,
     "allotted_unit": "executions",
     "per_parent_unit": "CSM host",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "184eb0df7ab4",
+    "parent_product_id": "98770a518711"
   },
   {
     "parent_product": "Serverless Workload Monitoring - Functions",
@@ -277,7 +337,9 @@
     "quantity_per_parent": 5,
     "allotted_unit": "custom metrics",
     "per_parent_unit": "function",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "cc7ca9648401",
+    "parent_product_id": "093155fe74fa"
   },
   {
     "parent_product": "Serverless Workload Monitoring - Apps",
@@ -285,7 +347,9 @@
     "quantity_per_parent": 20,
     "allotted_unit": "custom metrics",
     "per_parent_unit": "instance app",
-    "frequency": "month"
+    "frequency": "month",
+    "allotted_product_id": "cc7ca9648401",
+    "parent_product_id": "7dc8a69b5717"
   },
   {
     "parent_product": "Pipeline Visibility",
@@ -293,7 +357,8 @@
     "quantity_per_parent": 400000,
     "allotted_unit": "spans",
     "per_parent_unit": "committer",
-    "frequency": "month"
+    "frequency": "month",
+    "parent_product_id": "f0a73b6bcff2"
   },
   {
     "parent_product": "Test Optimization",
@@ -301,6 +366,7 @@
     "quantity_per_parent": 1000000,
     "allotted_unit": "spans",
     "per_parent_unit": "committer",
-    "frequency": "month"
+    "frequency": "month",
+    "parent_product_id": "bde3657ac280"
   }
 ]

@@ -8,12 +8,76 @@ import re
 from pathlib import Path
 from datetime import datetime
 
+from .scraper import load_pricing_data, DEFAULT_REGION
+
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 ALLOTMENTS_FILE = DATA_DIR / "allotments.json"
 ALLOTMENTS_METADATA_FILE = DATA_DIR / "allotments_metadata.json"
 
 ALLOTMENTS_URL = "https://www.datadoghq.com/pricing/allotments/"
+
+
+def find_product_id_by_name(product_name: str, pricing_data: list[dict] = None) -> str | None:
+    """
+    Find a product ID by matching the product name.
+    Uses fuzzy matching to handle variations in naming.
+    """
+    if pricing_data is None:
+        pricing_data = load_pricing_data(DEFAULT_REGION)
+    
+    if not pricing_data:
+        return None
+    
+    product_name_lower = product_name.lower().strip()
+    
+    # Try exact match first
+    for product in pricing_data:
+        if product.get("product", "").lower().strip() == product_name_lower:
+            return product.get("id")
+    
+    # Try partial match (product name contains allotted product name)
+    for product in pricing_data:
+        prod_name = product.get("product", "").lower().strip()
+        if product_name_lower in prod_name or prod_name in product_name_lower:
+            return product.get("id")
+    
+    # Try matching key terms
+    # e.g., "Custom Metrics" should match "Custom Metrics" product
+    key_terms = product_name_lower.split()
+    for product in pricing_data:
+        prod_name = product.get("product", "").lower().strip()
+        if all(term in prod_name for term in key_terms if len(term) > 2):
+            return product.get("id")
+    
+    return None
+
+
+def enrich_allotments_with_product_ids(allotments: list[dict]) -> list[dict]:
+    """
+    Enrich allotments data with product IDs by matching product names.
+    """
+    pricing_data = load_pricing_data(DEFAULT_REGION)
+    
+    enriched = []
+    for allotment in allotments:
+        enriched_allotment = allotment.copy()
+        
+        # Try to find product ID for the allotted product
+        allotted_product = allotment.get("allotted_product", "")
+        product_id = find_product_id_by_name(allotted_product, pricing_data)
+        if product_id:
+            enriched_allotment["allotted_product_id"] = product_id
+        
+        # Try to find product ID for the parent product
+        parent_product = allotment.get("parent_product", "")
+        parent_id = find_product_id_by_name(parent_product, pricing_data)
+        if parent_id:
+            enriched_allotment["parent_product_id"] = parent_id
+        
+        enriched.append(enriched_allotment)
+    
+    return enriched
 
 
 def parse_allotment_value(value_str: str) -> dict:
@@ -148,16 +212,19 @@ def scrape_allotments_data() -> list[dict]:
 
 
 def save_allotments_data(data: list[dict]) -> None:
-    """Save allotments data to JSON file."""
+    """Save allotments data to JSON file, enriched with product IDs."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     
+    # Enrich allotments with product IDs
+    enriched_data = enrich_allotments_with_product_ids(data)
+    
     with open(ALLOTMENTS_FILE, 'w') as f:
-        json.dump(data, f, indent=2)
+        json.dump(enriched_data, f, indent=2)
     
     # Save metadata
     metadata = {
         "last_sync": datetime.utcnow().isoformat(),
-        "allotments_count": len(data),
+        "allotments_count": len(enriched_data),
         "source_url": ALLOTMENTS_URL
     }
     with open(ALLOTMENTS_METADATA_FILE, 'w') as f:
@@ -542,15 +609,18 @@ def get_manual_allotments() -> list[dict]:
 
 
 def save_manual_allotments() -> None:
-    """Save manual allotments to JSON file."""
+    """Save manual allotments to JSON file, enriched with product IDs."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     
+    # Enrich manual allotments with product IDs
+    enriched_data = enrich_allotments_with_product_ids(MANUAL_ALLOTMENTS)
+    
     with open(ALLOTMENTS_FILE, 'w') as f:
-        json.dump(MANUAL_ALLOTMENTS, f, indent=2)
+        json.dump(enriched_data, f, indent=2)
     
     metadata = {
         "last_sync": datetime.utcnow().isoformat(),
-        "allotments_count": len(MANUAL_ALLOTMENTS),
+        "allotments_count": len(enriched_data),
         "source": "manual",
         "source_url": ALLOTMENTS_URL
     }
