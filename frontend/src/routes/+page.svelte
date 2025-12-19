@@ -825,168 +825,83 @@
 			</p>
 		</div>
 
-		<!-- Import and Share Buttons (right-aligned) -->
-		<div class="flex justify-end gap-2">
-			<!-- Import Button -->
-			<Button
-				variant="outline"
-				on:click={() => importModalOpen = true}
-				class="gap-2"
-			>
-				<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 3v12" />
-				</svg>
-				Import
-			</Button>
-
-			<!-- Share Button with Dropdown -->
-			<div class="share-menu-container relative">
-				<Button
-					on:click={() => shareMenuOpen = !shareMenuOpen}
-					disabled={validLines.length === 0}
-					class="gap-2"
-				>
-					<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" />
-					</svg>
-					Share
-					<svg class="h-3 w-3 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<path d="M6 9l6 6 6-6" />
-					</svg>
-				</Button>
-
-				<!-- Dropdown Menu -->
-				{#if shareMenuOpen}
-					<div class="absolute right-0 top-full mt-2 w-56 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
-						<button
-							type="button"
-							class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
-							on:click={handleShare}
-							disabled={saving}
-						>
-							{#if saving}
-								<svg class="h-4 w-4 animate-spin text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-									<path d="M21 12a9 9 0 11-6.219-8.56" />
-								</svg>
-							{:else}
-								<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-									<path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
-									<path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
-								</svg>
-							{/if}
-							<span>{saving ? 'Creating...' : 'Create Public URL'}</span>
-						</button>
-						<button
-							type="button"
-							class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
-							on:click={downloadCSV}
-						>
-							<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-								<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-								<polyline points="14 2 14 8 20 8" />
-								<path d="M8 13h2M8 17h2M14 13h2M14 17h2" />
-							</svg>
-							<span>Export CSV</span>
-						</button>
-						<button
-							type="button"
-							class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
-							on:click={exportJSON}
-						>
-							<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-								<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-								<polyline points="14 2 14 8 20 8" />
-								<path d="M10 12l-2 2 2 2M14 12l2 2-2 2" />
-							</svg>
-							<span>Export JSON</span>
-						</button>
-						<button
-							type="button"
-							class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
-							on:click={downloadPDF}
-						>
-							<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-								<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-								<polyline points="14 2 14 8 20 8" />
-								<line x1="12" y1="18" x2="12" y2="12" />
-								<line x1="9" y1="15" x2="15" y2="15" />
-							</svg>
-							<span>Download PDF</span>
-						</button>
-					</div>
-				{/if}
-			</div>
-		</div>
 	</header>
 
-	<!-- Pricing Region & Sync -->
-	<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-		<div class="flex items-center gap-4">
-			<!-- Region Selector -->
-			<div class="flex items-center rounded-lg border border-input bg-background">
-				<select
-					bind:value={selectedRegion}
-					on:change={handleRegionChange}
-					class="h-9 rounded-lg border-0 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-0 cursor-pointer"
-				>
-					{#each Object.entries(regions) as [id, region]}
-						<option value={id}>{region.name}</option>
-					{/each}
-				</select>
-			</div>
+	<!-- Unified Toolbar -->
+	<div class="mb-6 rounded-xl border border-border bg-card/50 p-3">
+		<div class="flex flex-wrap items-center justify-between gap-3">
+			<!-- Left: Region & Info -->
+			<div class="flex items-center gap-3">
+				<!-- Region Selector -->
+				<div class="flex items-center gap-2">
+					<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<circle cx="12" cy="12" r="10" />
+						<path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+					</svg>
+					<select
+						bind:value={selectedRegion}
+						on:change={handleRegionChange}
+						class="h-8 rounded-md border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-datadog-purple cursor-pointer"
+					>
+						{#each Object.entries(regions) as [id, region]}
+							<option value={id}>{region.name}</option>
+						{/each}
+					</select>
+				</div>
 
-			<!-- Pricing Info -->
-			<div class="text-xs text-muted-foreground">
-				{#if loading}
-					<span class="text-muted-foreground/50">Loading...</span>
-				{:else if products.length > 0}
-					<span>{products.length} products</span>
-					{#if lastSyncFormatted}
-						<span class="mx-1">·</span>
-						<span>Updated: {lastSyncFormatted}</span>
+				<!-- Separator -->
+				<div class="h-6 w-px bg-border"></div>
+
+				<!-- Pricing Info -->
+				<div class="text-xs text-muted-foreground hidden sm:block">
+					{#if loading}
+						<span class="text-muted-foreground/50">Loading...</span>
+					{:else if products.length > 0}
+						<span>{products.length} products</span>
+						{#if lastSyncFormatted}
+							<span class="mx-1">·</span>
+							<span>Updated: {lastSyncFormatted}</span>
+						{/if}
 					{/if}
-					<span class="mx-1">·</span>
-					<span class="text-muted-foreground/60">Auto-syncs hourly</span>
-				{/if}
+				</div>
 			</div>
-		</div>
 
-		<div class="flex items-center gap-2">
-			<!-- Smart Logs Index Estimator Button -->
-			<Button
-				variant={showLogsCalculator ? "default" : "outline"}
-				on:click={() => showLogsCalculator = !showLogsCalculator}
-				class="gap-2 {showLogsCalculator ? 'bg-datadog-purple hover:bg-datadog-purple/90' : ''}"
-			>
-				<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-					<polyline points="14 2 14 8 20 8" />
-					<line x1="16" y1="13" x2="8" y2="13" />
-					<line x1="16" y1="17" x2="8" y2="17" />
-				</svg>
-				Logs Estimator
-			</Button>
-
-			<!-- Tier Visibility Dropdown -->
-			<div class="filter-menu-container relative">
+			<!-- Right: Actions -->
+			<div class="flex items-center gap-2">
+				<!-- Smart Logs Index Estimator Button -->
 				<Button
-					variant="outline"
-					on:click={() => filterMenuOpen = !filterMenuOpen}
-					class="gap-2"
+					variant={showLogsCalculator ? "default" : "outline"}
+					size="sm"
+					on:click={() => showLogsCalculator = !showLogsCalculator}
+					class="gap-1.5 {showLogsCalculator ? 'bg-datadog-purple hover:bg-datadog-purple/90' : ''}"
 				>
 					<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<path d="M3 6h18M7 12h10M10 18h4" />
+						<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+						<polyline points="14 2 14 8 20 8" />
+						<line x1="16" y1="13" x2="8" y2="13" />
+						<line x1="16" y1="17" x2="8" y2="17" />
 					</svg>
-					Tier
-					<div class="flex items-center gap-1 ml-1">
-						{#if showAnnual}<span class="w-2 h-2 rounded-full bg-datadog-green"></span>{/if}
-						{#if showMonthly}<span class="w-2 h-2 rounded-full bg-datadog-blue"></span>{/if}
-						{#if showOnDemand}<span class="w-2 h-2 rounded-full bg-datadog-orange"></span>{/if}
-					</div>
-					<svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<path d="M6 9l6 6 6-6" />
-					</svg>
+					<span class="hidden sm:inline">Logs Estimator</span>
 				</Button>
+
+				<!-- Tier Visibility Dropdown -->
+				<div class="filter-menu-container relative">
+					<Button
+						variant="outline"
+						size="sm"
+						on:click={() => filterMenuOpen = !filterMenuOpen}
+						class="gap-1.5"
+					>
+						<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M3 6h18M7 12h10M10 18h4" />
+						</svg>
+						<span class="hidden sm:inline">Tier</span>
+						<div class="flex items-center gap-0.5">
+							{#if showAnnual}<span class="w-2 h-2 rounded-full bg-datadog-green"></span>{/if}
+							{#if showMonthly}<span class="w-2 h-2 rounded-full bg-datadog-blue"></span>{/if}
+							{#if showOnDemand}<span class="w-2 h-2 rounded-full bg-datadog-orange"></span>{/if}
+						</div>
+					</Button>
 
 			{#if filterMenuOpen}
 				<div class="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
@@ -1034,6 +949,102 @@
 					</button>
 				</div>
 			{/if}
+			</div>
+
+				<!-- Separator -->
+				<div class="h-6 w-px bg-border hidden sm:block"></div>
+
+				<!-- Import Button -->
+				<Button
+					variant="outline"
+					size="sm"
+					on:click={() => importModalOpen = true}
+					class="gap-1.5"
+				>
+					<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 3v12" />
+					</svg>
+					<span class="hidden sm:inline">Import</span>
+				</Button>
+
+				<!-- Share Button with Dropdown -->
+				<div class="share-menu-container relative">
+					<Button
+						size="sm"
+						on:click={() => shareMenuOpen = !shareMenuOpen}
+						disabled={validLines.length === 0}
+						class="gap-1.5"
+					>
+						<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" />
+						</svg>
+						<span class="hidden sm:inline">Share</span>
+						<svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M6 9l6 6 6-6" />
+						</svg>
+					</Button>
+
+					<!-- Dropdown Menu -->
+					{#if shareMenuOpen}
+						<div class="absolute right-0 top-full mt-2 w-56 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
+							<button
+								type="button"
+								class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
+								on:click={handleShare}
+								disabled={saving}
+							>
+								{#if saving}
+									<svg class="h-4 w-4 animate-spin text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<path d="M21 12a9 9 0 11-6.219-8.56" />
+									</svg>
+								{:else}
+									<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+										<path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+									</svg>
+								{/if}
+								<span>{saving ? 'Creating...' : 'Create Public URL'}</span>
+							</button>
+							<button
+								type="button"
+								class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
+								on:click={downloadCSV}
+							>
+								<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+									<polyline points="14 2 14 8 20 8" />
+									<path d="M8 13h2M8 17h2M14 13h2M14 17h2" />
+								</svg>
+								<span>Export CSV</span>
+							</button>
+							<button
+								type="button"
+								class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
+								on:click={exportJSON}
+							>
+								<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+									<polyline points="14 2 14 8 20 8" />
+									<path d="M10 12l-2 2 2 2M14 12l2 2-2 2" />
+								</svg>
+								<span>Export JSON</span>
+							</button>
+							<button
+								type="button"
+								class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
+								on:click={downloadPDF}
+							>
+								<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+									<polyline points="14 2 14 8 20 8" />
+									<line x1="12" y1="18" x2="12" y2="12" />
+									<line x1="9" y1="15" x2="15" y2="15" />
+								</svg>
+								<span>Download PDF</span>
+							</button>
+						</div>
+					{/if}
+				</div>
 			</div>
 		</div>
 	</div>
