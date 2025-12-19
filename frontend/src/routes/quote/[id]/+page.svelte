@@ -223,11 +223,11 @@
 						</div>
 						
 						<!-- Monthly -->
-						<div class="rounded-lg border border-border bg-card p-4 {quote.billing_type === 'monthly' ? 'ring-2 ring-datadog-purple' : ''}">
+						<div class="rounded-lg border border-border bg-card p-4 {quote.billing_type === 'monthly' ? 'ring-2 ring-datadog-blue' : ''}">
 							<div class="flex items-center justify-between mb-2">
 								<span class="text-sm font-medium text-muted-foreground">Monthly</span>
 								{#if quote.billing_type === 'monthly'}
-									<Badge class="bg-datadog-purple text-white text-xs">Selected</Badge>
+									<Badge class="bg-datadog-blue text-white text-xs">Selected</Badge>
 								{/if}
 							</div>
 							<div class="text-2xl font-bold font-mono">

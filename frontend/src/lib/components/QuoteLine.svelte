@@ -136,13 +136,13 @@
 
 				{#if showMonthly}
 					<div class="flex-1 text-center min-w-[100px]">
-						<label class="mb-1.5 block text-xs font-medium text-datadog-purple">Monthly</label>
-						<div class="rounded-lg bg-datadog-purple/10 border border-datadog-purple/20 px-2 py-2">
-							<div class="font-mono text-sm font-semibold text-datadog-purple truncate">
+						<label class="mb-1.5 block text-xs font-medium text-datadog-blue">Monthly</label>
+						<div class="rounded-lg bg-datadog-blue/10 border border-datadog-blue/20 px-2 py-2">
+							<div class="font-mono text-sm font-semibold text-datadog-blue truncate">
 								{selectedProduct ? formatCurrency(monthlyTotal) : '-'}
 							</div>
 							{#if selectedProduct && monthlyPrice > 0}
-								<div class="font-mono text-[10px] text-datadog-purple/60 mt-0.5">
+								<div class="font-mono text-[10px] text-datadog-blue/60 mt-0.5">
 									{formatCurrency(monthlyPrice)}/unit
 								</div>
 							{/if}

@@ -961,7 +961,7 @@
 				Tier
 				<div class="flex items-center gap-1 ml-1">
 					{#if showAnnual}<span class="w-2 h-2 rounded-full bg-datadog-green"></span>{/if}
-					{#if showMonthly}<span class="w-2 h-2 rounded-full bg-datadog-purple"></span>{/if}
+					{#if showMonthly}<span class="w-2 h-2 rounded-full bg-datadog-blue"></span>{/if}
 					{#if showOnDemand}<span class="w-2 h-2 rounded-full bg-datadog-orange"></span>{/if}
 				</div>
 				<svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -990,14 +990,14 @@
 						class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
 						on:click={() => showMonthly = !showMonthly}
 					>
-						<span class="w-4 h-4 rounded border flex items-center justify-center {showMonthly ? 'bg-datadog-purple border-datadog-purple' : 'border-muted-foreground/30'}">
+						<span class="w-4 h-4 rounded border flex items-center justify-center {showMonthly ? 'bg-datadog-blue border-datadog-blue' : 'border-muted-foreground/30'}">
 							{#if showMonthly}
 								<svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
 									<path d="M20 6L9 17l-5-5" />
 								</svg>
 							{/if}
 						</span>
-						<span class="text-datadog-purple font-medium">Monthly</span>
+						<span class="text-datadog-blue font-medium">Monthly</span>
 					</button>
 					<button
 						type="button"
@@ -1183,14 +1183,14 @@
 
 					{#if showMonthly}
 						<!-- Monthly -->
-						<div class="relative rounded-xl border border-datadog-purple/30 bg-datadog-purple/5 p-5">
+						<div class="relative rounded-xl border border-datadog-blue/30 bg-datadog-blue/5 p-5">
 							{#if bestValueOption?.key === 'monthly' && dynamicSavings > 0}
-								<div class="absolute -top-2.5 right-3 rounded-full bg-datadog-purple px-2.5 py-0.5 text-xs font-bold text-white shadow">
+								<div class="absolute -top-2.5 right-3 rounded-full bg-datadog-blue px-2.5 py-0.5 text-xs font-bold text-white shadow">
 									Best Value
 								</div>
 							{/if}
-							<div class="text-sm font-medium text-datadog-purple mb-2">Monthly Billing</div>
-							<div class="text-3xl font-bold text-datadog-purple mb-1">
+							<div class="text-sm font-medium text-datadog-blue mb-2">Monthly Billing</div>
+							<div class="text-3xl font-bold text-datadog-blue mb-1">
 								{formatCurrency(annualCosts.monthly)}
 								<span class="text-sm font-normal text-muted-foreground">/year</span>
 							</div>
@@ -1198,7 +1198,7 @@
 								{formatCurrency(totals.monthly)}/month
 							</div>
 							{#if bestValueOption?.key === 'monthly' && dynamicSavings > 0}
-								<div class="flex items-center gap-1.5 text-sm font-medium text-datadog-purple">
+								<div class="flex items-center gap-1.5 text-sm font-medium text-datadog-blue">
 									<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 										<path d="M12 19V5M5 12l7-7 7 7" />
 									</svg>
