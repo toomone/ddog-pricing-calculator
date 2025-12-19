@@ -10,7 +10,7 @@
 
 	// User inputs
 	let ingestedLogsGB = 100; // GB per month
-	let avgLogSizeKB = 1; // Average log size in KB
+	let avgLogSizeKB = 2; // Average log size in KB
 	let indexingPercentage = 15; // Percentage of logs to index
 	let retentionDays: 3 | 7 | 15 | 30 = 15;
 
