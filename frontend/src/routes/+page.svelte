@@ -1292,14 +1292,14 @@
 							{#if bestValueOption?.key === 'annual' && dynamicSavings > 0}
 								<div class="flex items-center gap-1.5 text-sm font-medium text-datadog-green">
 									<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-										<path d="M12 19V5M5 12l7-7 7 7" />
+										<path d="M12 5v14M5 12l7 7 7-7" />
 									</svg>
 									Save {formatCurrency(dynamicSavings)}/yr
 								</div>
 							{:else if bestValueOption && bestValueOption.key !== 'annual'}
 								<div class="flex items-center gap-1.5 text-sm text-muted-foreground">
 									<svg class="h-4 w-4 text-datadog-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-										<path d="M12 5v14M5 12l7 7 7-7" />
+										<path d="M12 19V5M5 12l7-7 7 7" />
 									</svg>
 									+{((annualCosts.annually - bestValueOption.cost) / bestValueOption.cost * 100).toFixed(0)}% vs {bestValueLabel}
 								</div>
@@ -1326,14 +1326,14 @@
 							{#if bestValueOption?.key === 'monthly' && dynamicSavings > 0}
 								<div class="flex items-center gap-1.5 text-sm font-medium text-datadog-blue">
 									<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-										<path d="M12 19V5M5 12l7-7 7 7" />
+										<path d="M12 5v14M5 12l7 7 7-7" />
 									</svg>
 									Save {formatCurrency(dynamicSavings)}/yr
 								</div>
 							{:else if bestValueOption && bestValueOption.key !== 'monthly'}
 								<div class="flex items-center gap-1.5 text-sm text-muted-foreground">
 									<svg class="h-4 w-4 text-datadog-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-										<path d="M12 5v14M5 12l7 7 7-7" />
+										<path d="M12 19V5M5 12l7-7 7 7" />
 									</svg>
 									+{((annualCosts.monthly - bestValueOption.cost) / bestValueOption.cost * 100).toFixed(0)}% vs {bestValueLabel}
 								</div>
@@ -1360,14 +1360,14 @@
 							{#if bestValueOption?.key === 'ondemand' && dynamicSavings > 0}
 								<div class="flex items-center gap-1.5 text-sm font-medium text-datadog-orange">
 									<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-										<path d="M12 19V5M5 12l7-7 7 7" />
+										<path d="M12 5v14M5 12l7 7 7-7" />
 									</svg>
 									Save {formatCurrency(dynamicSavings)}/yr
 								</div>
 							{:else if bestValueOption && bestValueOption.key !== 'ondemand'}
 								<div class="flex items-center gap-1.5 text-sm text-muted-foreground">
 									<svg class="h-4 w-4 text-destructive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-										<path d="M12 5v14M5 12l7 7 7-7" />
+										<path d="M12 19V5M5 12l7-7 7 7" />
 									</svg>
 									+{((annualCosts.on_demand - bestValueOption.cost) / bestValueOption.cost * 100).toFixed(0)}% vs {bestValueLabel}
 								</div>
