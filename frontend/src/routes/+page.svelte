@@ -8,7 +8,7 @@
 	import QuoteLine from '$lib/components/QuoteLine.svelte';
 	import LogsIndexingCalculator from '$lib/components/LogsIndexingCalculator.svelte';
 	import { fetchProducts, fetchMetadata, createQuote, fetchRegions, fetchAllotments, initAllotments, type Product, type PricingMetadata, type Region, type Allotment } from '$lib/api';
-	import { formatCurrency, parsePrice } from '$lib/utils';
+	import { formatCurrency, parsePrice, formatNumber } from '$lib/utils';
 
 	interface LineItem {
 		id: string;
@@ -1077,7 +1077,7 @@
 				</div>
 			{:else}
 				<div class="space-y-3 overflow-visible">
-					{#each lines as line, index (line.id)}
+					{#each lines.filter(l => !l.isAllotment) as line, index (line.id)}
 						<QuoteLine
 							{products}
 							{index}
@@ -1086,13 +1086,36 @@
 							{showOnDemand}
 							selectedProduct={line.product}
 							quantity={line.quantity}
-							isAllotment={line.isAllotment || false}
-							includedQuantity={line.includedQuantity || 0}
-							allotmentInfo={line.allotmentInfo || null}
-							totalAllottedForProduct={!line.isAllotment ? getTotalAllottedForProduct(line.product?.product) : 0}
+							isAllotment={false}
+							includedQuantity={0}
+							allotmentInfo={null}
+							totalAllottedForProduct={getTotalAllottedForProduct(line.product?.product)}
 							on:update={(e) => updateLine(line.id, e.detail.product, e.detail.quantity)}
 							on:remove={() => removeLine(line.id)}
 						/>
+						<!-- Consolidated Allotments Card -->
+						{@const lineAllotments = lines.filter(l => l.isAllotment && l.parentLineId === line.id)}
+						{#if lineAllotments.length > 0}
+							<div class="ml-8 rounded-lg border border-datadog-green/30 bg-datadog-green/5 px-4 py-3">
+								<div class="flex items-center gap-2 mb-2">
+									<svg class="w-4 h-4 text-datadog-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+									</svg>
+									<span class="text-xs font-medium text-datadog-green">Included Allotments</span>
+								</div>
+								<ul class="space-y-1">
+									{#each lineAllotments as allotment}
+										<li class="flex items-center gap-2 text-sm text-muted-foreground">
+											<span class="w-1 h-1 rounded-full bg-datadog-green/50"></span>
+											<span class="truncate">{allotment.product?.product || 'Unknown'}</span>
+											<span class="ml-auto font-mono text-xs text-datadog-green shrink-0">
+												{formatNumber(allotment.includedQuantity || 0)} {allotment.allotmentInfo?.allotted_unit || 'units'}
+											</span>
+										</li>
+									{/each}
+								</ul>
+							</div>
+						{/if}
 					{/each}
 				</div>
 
