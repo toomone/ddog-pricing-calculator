@@ -171,11 +171,12 @@
   },
   {
     "parent_product": "APM",
-    "allotted_product": "Ingested Spans",
+    "allotted_product": "APM Ingestion",
     "quantity_per_parent": 150,
     "allotted_unit": "GB",
     "per_parent_unit": "APM host",
     "frequency": "month",
+    "allotted_product_id": "9037fb7521b2",
     "parent_product_id": "cdf4c8acc0ec"
   },
   {
@@ -190,11 +191,12 @@
   },
   {
     "parent_product": "APM Pro (APM and Data Streams Monitoring)",
-    "allotted_product": "Ingested Spans",
+    "allotted_product": "APM Ingestion",
     "quantity_per_parent": 150,
     "allotted_unit": "GB",
     "per_parent_unit": "APM host",
     "frequency": "month",
+    "allotted_product_id": "9037fb7521b2",
     "parent_product_id": "b56961fb7fec"
   },
   {
@@ -219,11 +221,12 @@
   },
   {
     "parent_product": "APM Enterprise (APM, Data Streams Monitoring, Continuous Profiler)",
-    "allotted_product": "Ingested Spans",
+    "allotted_product": "APM Ingestion",
     "quantity_per_parent": 150,
     "allotted_unit": "GB",
     "per_parent_unit": "APM host",
     "frequency": "month",
+    "allotted_product_id": "9037fb7521b2",
     "parent_product_id": "ee5e36f94333"
   },
   {
