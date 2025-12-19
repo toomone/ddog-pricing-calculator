@@ -100,8 +100,8 @@
 				</svg>
 			</div>
 			<div>
-				<CardTitle>Logs Indexing Calculator</CardTitle>
-				<CardDescription>Optimize your log indexing strategy based on ingestion volume</CardDescription>
+				<CardTitle>Smart Logs Index Estimator</CardTitle>
+				<CardDescription>Intelligently estimate your log indexing needs based on ingestion volume</CardDescription>
 			</div>
 		</div>
 	</CardHeader>
