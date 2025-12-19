@@ -867,12 +867,12 @@
 			</div>
 
 			<!-- Right: Button Group -->
-			<div class="inline-flex items-center rounded-lg border border-input bg-background overflow-hidden">
+			<div class="inline-flex items-center rounded-lg border border-input bg-background">
 				<!-- Indexes Estimator Button -->
 				<button
 					type="button"
 					on:click={() => showLogsCalculator = !showLogsCalculator}
-					class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors hover:bg-muted border-r border-input {showLogsCalculator ? 'bg-datadog-purple text-white hover:bg-datadog-purple/90' : ''}"
+					class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors hover:bg-muted border-r border-input rounded-l-lg {showLogsCalculator ? 'bg-datadog-purple text-white hover:bg-datadog-purple/90' : ''}"
 				>
 					<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 						<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
@@ -967,7 +967,7 @@
 						type="button"
 						on:click={() => shareMenuOpen = !shareMenuOpen}
 						disabled={validLines.length === 0}
-						class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed bg-datadog-purple text-white hover:bg-datadog-purple/90"
+						class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed bg-datadog-purple text-white hover:bg-datadog-purple/90 rounded-r-lg"
 					>
 						<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 							<path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" />
@@ -1072,11 +1072,13 @@
 			<div class="flex flex-wrap items-start justify-between gap-4">
 				<div>
 					<CardTitle class="flex items-center gap-2">
-						<svg class="h-5 w-5 text-datadog-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-							<circle cx="9" cy="21" r="1" />
-							<circle cx="20" cy="21" r="1" />
-							<path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
-						</svg>
+						<div class="flex h-7 w-7 items-center justify-center rounded-md bg-datadog-purple">
+							<svg class="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<circle cx="9" cy="21" r="1" />
+								<circle cx="20" cy="21" r="1" />
+								<path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+							</svg>
+						</div>
 						Quote Items
 					</CardTitle>
 					<CardDescription>Add products and specify quantities</CardDescription>
