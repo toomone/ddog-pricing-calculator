@@ -211,6 +211,8 @@
 				fetchProducts(selectedRegion),
 				fetchMetadata(selectedRegion)
 			]);
+			// Sort products alphabetically by name
+			products = products.sort((a, b) => a.product.localeCompare(b.product));
 			if (products.length === 0) {
 				error = 'No products found. Please wait for automatic sync or check backend connection.';
 			}
