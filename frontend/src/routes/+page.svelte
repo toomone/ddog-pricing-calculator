@@ -1028,15 +1028,6 @@
 		</div>
 	</div>
 
-	<!-- Logs Indexing Calculator -->
-	{#if showLogsCalculator}
-		<div class="mb-6">
-			<LogsIndexingCalculator 
-				{products} 
-				onAddToQuote={addItemsFromCalculator}
-			/>
-		</div>
-	{/if}
 
 	<!-- Alerts -->
 	{#if error}
@@ -1390,6 +1381,39 @@
 	</div>
 {/if}
 
+<!-- Indexes Estimator Modal -->
+{#if showLogsCalculator}
+	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+	<div 
+		class="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+		on:click|self={() => showLogsCalculator = false}
+		on:keydown={(e) => e.key === 'Escape' && (showLogsCalculator = false)}
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
+	>
+		<div class="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card shadow-2xl">
+			<!-- Close Button -->
+			<button
+				type="button"
+				class="absolute right-4 top-4 z-10 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+				on:click={() => showLogsCalculator = false}
+			>
+				<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M18 6L6 18M6 6l12 12" />
+				</svg>
+			</button>
+
+			<LogsIndexingCalculator 
+				{products} 
+				onAddToQuote={(items) => {
+					addItemsFromCalculator(items);
+					showLogsCalculator = false;
+				}}
+			/>
+		</div>
+	</div>
+{/if}
 
 <style>
 	@keyframes fadeIn {
