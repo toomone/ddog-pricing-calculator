@@ -1,0 +1,44 @@
+{
+  "id": "d601a669-7d42-4c91-b120-31afd7f40a4d",
+  "name": "Quote d601a669",
+  "region": "us",
+  "billing_type": "annually",
+  "items": [
+    {
+      "id": "6eec176f9f8a",
+      "product": "Cloud Security Management (CSM) Pro",
+      "billing_unit": "Per CSM host, per month",
+      "quantity": 10,
+      "unit_price": 10.0,
+      "total_price": 100.0,
+      "is_allotment": false,
+      "allotments": []
+    },
+    {
+      "id": "ff76468b12e5",
+      "product": "Logs - Ingestion",
+      "billing_unit": "Per ingested logs (1GB), per month",
+      "quantity": 100,
+      "unit_price": 0.1,
+      "total_price": 10.0,
+      "is_allotment": false,
+      "allotments": []
+    },
+    {
+      "id": "db4c605bbc95",
+      "product": "Logs - Indexed Log Events",
+      "billing_unit": "Per 1M indexed logs (15-day retention), per month",
+      "quantity": 22,
+      "unit_price": 1.7,
+      "total_price": 37.4,
+      "is_allotment": false,
+      "allotments": []
+    }
+  ],
+  "total": 147.4,
+  "total_annually": 147.4,
+  "total_monthly": 174.88,
+  "total_on_demand": 186.1,
+  "created_at": "2025-12-19T22:43:58.526757",
+  "updated_at": "2025-12-19T22:43:58.526757"
+}
