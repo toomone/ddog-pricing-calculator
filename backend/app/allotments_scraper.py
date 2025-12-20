@@ -5,11 +5,14 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import re
+import logging
 from pathlib import Path
 from datetime import datetime
 
 from .scraper import load_pricing_data, DEFAULT_REGION
 from .redis_client import get_redis, is_redis_available, RedisKeys
+
+logger = logging.getLogger("pricehound.allotments")
 
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -228,7 +231,7 @@ def save_allotments_data(data: list[dict]) -> None:
     if is_redis_available():
         redis.set_json(RedisKeys.ALLOTMENTS, enriched_data)
         redis.set_json(f"{RedisKeys.ALLOTMENTS}:metadata", metadata)
-        print(f"✅ Saved {len(enriched_data)} allotments to Redis")
+        logger.info(f"✅ Saved {len(enriched_data)} allotments to Redis")
     
     # Always save to file as backup
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -649,7 +652,7 @@ def save_manual_allotments() -> None:
         redis.set_json(RedisKeys.ALLOTMENTS_MANUAL, enriched_data)
         redis.set_json(RedisKeys.ALLOTMENTS, enriched_data)  # Also save to main key
         redis.set_json(f"{RedisKeys.ALLOTMENTS}:metadata", metadata)
-        print(f"✅ Saved {len(enriched_data)} manual allotments to Redis")
+        logger.info(f"✅ Saved {len(enriched_data)} manual allotments to Redis")
     
     # Always save to file as backup
     DATA_DIR.mkdir(parents=True, exist_ok=True)

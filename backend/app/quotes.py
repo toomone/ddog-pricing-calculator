@@ -1,5 +1,6 @@
 import json
 import uuid
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -7,6 +8,8 @@ from typing import Optional
 from .models import Quote, QuoteLineItem
 from .scraper import load_pricing_data, parse_price
 from .redis_client import get_redis, is_redis_available, RedisKeys
+
+logger = logging.getLogger("pricehound.quotes")
 
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -93,7 +96,7 @@ def save_quote_file(quote: Quote) -> None:
         redis.set_json(RedisKeys.quote(quote.id), quote_data)
         # Add to index for listing
         redis.add_to_index(RedisKeys.QUOTES_INDEX, quote.id)
-        print(f"✅ Saved quote {quote.id} to Redis")
+        logger.info(f"✅ Saved quote {quote.id} to Redis")
     
     # Always save to file as backup
     QUOTES_DIR.mkdir(parents=True, exist_ok=True)

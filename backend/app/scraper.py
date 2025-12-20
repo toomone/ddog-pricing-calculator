@@ -4,10 +4,13 @@ from bs4 import BeautifulSoup
 import json
 import re
 import hashlib
+import logging
 from pathlib import Path
 from datetime import datetime
 
 from .redis_client import get_redis, is_redis_available, RedisKeys
+
+logger = logging.getLogger("pricehound.scraper")
 
 
 def generate_product_id(product_name: str, billing_unit: str) -> str:
@@ -193,7 +196,7 @@ def save_pricing_data(data: list[dict], region: str = DEFAULT_REGION) -> None:
     if is_redis_available():
         redis.set_json(RedisKeys.pricing(region), data)
         redis.set_json(RedisKeys.pricing_metadata(region), metadata)
-        print(f"✅ Saved {len(data)} products to Redis for {region}")
+        logger.info(f"✅ Saved {len(data)} products to Redis for {region}")
     
     # Always save to file as backup
     PRICING_DIR.mkdir(parents=True, exist_ok=True)

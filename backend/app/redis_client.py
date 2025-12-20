@@ -6,12 +6,16 @@ Handles connection management and provides helper functions for storing/retrievi
 import os
 import json
 import redis
+import logging
 from typing import Optional, Any
 from datetime import datetime
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+
+# Configure logging
+logger = logging.getLogger("pricehound.redis")
 
 # Redis connection URL (default to local Redis if not set)
 REDIS_URL = os.getenv(
@@ -70,10 +74,10 @@ class RedisClient:
             )
             # Test connection
             self._client.ping()
-            print(f"✅ Connected to Redis")
+            logger.info("✅ Connected to Redis")
         except redis.ConnectionError as e:
-            print(f"⚠️ Redis connection failed: {e}")
-            print("Falling back to file storage")
+            logger.warning(f"⚠️ Redis connection failed: {e}")
+            logger.info("📁 Falling back to file storage")
             self._client = None
     
     @property
@@ -105,7 +109,7 @@ class RedisClient:
                 self._client.set(key, json_str)
             return True
         except Exception as e:
-            print(f"Redis set_json error: {e}")
+            logger.error(f"Redis set_json error: {e}")
             return False
     
     def get_json(self, key: str) -> Optional[Any]:
@@ -118,7 +122,7 @@ class RedisClient:
                 return json.loads(data)
             return None
         except Exception as e:
-            print(f"Redis get_json error: {e}")
+            logger.error(f"Redis get_json error: {e}")
             return None
     
     def delete(self, key: str) -> bool:
@@ -129,7 +133,7 @@ class RedisClient:
             self._client.delete(key)
             return True
         except Exception as e:
-            print(f"Redis delete error: {e}")
+            logger.error(f"Redis delete error: {e}")
             return False
     
     def exists(self, key: str) -> bool:
@@ -161,7 +165,7 @@ class RedisClient:
             self._client.zadd(index_key, {member: score})
             return True
         except Exception as e:
-            print(f"Redis add_to_index error: {e}")
+            logger.error(f"Redis add_to_index error: {e}")
             return False
     
     def get_index(self, index_key: str, start: int = 0, end: int = -1) -> list[str]:

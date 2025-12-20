@@ -5,6 +5,7 @@ from typing import Optional
 from datetime import datetime, timedelta
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
+import logging
 
 from .models import PricingItem, Quote, QuoteCreate, SyncResponse
 from .scraper import (
@@ -20,19 +21,27 @@ from .allotments_scraper import (
 from .redis_client import get_redis, is_redis_available
 
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s | %(levelname)s | %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger("pricehound")
+
 # Background scheduler for automatic syncing
 scheduler = BackgroundScheduler()
 
 
 def sync_all_pricing_job():
     """Background job to sync pricing data for all regions."""
-    print(f"[{datetime.now().isoformat()}] Running scheduled pricing sync...")
+    logger.info("🔄 Running scheduled pricing sync...")
     try:
         results = sync_all_regions()
         success_count = sum(1 for r in results if r.get('success', False))
-        print(f"[{datetime.now().isoformat()}] Sync complete: {success_count}/{len(results)} regions updated")
+        logger.info(f"✅ Sync complete: {success_count}/{len(results)} regions updated")
     except Exception as e:
-        print(f"[{datetime.now().isoformat()}] Sync failed: {e}")
+        logger.error(f"❌ Sync failed: {e}")
 
 
 def should_sync_on_startup() -> bool:
@@ -54,13 +63,19 @@ def should_sync_on_startup() -> bool:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logger.info("🚀 PriceHound API starting up...")
+    
+    # Log Redis status
+    redis_status = "connected" if is_redis_available() else "disconnected"
+    logger.info(f"📦 Redis status: {redis_status}")
+    
     # Startup: ensure pricing data exists for default region
     success, message, count = ensure_pricing_data(DEFAULT_REGION)
-    print(f"Startup: {message}")
+    logger.info(f"📊 {message}")
     
     # Check if we should sync on startup (data older than 1 hour)
     if should_sync_on_startup():
-        print("Data is older than 1 hour, syncing all regions...")
+        logger.info("⏰ Data is older than 1 hour, syncing all regions...")
         sync_all_pricing_job()
     
     # Start the background scheduler - sync every hour
@@ -72,13 +87,13 @@ async def lifespan(app: FastAPI):
         replace_existing=True
     )
     scheduler.start()
-    print("Background scheduler started - pricing will sync every hour")
+    logger.info("⏱️ Background scheduler started - pricing will sync every hour")
     
     yield
     
     # Shutdown
     scheduler.shutdown()
-    print("Shutting down...")
+    logger.info("👋 PriceHound API shutting down...")
 
 
 app = FastAPI(
@@ -146,14 +161,22 @@ async def get_pricing_metadata(region: str = Query(default=DEFAULT_REGION, descr
 @app.post("/api/pricing/sync", response_model=SyncResponse)
 async def sync_pricing_data(region: str = Query(default=DEFAULT_REGION, description="Datadog region")):
     """Sync pricing data from Datadog website for a specific region."""
+    logger.info(f"🔄 Manual sync requested for region: {region}")
     success, message, count = sync_pricing(region)
+    if success:
+        logger.info(f"✅ Sync successful: {count} products for {region}")
+    else:
+        logger.warning(f"⚠️ Sync failed for {region}: {message}")
     return SyncResponse(success=success, message=message, products_count=count)
 
 
 @app.post("/api/pricing/sync-all")
 async def sync_all_pricing_data():
     """Sync pricing data for all regions."""
+    logger.info("🔄 Manual sync-all requested")
     results = sync_all_regions()
+    success_count = sum(1 for r in results if r.get('success', False))
+    logger.info(f"✅ Sync-all complete: {success_count}/{len(results)} regions")
     return {"results": results}
 
 
@@ -185,21 +208,26 @@ async def get_all_quotes():
 @app.post("/api/quotes", response_model=Quote)
 async def create_new_quote(quote_data: QuoteCreate):
     """Create a new quote."""
+    logger.info(f"📝 Creating new quote: name='{quote_data.name}', region={quote_data.region}, billing={quote_data.billing_type}, items={len(quote_data.items)}")
     quote = create_quote(
         name=quote_data.name,
         region=quote_data.region,
         billing_type=quote_data.billing_type,
         items=quote_data.items
     )
+    logger.info(f"✅ Quote created: id={quote.id}, total=${quote.total:.2f}")
     return quote
 
 
 @app.get("/api/quotes/{quote_id}", response_model=Quote)
 async def get_quote_by_id(quote_id: str):
     """Get a quote by ID."""
+    logger.info(f"🔍 Fetching quote: {quote_id}")
     quote = get_quote(quote_id)
     if not quote:
+        logger.warning(f"⚠️ Quote not found: {quote_id}")
         raise HTTPException(status_code=404, detail="Quote not found")
+    logger.info(f"✅ Quote found: {quote_id}, items={len(quote.items)}")
     return quote
 
 
@@ -220,9 +248,12 @@ async def update_existing_quote(quote_id: str, quote_data: QuoteCreate):
 @app.delete("/api/quotes/{quote_id}")
 async def delete_existing_quote(quote_id: str):
     """Delete a quote."""
+    logger.info(f"🗑️ Deleting quote: {quote_id}")
     success = delete_quote(quote_id)
     if not success:
+        logger.warning(f"⚠️ Quote not found for deletion: {quote_id}")
         raise HTTPException(status_code=404, detail="Quote not found")
+    logger.info(f"✅ Quote deleted: {quote_id}")
     return {"message": "Quote deleted successfully"}
 
 
@@ -257,16 +288,23 @@ async def get_product_allotments(product_name: str):
 @app.post("/api/allotments/sync")
 async def sync_allotments_data():
     """Sync allotments data."""
+    logger.info("🔄 Syncing allotments data...")
     success, message, count = sync_allotments()
     if not success:
-        # Fall back to saving manual allotments
+        logger.warning(f"⚠️ Allotments sync failed, using manual data: {message}")
         save_manual_allotments()
-        return {"success": True, "message": f"Using manual allotments data ({len(get_manual_allotments())} items)", "count": len(get_manual_allotments())}
+        manual_count = len(get_manual_allotments())
+        logger.info(f"✅ Manual allotments saved: {manual_count} items")
+        return {"success": True, "message": f"Using manual allotments data ({manual_count} items)", "count": manual_count}
+    logger.info(f"✅ Allotments synced: {count} items")
     return {"success": success, "message": message, "count": count}
 
 
 @app.post("/api/allotments/init")
 async def init_allotments():
     """Initialize allotments with manual data."""
+    logger.info("📦 Initializing manual allotments...")
     save_manual_allotments()
+    count = len(get_manual_allotments())
+    logger.info(f"✅ Manual allotments initialized: {count} items")
     return {"success": True, "message": f"Initialized {len(get_manual_allotments())} manual allotments"}
