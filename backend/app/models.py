@@ -26,8 +26,15 @@ class QuoteLineItem(BaseModel):
     product: str
     billing_unit: str
     quantity: int
-    unit_price: float
-    total_price: float
+    unit_price: float  # Price for selected billing type
+    total_price: float  # Total for selected billing type
+    # Prices for all billing types
+    unit_price_annually: Optional[float] = None
+    unit_price_monthly: Optional[float] = None
+    unit_price_on_demand: Optional[float] = None
+    total_price_annually: Optional[float] = None
+    total_price_monthly: Optional[float] = None
+    total_price_on_demand: Optional[float] = None
     is_allotment: bool = False
     allotments: list[AllotmentInfo] = []
 

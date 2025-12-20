@@ -164,6 +164,13 @@ def create_quote(name: Optional[str], region: str, billing_type: str, items: lis
             quantity=quantity,
             unit_price=unit_price,
             total_price=item_total,
+            # Add prices for all billing types
+            unit_price_annually=all_prices['annually'],
+            unit_price_monthly=all_prices['monthly'],
+            unit_price_on_demand=all_prices['on_demand'],
+            total_price_annually=all_prices['annually'] * quantity,
+            total_price_monthly=all_prices['monthly'] * quantity,
+            total_price_on_demand=all_prices['on_demand'] * quantity,
             allotments=allotments
         ))
     
@@ -245,6 +252,13 @@ def update_quote(quote_id: str, name: Optional[str], region: str, billing_type: 
             quantity=quantity,
             unit_price=unit_price,
             total_price=item_total,
+            # Add prices for all billing types
+            unit_price_annually=all_prices['annually'],
+            unit_price_monthly=all_prices['monthly'],
+            unit_price_on_demand=all_prices['on_demand'],
+            total_price_annually=all_prices['annually'] * quantity,
+            total_price_monthly=all_prices['monthly'] * quantity,
+            total_price_on_demand=all_prices['on_demand'] * quantity,
             allotments=allotments
         ))
     
