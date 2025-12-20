@@ -49,7 +49,11 @@
 	let showLogsCalculator = false;
 	
 	// Filter products based on selected plan (show selected plan + "All" products)
-	$: filteredProducts = products.filter(p => p.plan === selectedPlan || p.plan === 'All');
+	// Products without a plan field are treated as "All" (available to all plans)
+	$: filteredProducts = products.filter(p => {
+		const productPlan = p.plan || 'All';
+		return productPlan === selectedPlan || productPlan === 'All';
+	});
 
 	$: lastSyncFormatted = metadata?.last_sync
 		? new Date(metadata.last_sync).toLocaleString('en-US', {
