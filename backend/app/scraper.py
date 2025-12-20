@@ -7,6 +7,8 @@ import hashlib
 from pathlib import Path
 from datetime import datetime
 
+from .redis_client import get_redis, is_redis_available, RedisKeys
+
 
 def generate_product_id(product_name: str, billing_unit: str) -> str:
     """Generate a unique, deterministic ID for a product based on name and billing unit."""
@@ -173,16 +175,10 @@ def scrape_pricing_data(region: str = DEFAULT_REGION) -> list[dict]:
 
 
 def save_pricing_data(data: list[dict], region: str = DEFAULT_REGION) -> None:
-    """Save pricing data to JSON file for a specific region."""
-    PRICING_DIR.mkdir(parents=True, exist_ok=True)
-    
-    pricing_file = get_pricing_file(region)
-    with open(pricing_file, 'w') as f:
-        json.dump(data, f, indent=2)
-    
-    # Save metadata with last sync timestamp
+    """Save pricing data to Redis (primary) and file (backup)."""
     region_info = REGIONS.get(region, REGIONS[DEFAULT_REGION])
     site = region_info["site"]
+    
     metadata = {
         "region": region,
         "region_name": region_info["name"],
@@ -191,13 +187,35 @@ def save_pricing_data(data: list[dict], region: str = DEFAULT_REGION) -> None:
         "products_count": len(data),
         "source_url": f"{PRICING_BASE_URL}?site={site}"
     }
+    
+    # Try Redis first
+    redis = get_redis()
+    if is_redis_available():
+        redis.set_json(RedisKeys.pricing(region), data)
+        redis.set_json(RedisKeys.pricing_metadata(region), metadata)
+        print(f"✅ Saved {len(data)} products to Redis for {region}")
+    
+    # Always save to file as backup
+    PRICING_DIR.mkdir(parents=True, exist_ok=True)
+    
+    pricing_file = get_pricing_file(region)
+    with open(pricing_file, 'w') as f:
+        json.dump(data, f, indent=2)
+    
     metadata_file = get_metadata_file(region)
     with open(metadata_file, 'w') as f:
         json.dump(metadata, f, indent=2)
 
 
 def load_pricing_data(region: str = DEFAULT_REGION) -> list[dict]:
-    """Load pricing data from JSON file for a specific region."""
+    """Load pricing data from Redis (primary) or file (fallback)."""
+    # Try Redis first
+    if is_redis_available():
+        data = get_redis().get_json(RedisKeys.pricing(region))
+        if data:
+            return data
+    
+    # Fallback to file
     pricing_file = get_pricing_file(region)
     if not pricing_file.exists():
         return []
@@ -206,7 +224,14 @@ def load_pricing_data(region: str = DEFAULT_REGION) -> list[dict]:
 
 
 def load_metadata(region: str = DEFAULT_REGION) -> dict:
-    """Load metadata about the pricing data for a specific region."""
+    """Load metadata from Redis (primary) or file (fallback)."""
+    # Try Redis first
+    if is_redis_available():
+        metadata = get_redis().get_json(RedisKeys.pricing_metadata(region))
+        if metadata:
+            return metadata
+    
+    # Fallback to file
     metadata_file = get_metadata_file(region)
     if not metadata_file.exists():
         return {}
@@ -245,7 +270,8 @@ def sync_pricing(region: str = DEFAULT_REGION) -> tuple[bool, str, int]:
         if data:
             save_pricing_data(data, region)
             region_name = REGIONS[region]["name"]
-            return True, f"Successfully synced {len(data)} products for {region_name}", len(data)
+            storage = "Redis + file" if is_redis_available() else "file"
+            return True, f"Successfully synced {len(data)} products for {region_name} ({storage})", len(data)
         else:
             return False, "No pricing data found", 0
     except Exception as e:
@@ -273,7 +299,8 @@ def ensure_pricing_data(region: str = DEFAULT_REGION) -> tuple[bool, str, int]:
         metadata = load_metadata(region)
         last_sync = metadata.get("last_sync", "unknown")
         region_name = REGIONS.get(region, {}).get("name", region)
-        return True, f"Loaded {len(existing_data)} products for {region_name} (last sync: {last_sync})", len(existing_data)
+        storage = "Redis" if is_redis_available() else "file"
+        return True, f"Loaded {len(existing_data)} products for {region_name} from {storage} (last sync: {last_sync})", len(existing_data)
     
     # No data exists, sync now
     return sync_pricing(region)

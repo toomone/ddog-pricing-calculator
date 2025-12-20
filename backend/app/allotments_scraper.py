@@ -9,6 +9,7 @@ from pathlib import Path
 from datetime import datetime
 
 from .scraper import load_pricing_data, DEFAULT_REGION
+from .redis_client import get_redis, is_redis_available, RedisKeys
 
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -212,27 +213,42 @@ def scrape_allotments_data() -> list[dict]:
 
 
 def save_allotments_data(data: list[dict]) -> None:
-    """Save allotments data to JSON file, enriched with product IDs."""
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    
+    """Save allotments data to Redis (primary) and file (backup), enriched with product IDs."""
     # Enrich allotments with product IDs
     enriched_data = enrich_allotments_with_product_ids(data)
     
-    with open(ALLOTMENTS_FILE, 'w') as f:
-        json.dump(enriched_data, f, indent=2)
-    
-    # Save metadata
     metadata = {
         "last_sync": datetime.utcnow().isoformat(),
         "allotments_count": len(enriched_data),
         "source_url": ALLOTMENTS_URL
     }
+    
+    # Try Redis first
+    redis = get_redis()
+    if is_redis_available():
+        redis.set_json(RedisKeys.ALLOTMENTS, enriched_data)
+        redis.set_json(f"{RedisKeys.ALLOTMENTS}:metadata", metadata)
+        print(f"✅ Saved {len(enriched_data)} allotments to Redis")
+    
+    # Always save to file as backup
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    
+    with open(ALLOTMENTS_FILE, 'w') as f:
+        json.dump(enriched_data, f, indent=2)
+    
     with open(ALLOTMENTS_METADATA_FILE, 'w') as f:
         json.dump(metadata, f, indent=2)
 
 
 def load_allotments_data() -> list[dict]:
-    """Load allotments data from JSON file."""
+    """Load allotments data from Redis (primary) or file (fallback)."""
+    # Try Redis first
+    if is_redis_available():
+        data = get_redis().get_json(RedisKeys.ALLOTMENTS)
+        if data:
+            return data
+    
+    # Fallback to file
     if not ALLOTMENTS_FILE.exists():
         return []
     with open(ALLOTMENTS_FILE, 'r') as f:
@@ -240,7 +256,14 @@ def load_allotments_data() -> list[dict]:
 
 
 def load_allotments_metadata() -> dict:
-    """Load allotments metadata."""
+    """Load allotments metadata from Redis (primary) or file (fallback)."""
+    # Try Redis first
+    if is_redis_available():
+        metadata = get_redis().get_json(f"{RedisKeys.ALLOTMENTS}:metadata")
+        if metadata:
+            return metadata
+    
+    # Fallback to file
     if not ALLOTMENTS_METADATA_FILE.exists():
         return {}
     with open(ALLOTMENTS_METADATA_FILE, 'r') as f:
@@ -609,14 +632,9 @@ def get_manual_allotments() -> list[dict]:
 
 
 def save_manual_allotments() -> None:
-    """Save manual allotments to JSON file, enriched with product IDs."""
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    
+    """Save manual allotments to Redis (primary) and file (backup), enriched with product IDs."""
     # Enrich manual allotments with product IDs
     enriched_data = enrich_allotments_with_product_ids(MANUAL_ALLOTMENTS)
-    
-    with open(ALLOTMENTS_FILE, 'w') as f:
-        json.dump(enriched_data, f, indent=2)
     
     metadata = {
         "last_sync": datetime.utcnow().isoformat(),
@@ -624,6 +642,21 @@ def save_manual_allotments() -> None:
         "source": "manual",
         "source_url": ALLOTMENTS_URL
     }
+    
+    # Try Redis first
+    redis = get_redis()
+    if is_redis_available():
+        redis.set_json(RedisKeys.ALLOTMENTS_MANUAL, enriched_data)
+        redis.set_json(RedisKeys.ALLOTMENTS, enriched_data)  # Also save to main key
+        redis.set_json(f"{RedisKeys.ALLOTMENTS}:metadata", metadata)
+        print(f"✅ Saved {len(enriched_data)} manual allotments to Redis")
+    
+    # Always save to file as backup
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    
+    with open(ALLOTMENTS_FILE, 'w') as f:
+        json.dump(enriched_data, f, indent=2)
+    
     with open(ALLOTMENTS_METADATA_FILE, 'w') as f:
         json.dump(metadata, f, indent=2)
 

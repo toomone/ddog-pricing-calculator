@@ -6,6 +6,7 @@ from typing import Optional
 
 from .models import Quote, QuoteLineItem
 from .scraper import load_pricing_data, parse_price
+from .redis_client import get_redis, is_redis_available, RedisKeys
 
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -83,15 +84,33 @@ def get_all_prices_for_product(product_id: str, product_name: str, region: str =
 
 
 def save_quote_file(quote: Quote) -> None:
-    """Save a quote to its own JSON file."""
+    """Save a quote to Redis (primary) and file (backup)."""
+    quote_data = quote.model_dump()
+    
+    # Try Redis first
+    redis = get_redis()
+    if is_redis_available():
+        redis.set_json(RedisKeys.quote(quote.id), quote_data)
+        # Add to index for listing
+        redis.add_to_index(RedisKeys.QUOTES_INDEX, quote.id)
+        print(f"✅ Saved quote {quote.id} to Redis")
+    
+    # Always save to file as backup
     QUOTES_DIR.mkdir(parents=True, exist_ok=True)
     quote_file = get_quote_file(quote.id)
     with open(quote_file, 'w') as f:
-        json.dump(quote.model_dump(), f, indent=2)
+        json.dump(quote_data, f, indent=2)
 
 
 def load_quote_file(quote_id: str) -> Optional[dict]:
-    """Load a quote from its JSON file."""
+    """Load a quote from Redis (primary) or file (fallback)."""
+    # Try Redis first
+    if is_redis_available():
+        data = get_redis().get_json(RedisKeys.quote(quote_id))
+        if data:
+            return data
+    
+    # Fallback to file
     quote_file = get_quote_file(quote_id)
     if not quote_file.exists():
         return None
@@ -162,7 +181,7 @@ def create_quote(name: Optional[str], region: str, billing_type: str, items: lis
         updated_at=now
     )
     
-    # Save quote to its own file
+    # Save quote to Redis and file
     save_quote_file(quote)
     
     return quote
@@ -250,20 +269,47 @@ def update_quote(quote_id: str, name: Optional[str], region: str, billing_type: 
 
 
 def delete_quote(quote_id: str) -> bool:
-    """Delete a quote."""
+    """Delete a quote from Redis and file."""
+    deleted = False
+    
+    # Try Redis first
+    if is_redis_available():
+        redis = get_redis()
+        if redis.delete(RedisKeys.quote(quote_id)):
+            redis.remove_from_index(RedisKeys.QUOTES_INDEX, quote_id)
+            deleted = True
+    
+    # Also delete file
     quote_file = get_quote_file(quote_id)
     if quote_file.exists():
         quote_file.unlink()
-        return True
-    return False
+        deleted = True
+    
+    return deleted
 
 
 def list_quotes() -> list[Quote]:
-    """List all quotes."""
+    """List all quotes from Redis (primary) or file (fallback)."""
+    quotes = []
+    
+    # Try Redis first
+    if is_redis_available():
+        redis = get_redis()
+        quote_ids = redis.get_index(RedisKeys.QUOTES_INDEX)
+        for quote_id in quote_ids:
+            quote_data = redis.get_json(RedisKeys.quote(quote_id))
+            if quote_data:
+                try:
+                    quotes.append(Quote(**quote_data))
+                except Exception:
+                    continue
+        if quotes:
+            return quotes
+    
+    # Fallback to file
     if not QUOTES_DIR.exists():
         return []
     
-    quotes = []
     for quote_file in QUOTES_DIR.glob("quote-*.json"):
         try:
             with open(quote_file, 'r') as f:

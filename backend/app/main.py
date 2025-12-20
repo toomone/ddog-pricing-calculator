@@ -17,6 +17,7 @@ from .allotments_scraper import (
     ensure_allotments_data, get_allotments_for_product, save_manual_allotments,
     get_manual_allotments
 )
+from .redis_client import get_redis, is_redis_available
 
 
 # Background scheduler for automatic syncing
@@ -100,6 +101,20 @@ app.add_middleware(
 @app.get("/")
 async def root():
     return {"message": "Datadog Pricing Calculator API", "version": "1.0.0"}
+
+
+@app.get("/api/health")
+async def health():
+    """Health check endpoint with storage status."""
+    redis_status = "connected" if is_redis_available() else "disconnected"
+    return {
+        "status": "healthy",
+        "storage": {
+            "redis": redis_status,
+            "file": "available"
+        },
+        "version": "1.0.0"
+    }
 
 
 @app.get("/api/regions")
