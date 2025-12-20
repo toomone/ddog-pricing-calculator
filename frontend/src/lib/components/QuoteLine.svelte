@@ -103,7 +103,7 @@
 		class="group relative rounded-xl border border-border/50 bg-card/50 p-4 transition-all hover:border-foreground/20 hover:bg-card/80"
 		style="animation: slideIn 0.3s ease-out {index * 0.05}s both;"
 	>
-		<div class="flex flex-col gap-4 lg:flex-row lg:items-start">
+		<div class="flex flex-col gap-4 lg:flex-row lg:items-center">
 			<!-- Product Search -->
 			<div class="flex-1 min-w-0">
 				<ProductSearch {products} {selectedProduct} on:select={handleProductSelect} />
@@ -134,7 +134,7 @@
 			<div class="flex gap-2" style="width: {visibleColumns * 110}px;">
 				{#if showAnnual}
 					<div class="flex-1 text-center min-w-[100px]">
-						<label class="mb-1.5 block text-xs font-medium text-datadog-green">Annual</label>
+						<label class="mb-1.5 block text-xs font-medium text-datadog-green">Annually</label>
 						<div class="rounded-lg bg-datadog-green/10 border border-datadog-green/20 px-2 py-2">
 							<div class="font-mono text-sm font-semibold text-datadog-green truncate">
 								{#if !selectedProduct}
