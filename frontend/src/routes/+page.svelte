@@ -633,12 +633,12 @@
 
 				<div class="totals">
 					<div class="total-card annual">
-						<div class="total-label">Annual Billing</div>
+						<div class="total-label">Billed Annually</div>
 						<div class="total-value">${formatCurrency(totals.annually)}/mo</div>
 						<div style="color: #666; font-size: 14px;">${formatCurrency(annualCosts.annually)}/year</div>
 					</div>
 					<div class="total-card monthly">
-						<div class="total-label">Monthly Billing</div>
+						<div class="total-label">Billed Monthly</div>
 						<div class="total-value">${formatCurrency(totals.monthly)}/mo</div>
 						<div style="color: #666; font-size: 14px;">${formatCurrency(annualCosts.monthly)}/year</div>
 					</div>
@@ -984,7 +984,7 @@
 										</svg>
 									{/if}
 								</span>
-								<span class="text-datadog-green font-medium">Annual</span>
+								<span class="text-datadog-green font-medium">Annually</span>
 							</button>
 							<button
 								type="button"
@@ -1281,7 +1281,7 @@
 									Best Value
 								</div>
 							{/if}
-							<div class="text-sm font-medium text-datadog-green mb-2">Annual Billing</div>
+							<div class="text-sm font-medium text-datadog-green mb-2">Billed Annually</div>
 							<div class="text-3xl font-bold text-datadog-green mb-1">
 								{formatCurrency(annualCosts.annually)}
 								<span class="text-sm font-normal text-muted-foreground">/year</span>
@@ -1315,7 +1315,7 @@
 									Best Value
 								</div>
 							{/if}
-							<div class="text-sm font-medium text-datadog-blue mb-2">Monthly Billing</div>
+							<div class="text-sm font-medium text-datadog-blue mb-2">Billed Monthly</div>
 							<div class="text-3xl font-bold text-datadog-blue mb-1">
 								{formatCurrency(annualCosts.monthly)}
 								<span class="text-sm font-normal text-muted-foreground">/year</span>

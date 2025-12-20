@@ -17,7 +17,7 @@
 	// Single tier selection (annual, monthly, on-demand)
 	let selectedTier: 'annual' | 'monthly' | 'on-demand' = 'annual';
 	
-	$: tierLabel = selectedTier === 'annual' ? 'Annual' : selectedTier === 'monthly' ? 'Monthly' : 'On-Demand';
+	$: tierLabel = selectedTier === 'annual' ? 'Annually' : selectedTier === 'monthly' ? 'Monthly' : 'On-Demand';
 	$: tierColor = selectedTier === 'annual' ? 'datadog-green' : selectedTier === 'monthly' ? 'datadog-blue' : 'datadog-orange';
 
 	// Region display names
@@ -207,7 +207,7 @@
 						<!-- Annual -->
 						<div class="rounded-lg border-2 border-datadog-green/50 bg-datadog-green/5 p-6">
 							<div class="flex items-center justify-between mb-3">
-								<span class="text-lg font-semibold text-datadog-green">Annual Billing</span>
+								<span class="text-lg font-semibold text-datadog-green">Billed Annually</span>
 								{#if savingsVsMonthly > 0 || savingsVsOnDemand > 0}
 									<Badge class="bg-datadog-green text-white text-xs">Best Value</Badge>
 								{/if}
@@ -239,7 +239,7 @@
 						<!-- Monthly -->
 						<div class="rounded-lg border-2 border-datadog-blue/50 bg-datadog-blue/5 p-6">
 							<div class="flex items-center justify-between mb-3">
-								<span class="text-lg font-semibold text-datadog-blue">Monthly Billing</span>
+								<span class="text-lg font-semibold text-datadog-blue">Billed Monthly</span>
 							</div>
 							<div class="text-4xl font-bold text-datadog-blue font-mono mb-2">
 								{formatCurrency(monthlyTotal * 12)}<span class="text-lg font-normal text-muted-foreground">/yr</span>
@@ -312,7 +312,7 @@
 									<span class="w-2 h-2 rounded-full bg-datadog-green"></span>
 								{/if}
 							</span>
-							<span class="text-datadog-green font-medium">Annual</span>
+							<span class="text-datadog-green font-medium">Annually</span>
 							{#if savingsVsMonthly > 0 || savingsVsOnDemand > 0}
 								<Badge variant="outline" class="ml-auto text-[10px] text-datadog-green border-datadog-green/50">Best</Badge>
 							{/if}
