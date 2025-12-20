@@ -106,7 +106,6 @@
 		<div class="flex flex-col gap-4 lg:flex-row lg:items-start">
 			<!-- Product Search -->
 			<div class="flex-1 min-w-0">
-				<label class="mb-1.5 block text-xs font-medium text-muted-foreground">Product</label>
 				<ProductSearch {products} {selectedProduct} on:select={handleProductSelect} />
 				{#if selectedProduct}
 					<Badge variant="outline" class="mt-2 text-xs">
@@ -117,7 +116,6 @@
 
 			<!-- Quantity -->
 			<div class="w-24 shrink-0">
-				<label class="mb-1.5 block text-xs font-medium text-muted-foreground">Qty</label>
 				<input
 					type="number"
 					min="1"
