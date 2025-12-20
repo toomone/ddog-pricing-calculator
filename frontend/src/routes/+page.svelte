@@ -38,7 +38,7 @@
 	let importModalOpen = false;
 	let isDragging = false;
 	
-	// Tier visibility toggles
+	// Billing visibility toggles
 	let showAnnual = true;
 	let showMonthly = true;
 	let showOnDemand = false;
@@ -952,7 +952,7 @@
 
 			<!-- Right: Button Group -->
 			<div class="inline-flex items-center rounded-lg border border-input bg-background">
-				<!-- Tier Visibility Dropdown -->
+				<!-- Billing Visibility Dropdown -->
 				<div class="filter-menu-container relative">
 					<button
 						type="button"
@@ -962,7 +962,7 @@
 						<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 							<path d="M3 6h18M7 12h10M10 18h4" />
 						</svg>
-						<span class="hidden sm:inline">Tier</span>
+						<span class="hidden sm:inline">Billing</span>
 						<div class="flex items-center gap-0.5">
 							{#if showAnnual}<span class="w-2 h-2 rounded-full bg-datadog-green"></span>{/if}
 							{#if showMonthly}<span class="w-2 h-2 rounded-full bg-datadog-blue"></span>{/if}

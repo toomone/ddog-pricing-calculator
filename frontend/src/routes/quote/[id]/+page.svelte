@@ -284,7 +284,7 @@
 
 		<!-- Actions -->
 		<div class="flex flex-wrap items-center justify-center gap-3 print:hidden">
-			<!-- Tier Selection Dropdown -->
+			<!-- Billing Selection Dropdown -->
 			<!-- svelte-ignore a11y-click-events-have-key-events -->
 			<!-- svelte-ignore a11y-no-static-element-interactions -->
 			<div class="relative" on:click|stopPropagation>
