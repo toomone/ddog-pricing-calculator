@@ -103,9 +103,10 @@
 		class="group relative rounded-xl border border-border/50 bg-card/50 p-4 transition-all hover:border-foreground/20 hover:bg-card/80"
 		style="animation: slideIn 0.3s ease-out {index * 0.05}s both;"
 	>
-		<div class="flex flex-col gap-4 lg:flex-row lg:items-center">
+		<div class="flex flex-col gap-4 lg:flex-row lg:items-start">
 			<!-- Product Search -->
 			<div class="flex-1 min-w-0">
+				<div class="mb-1.5 h-4"></div>
 				<ProductSearch {products} {selectedProduct} on:select={handleProductSelect} />
 				{#if selectedProduct}
 					<Badge variant="outline" class="mt-2 text-xs">
@@ -116,6 +117,7 @@
 
 			<!-- Quantity -->
 			<div class="w-24 shrink-0">
+				<div class="mb-1.5 h-4"></div>
 				<input
 					type="number"
 					min="1"
