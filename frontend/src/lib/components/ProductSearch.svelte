@@ -117,7 +117,7 @@
 
 	{#if isOpen && filteredProducts.length > 0}
 		<div
-			class="absolute z-[100] mt-1 max-h-60 w-full overflow-auto rounded-lg border border-border bg-card p-1 shadow-2xl"
+			class="absolute z-[9999] mt-1 max-h-60 w-full overflow-auto rounded-lg border border-border bg-card p-1 shadow-2xl"
 		>
 			{#each filteredProducts as product, index}
 				<button
@@ -142,7 +142,7 @@
 
 	{#if isOpen && searchQuery && filteredProducts.length === 0}
 		<div
-			class="absolute z-[100] mt-1 w-full rounded-lg border border-border bg-card p-4 text-center text-sm text-muted-foreground shadow-2xl"
+			class="absolute z-[9999] mt-1 w-full rounded-lg border border-border bg-card p-4 text-center text-sm text-muted-foreground shadow-2xl"
 		>
 			No products found
 		</div>
