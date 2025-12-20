@@ -215,10 +215,11 @@
 
 			<!-- Remove Button -->
 			<div class="absolute -right-2 -top-2 lg:relative lg:right-auto lg:top-auto lg:self-center lg:ml-2">
+				<div class="mb-1.5 h-4 hidden lg:block"></div>
 				<Button
 					variant="ghost"
 					size="icon"
-					class="h-8 w-8 rounded-full bg-destructive/10 text-destructive opacity-0 transition-opacity group-hover:opacity-100 hover:bg-destructive hover:text-white"
+					class="h-8 w-8 rounded-full text-muted-foreground/40 transition-all hover:bg-destructive hover:text-white group-hover:bg-destructive/10 group-hover:text-destructive"
 					on:click={handleRemove}
 				>
 					<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
