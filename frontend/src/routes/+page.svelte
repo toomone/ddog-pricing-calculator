@@ -37,6 +37,7 @@
 	let shareUrl = '';
 	let shareMenuOpen = false;
 	let filterMenuOpen = false;
+	let billingMenuOpen = false;
 	let importModalOpen = false;
 	let isDragging = false;
 	
@@ -681,6 +682,9 @@
 		if (!target.closest('.filter-menu-container')) {
 			filterMenuOpen = false;
 		}
+		if (!target.closest('.billing-menu-container')) {
+			billingMenuOpen = false;
+		}
 	}
 
 	function exportJSON() {
@@ -1117,10 +1121,12 @@
 					</div>
 				</div>
 				
-				<!-- Plan & Billing Selectors -->
-				<div class="flex items-center gap-2">
-					<!-- Plan Selector -->
-					<div class="inline-flex items-center rounded-lg border border-input bg-background p-1">
+				<!-- Plan & Billing Selectors Group -->
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y-no-static-element-interactions -->
+				<div class="inline-flex items-center rounded-lg border border-input bg-background" on:click|stopPropagation>
+					<!-- Plan Selector (Left) -->
+					<div class="inline-flex items-center p-1 border-r border-input">
 						<button
 							type="button"
 							class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors {selectedPlan === 'Pro' ? 'bg-datadog-purple text-white' : 'hover:bg-muted'}"
@@ -1137,35 +1143,70 @@
 						</button>
 					</div>
 					
-					<!-- Billing Toggles -->
-					<div class="inline-flex items-center rounded-lg border border-input bg-background p-1">
+					<!-- Billing Dropdown (Right) -->
+					<div class="relative billing-menu-container">
 						<button
 							type="button"
-							class="px-2 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1 {showAnnual ? 'bg-datadog-green/20 text-datadog-green' : 'hover:bg-muted text-muted-foreground'}"
-							on:click={() => showAnnual = !showAnnual}
-							title="Toggle Annual billing"
+							on:click={() => billingMenuOpen = !billingMenuOpen}
+							class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors hover:bg-muted rounded-r-lg"
 						>
-							<span class="w-2 h-2 rounded-full {showAnnual ? 'bg-datadog-green' : 'bg-muted-foreground/30'}"></span>
-							<span class="hidden sm:inline">Annual</span>
+							<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M3 6h18M7 12h10M10 18h4" />
+							</svg>
+							<span>Billing</span>
+							<div class="flex items-center gap-0.5">
+								{#if showAnnual}<span class="w-2 h-2 rounded-full bg-datadog-green"></span>{/if}
+								{#if showMonthly}<span class="w-2 h-2 rounded-full bg-datadog-blue"></span>{/if}
+								{#if showOnDemand}<span class="w-2 h-2 rounded-full bg-datadog-orange"></span>{/if}
+							</div>
 						</button>
-						<button
-							type="button"
-							class="px-2 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1 {showMonthly ? 'bg-datadog-blue/20 text-datadog-blue' : 'hover:bg-muted text-muted-foreground'}"
-							on:click={() => showMonthly = !showMonthly}
-							title="Toggle Monthly billing"
-						>
-							<span class="w-2 h-2 rounded-full {showMonthly ? 'bg-datadog-blue' : 'bg-muted-foreground/30'}"></span>
-							<span class="hidden sm:inline">Monthly</span>
-						</button>
-						<button
-							type="button"
-							class="px-2 py-1.5 text-xs font-medium rounded-md transition-colors flex items-center gap-1 {showOnDemand ? 'bg-datadog-orange/20 text-datadog-orange' : 'hover:bg-muted text-muted-foreground'}"
-							on:click={() => showOnDemand = !showOnDemand}
-							title="Toggle On-Demand billing"
-						>
-							<span class="w-2 h-2 rounded-full {showOnDemand ? 'bg-datadog-orange' : 'bg-muted-foreground/30'}"></span>
-							<span class="hidden sm:inline">On-Demand</span>
-						</button>
+
+						{#if billingMenuOpen}
+							<div class="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
+								<button
+									type="button"
+									class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
+									on:click={() => showAnnual = !showAnnual}
+								>
+									<span class="w-4 h-4 rounded border flex items-center justify-center {showAnnual ? 'bg-datadog-green border-datadog-green' : 'border-muted-foreground/30'}">
+										{#if showAnnual}
+											<svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+												<path d="M20 6L9 17l-5-5" />
+											</svg>
+										{/if}
+									</span>
+									<span class="text-datadog-green font-medium">Annually</span>
+								</button>
+								<button
+									type="button"
+									class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
+									on:click={() => showMonthly = !showMonthly}
+								>
+									<span class="w-4 h-4 rounded border flex items-center justify-center {showMonthly ? 'bg-datadog-blue border-datadog-blue' : 'border-muted-foreground/30'}">
+										{#if showMonthly}
+											<svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+												<path d="M20 6L9 17l-5-5" />
+											</svg>
+										{/if}
+									</span>
+									<span class="text-datadog-blue font-medium">Monthly</span>
+								</button>
+								<button
+									type="button"
+									class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
+									on:click={() => showOnDemand = !showOnDemand}
+								>
+									<span class="w-4 h-4 rounded border flex items-center justify-center {showOnDemand ? 'bg-datadog-orange border-datadog-orange' : 'border-muted-foreground/30'}">
+										{#if showOnDemand}
+											<svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+												<path d="M20 6L9 17l-5-5" />
+											</svg>
+										{/if}
+									</span>
+									<span class="text-datadog-orange font-medium">On-Demand</span>
+								</button>
+							</div>
+						{/if}
 					</div>
 				</div>
 			</div>
