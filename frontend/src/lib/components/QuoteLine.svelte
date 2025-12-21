@@ -178,15 +178,31 @@
 		const period = extractPeriod(billingUnit);
 		
 		// Match patterns with numbers: "Per 100 custom metrics", "Per 1M indexed logs", "Per million records"
-		const matchWithNumber = billingUnit.match(/per\s+([\d.,]+[KMB]?|million|thousand|billion)\s+([a-zA-Z\s]+?)(?:\s*[\(,]|$)/i);
+		const matchWithNumber = billingUnit.match(/^per\s+([\d.,]+[KMB]?|million|thousand|billion)\s+([a-zA-Z\s]+?)(?:\s*[\(,]|$)/i);
 		if (matchWithNumber) {
 			const multiplier = parseMultiplier(matchWithNumber[1]);
 			const unit = matchWithNumber[2].trim();
 			return { multiplier, unit: abbreviateUnit(unit), period };
 		}
 		
+		// Match patterns with number in parentheses: "Per ingested logs (1GB)", "Per GB outbound"
+		const matchParens = billingUnit.match(/^per\s+([a-zA-Z\s]+?)\s*\(([\d.,]+)\s*([a-zA-Z]+)\)/i);
+		if (matchParens) {
+			const baseUnit = matchParens[1].trim();
+			const multiplier = parseMultiplier(matchParens[2]);
+			const unitSuffix = matchParens[3].trim(); // e.g., "GB"
+			return { multiplier, unit: unitSuffix, period };
+		}
+		
+		// Match patterns with unit like "Per GB outbound"
+		const matchUnitFirst = billingUnit.match(/^per\s+(GB|MB|KB|TB)\s+/i);
+		if (matchUnitFirst) {
+			return { multiplier: 1, unit: matchUnitFirst[1].toUpperCase(), period };
+		}
+		
 		// Match patterns without numbers: "Per host", "Per APM host", "Per container"
-		const matchSimple = billingUnit.match(/per\s+([a-zA-Z\s]+?)(?:\s*,|$)/i);
+		// Use greedy match but stop at comma, parenthesis, or "per" (for "per month")
+		const matchSimple = billingUnit.match(/^per\s+([a-zA-Z\s]+?)(?:\s*[,(]|\s+per\s|$)/i);
 		if (matchSimple) {
 			const unit = matchSimple[1].trim();
 			return { multiplier: 1, unit: abbreviateUnit(unit), period };
