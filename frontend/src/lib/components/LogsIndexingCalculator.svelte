@@ -130,7 +130,7 @@
 					step="0.1"
 					class="font-mono"
 				/>
-				<p class="text-xs text-muted-foreground">Typical log entry size (default: 1KB)</p>
+				<p class="text-xs text-muted-foreground">Typical log entry size (default: 2KB)</p>
 			</div>
 		</div>
 
