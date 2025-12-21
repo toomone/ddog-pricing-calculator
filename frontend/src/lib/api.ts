@@ -56,6 +56,7 @@ export interface Quote {
 	total_on_demand: number | null;
 	created_at: string;
 	updated_at: string;
+	is_protected: boolean;
 }
 
 export interface SyncResponse {
@@ -119,12 +120,13 @@ export async function createQuote(
 	name: string | null,
 	region: string,
 	billing_type: string,
-	items: { id?: string; product: string; quantity: number; allotments?: { id?: string; allotted_product: string; quantity_included: number; allotted_unit: string }[] }[]
+	items: { id?: string; product: string; quantity: number; allotments?: { id?: string; allotted_product: string; quantity_included: number; allotted_unit: string }[] }[],
+	edit_password?: string | null
 ): Promise<Quote> {
 	const response = await fetch(`${API_BASE}/quotes`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ name, region, billing_type, items })
+		body: JSON.stringify({ name, region, billing_type, items, edit_password: edit_password || null })
 	});
 	if (!response.ok) throw new Error('Failed to create quote');
 	return response.json();
@@ -139,15 +141,33 @@ export async function fetchQuote(quoteId: string): Promise<Quote> {
 export async function updateQuote(
 	quoteId: string,
 	name: string | null,
+	region: string,
 	billing_type: string,
-	items: { id?: string; product: string; quantity: number; allotments?: { id?: string; allotted_product: string; quantity_included: number; allotted_unit: string }[] }[]
+	items: { id?: string; product: string; quantity: number; allotments?: { id?: string; allotted_product: string; quantity_included: number; allotted_unit: string }[] }[],
+	edit_password?: string | null
 ): Promise<Quote> {
 	const response = await fetch(`${API_BASE}/quotes/${quoteId}`, {
 		method: 'PUT',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ name, billing_type, items })
+		body: JSON.stringify({ name, region, billing_type, items, edit_password: edit_password || null })
 	});
-	if (!response.ok) throw new Error('Failed to update quote');
+	if (!response.ok) {
+		const error = await response.json().catch(() => ({ detail: 'Failed to update quote' }));
+		throw new Error(error.detail || 'Failed to update quote');
+	}
+	return response.json();
+}
+
+export async function verifyQuotePassword(quoteId: string, password: string): Promise<{ valid: boolean; message: string }> {
+	const response = await fetch(`${API_BASE}/quotes/${quoteId}/verify-password`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify({ password })
+	});
+	if (!response.ok) {
+		if (response.status === 404) throw new Error('Quote not found');
+		throw new Error('Failed to verify password');
+	}
 	return response.json();
 }
 

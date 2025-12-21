@@ -7,7 +7,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import QuoteLine from '$lib/components/QuoteLine.svelte';
 	import LogsIndexingCalculator from '$lib/components/LogsIndexingCalculator.svelte';
-	import { fetchProducts, fetchMetadata, createQuote, fetchRegions, fetchAllotments, initAllotments, syncPricing, type Product, type PricingMetadata, type Region, type Allotment } from '$lib/api';
+	import { fetchProducts, fetchMetadata, createQuote, updateQuote, fetchRegions, fetchAllotments, initAllotments, syncPricing, type Product, type PricingMetadata, type Region, type Allotment } from '$lib/api';
 	import { formatCurrency, parsePrice, formatNumber, isPercentagePrice, parsePercentage } from '$lib/utils';
 
 	interface LineItem {
@@ -40,6 +40,14 @@
 	let billingMenuOpen = false;
 	let importModalOpen = false;
 	let isDragging = false;
+	let saveModalOpen = false;
+	let editPassword = '';
+	let confirmPassword = '';
+	let passwordError = '';
+	
+	// Edit mode (editing existing quote)
+	let editingQuoteId: string | null = null;
+	let editQuotePassword: string | null = null;
 	
 	// Billing visibility toggles
 	let showAnnual = true;
@@ -183,6 +191,20 @@
 		await loadAllotments();
 		await loadProducts();
 		
+		// Check for edit parameter (editing existing quote)
+		const editParam = $page.url.searchParams.get('edit');
+		if (editParam) {
+			try {
+				const editData = JSON.parse(decodeURIComponent(editParam));
+				await loadEditQuote(editData);
+				// Remove the edit param from URL
+				goto('/', { replaceState: true });
+			} catch (e) {
+				console.error('Failed to parse edit data:', e);
+			}
+			return;
+		}
+		
 		// Check for clone parameter
 		const cloneParam = $page.url.searchParams.get('clone');
 		if (cloneParam) {
@@ -237,6 +259,46 @@
 		if (newLines.length > 0) {
 			lines = newLines;
 			success = 'Quote cloned successfully! You can now edit it.';
+			setTimeout(() => success = '', 5000);
+		}
+	}
+
+	async function loadEditQuote(editData: { quoteId: string; name: string; region: string; editPassword: string | null; items: { id?: string; product: string; quantity: number }[] }) {
+		// Store edit mode info
+		editingQuoteId = editData.quoteId;
+		editQuotePassword = editData.editPassword;
+		quoteName = editData.name || '';
+		
+		// Change region if different
+		if (editData.region && editData.region !== selectedRegion) {
+			selectedRegion = editData.region;
+			await loadProducts();
+		}
+		
+		// Map items to lines - match by ID first, then by name
+		const newLines: LineItem[] = [];
+		for (const item of editData.items) {
+			let matchedProduct = item.id 
+				? products.find(p => p.id === item.id)
+				: null;
+			
+			// Fallback to name matching if ID not found
+			if (!matchedProduct) {
+				matchedProduct = products.find(p => p.product === item.product);
+			}
+			
+			if (matchedProduct) {
+				newLines.push({
+					id: crypto.randomUUID(),
+					product: matchedProduct,
+					quantity: item.quantity
+				});
+			}
+		}
+		
+		if (newLines.length > 0) {
+			lines = newLines;
+			success = 'Editing quote. Make your changes and save.';
 			setTimeout(() => success = '', 5000);
 		}
 	}
@@ -455,14 +517,36 @@
 		lines = newLines;
 	}
 
-	async function handleShare() {
+	function openSaveModal() {
 		if (validLines.length === 0) {
 			error = 'Please add at least one product to share';
+			return;
+		}
+		
+		// If editing an existing quote, save directly without modal
+		if (editingQuoteId) {
+			handleShare();
+			shareMenuOpen = false;
+			return;
+		}
+		
+		editPassword = '';
+		confirmPassword = '';
+		passwordError = '';
+		saveModalOpen = true;
+		shareMenuOpen = false;
+	}
+
+	async function handleShare() {
+		// Validate passwords match if provided (only for new quotes)
+		if (!editingQuoteId && editPassword && editPassword !== confirmPassword) {
+			passwordError = 'Passwords do not match';
 			return;
 		}
 
 		saving = true;
 		error = '';
+		passwordError = '';
 
 		try {
 			// Build items with allotment info and product IDs
@@ -487,13 +571,26 @@
 					};
 				});
 
-			const quote = await createQuote(quoteName || null, selectedRegion, 'annually', items);
-			shareUrl = `${window.location.origin}/quote/${quote.id}`;
-			shareMenuOpen = false;
-			success = 'Quote saved!';
+			let quote;
+			if (editingQuoteId) {
+				// Update existing quote
+				quote = await updateQuote(editingQuoteId, quoteName || null, selectedRegion, 'annually', items, editQuotePassword);
+				shareUrl = `${window.location.origin}/quote/${quote.id}`;
+				saveModalOpen = false;
+				success = 'Quote updated successfully!';
+				// Clear edit mode
+				editingQuoteId = null;
+				editQuotePassword = null;
+			} else {
+				// Create new quote
+				quote = await createQuote(quoteName || null, selectedRegion, 'annually', items, editPassword || null);
+				shareUrl = `${window.location.origin}/quote/${quote.id}`;
+				saveModalOpen = false;
+				success = quote.is_protected ? 'Quote saved with password protection!' : 'Quote saved!';
+			}
 			setTimeout(() => success = '', 3000);
-		} catch (e) {
-			error = 'Failed to save quote';
+		} catch (e: any) {
+			error = e.message || 'Failed to save quote';
 		} finally {
 			saving = false;
 		}
@@ -911,7 +1008,7 @@
 				</h1>
 			</div>
 			<p class="text-sm text-muted-foreground">
-				Get a realistic sense of your Datadog costs before you commit.
+				Get a sense of your Datadog costs before you commit.
 			</p>
 		</div>
 
@@ -1006,12 +1103,18 @@
 							<button
 								type="button"
 								class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
-								on:click={handleShare}
+								on:click={openSaveModal}
 								disabled={saving}
 							>
 								{#if saving}
 									<svg class="h-4 w-4 animate-spin text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 										<path d="M21 12a9 9 0 11-6.219-8.56" />
+									</svg>
+								{:else if editingQuoteId}
+									<svg class="h-4 w-4 text-datadog-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+										<polyline points="17 21 17 13 7 13 7 21" />
+										<polyline points="7 3 7 8 15 8" />
 									</svg>
 								{:else}
 									<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1019,7 +1122,7 @@
 										<path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
 									</svg>
 								{/if}
-								<span>{saving ? 'Creating...' : 'Create Public URL'}</span>
+								<span>{saving ? 'Saving...' : editingQuoteId ? 'Save Changes' : 'Create Public URL'}</span>
 							</button>
 							<button
 								type="button"
@@ -1076,6 +1179,62 @@
 	{#if success}
 		<div class="mb-6 rounded-lg border border-datadog-green/50 bg-datadog-green/10 p-4 text-datadog-green">
 			{success}
+		</div>
+	{/if}
+
+	<!-- Edit Mode Banner -->
+	{#if editingQuoteId}
+		<div class="mb-4 flex items-center gap-3 rounded-lg border border-datadog-green/50 bg-datadog-green/10 px-4 py-3">
+			<svg class="h-5 w-5 text-datadog-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+				<path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+			</svg>
+			<div class="flex-1">
+				<span class="font-medium text-datadog-green">Editing Quote</span>
+				<span class="text-sm text-muted-foreground ml-2">Make your changes and click Save to update</span>
+			</div>
+			<button
+				type="button"
+				class="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted transition-colors"
+				on:click={() => { const id = editingQuoteId; editingQuoteId = null; editQuotePassword = null; goto(`/quote/${id}`); }}
+			>
+				Cancel
+			</button>
+		</div>
+	{/if}
+
+	<!-- Share URL Display -->
+	{#if shareUrl}
+		<div class="mb-4 flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3">
+			<span class="text-sm text-muted-foreground">Public URL:</span>
+			<a 
+				href={shareUrl} 
+				target="_blank"
+				class="flex-1 truncate font-mono text-sm text-datadog-purple hover:underline"
+			>
+				{shareUrl}
+			</a>
+			<button
+				type="button"
+				class="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+				on:click={copyShareUrl}
+				title="Copy URL"
+			>
+				<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<rect x="9" y="9" width="13" height="13" rx="2" />
+					<path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+				</svg>
+			</button>
+			<button
+				type="button"
+				class="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+				on:click={() => shareUrl = ''}
+				title="Dismiss"
+			>
+				<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M18 6L6 18M6 6l12 12" />
+				</svg>
+			</button>
 		</div>
 	{/if}
 
@@ -1277,41 +1436,6 @@
 			{/if}
 		</CardContent>
 	</Card>
-
-	<!-- Share URL Display -->
-	{#if shareUrl}
-		<div class="mb-4 flex items-center gap-3 rounded-lg border border-border/50 bg-muted/30 px-4 py-3">
-			<span class="text-sm text-muted-foreground">Public URL:</span>
-			<a 
-				href={shareUrl} 
-				target="_blank"
-				class="flex-1 truncate font-mono text-sm text-datadog-purple hover:underline"
-			>
-				{shareUrl}
-			</a>
-			<button
-				type="button"
-				class="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-				on:click={copyShareUrl}
-				title="Copy URL"
-			>
-				<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<rect x="9" y="9" width="13" height="13" rx="2" />
-					<path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-				</svg>
-			</button>
-			<button
-				type="button"
-				class="shrink-0 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-				on:click={() => shareUrl = ''}
-				title="Dismiss"
-			>
-				<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<path d="M18 6L6 18M6 6l12 12" />
-				</svg>
-			</button>
-		</div>
-	{/if}
 
 	<!-- Summary Section -->
 	{#if validLines.length > 0}
@@ -1568,6 +1692,126 @@
 					showLogsCalculator = false;
 				}}
 			/>
+		</div>
+	</div>
+{/if}
+
+<!-- Save Quote Modal -->
+{#if saveModalOpen}
+	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+	<div 
+		class="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+		on:click|self={() => saveModalOpen = false}
+		on:keydown={(e) => e.key === 'Escape' && (saveModalOpen = false)}
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
+	>
+		<div class="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl">
+			<!-- Close Button -->
+			<button
+				type="button"
+				class="absolute right-4 top-4 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+				on:click={() => saveModalOpen = false}
+			>
+				<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M18 6L6 18M6 6l12 12" />
+				</svg>
+			</button>
+
+			<div class="flex items-center gap-3 mb-6">
+				<div class="flex h-11 w-11 items-center justify-center rounded-xl bg-datadog-purple shadow-lg shadow-datadog-purple/30">
+					<svg class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+						<path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+					</svg>
+				</div>
+				<div>
+					<h2 class="text-xl font-semibold">Share Quote</h2>
+					<p class="text-sm text-muted-foreground">Create a public URL for this quote</p>
+				</div>
+			</div>
+
+			<!-- Quote Name -->
+			<div class="mb-4">
+				<label for="save-quote-name" class="mb-2 block text-sm font-medium">Quote Name</label>
+				<Input 
+					id="save-quote-name"
+					bind:value={quoteName} 
+					placeholder="My Datadog Quote" 
+				/>
+			</div>
+
+			<!-- Password Protection Section -->
+			<div class="rounded-xl border border-border bg-muted/30 p-4 mb-6">
+				<div class="flex items-center gap-2 mb-3">
+					<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+						<path d="M7 11V7a5 5 0 0110 0v4" />
+					</svg>
+					<span class="text-sm font-medium">Edit Protection (Optional)</span>
+				</div>
+				<p class="text-xs text-muted-foreground mb-3">
+					Set a password to prevent others from editing this quote. Anyone can still view it.
+				</p>
+				
+				<div class="space-y-3">
+					<div>
+						<label for="edit-password" class="mb-1.5 block text-xs text-muted-foreground">Password</label>
+						<Input 
+							id="edit-password"
+							type="password"
+							bind:value={editPassword} 
+							placeholder="Leave empty for no protection"
+						/>
+					</div>
+					
+					{#if editPassword}
+						<div>
+							<label for="confirm-password" class="mb-1.5 block text-xs text-muted-foreground">Confirm Password</label>
+							<Input 
+								id="confirm-password"
+								type="password"
+								bind:value={confirmPassword} 
+								placeholder="Confirm password"
+							/>
+						</div>
+					{/if}
+				</div>
+				
+				{#if passwordError}
+					<p class="mt-2 text-sm text-destructive">{passwordError}</p>
+				{/if}
+			</div>
+
+			<!-- Actions -->
+			<div class="flex gap-3">
+				<Button 
+					variant="outline" 
+					class="flex-1"
+					on:click={() => saveModalOpen = false}
+				>
+					Cancel
+				</Button>
+				<Button 
+					class="flex-1 bg-datadog-purple hover:bg-datadog-purple/90"
+					on:click={handleShare}
+					disabled={saving || (editPassword !== '' && editPassword !== confirmPassword)}
+				>
+					{#if saving}
+						<svg class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M21 12a9 9 0 11-6.219-8.56" />
+						</svg>
+						Creating...
+					{:else}
+						<svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+							<path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+						</svg>
+						{editPassword ? 'Create Protected URL' : 'Create Public URL'}
+					{/if}
+				</Button>
+			</div>
 		</div>
 	</div>
 {/if}
