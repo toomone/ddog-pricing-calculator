@@ -213,7 +213,7 @@
 
 	$: billingUnitInfo = selectedProduct ? parseBillingUnit(selectedProduct.billing_unit) : null;
 	$: totalUnits = billingUnitInfo ? quantity * billingUnitInfo.multiplier : null;
-	$: showTotalUnits = billingUnitInfo && quantity > 1;
+	$: showTotalUnits = billingUnitInfo !== null;
 
 	function handleProductSelect(event: CustomEvent<Product>) {
 		selectedProduct = event.detail;
