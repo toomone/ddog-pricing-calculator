@@ -3,25 +3,16 @@ Redis client utility for PriceHound.
 Handles connection management and provides helper functions for storing/retrieving data.
 """
 
-import os
 import json
 import redis
 import logging
 from typing import Optional, Any
 from datetime import datetime
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+from .config import REDIS_URL, is_redis_storage
 
 # Configure logging
 logger = logging.getLogger("pricehound.redis")
-
-# Redis connection URL (default to local Redis if not set)
-REDIS_URL = os.getenv(
-    "REDIS_URL",
-    "redis://localhost:6379"
-)
 
 # Key prefixes
 class RedisKeys:
@@ -59,12 +50,16 @@ class RedisClient:
         return cls._instance
     
     def __init__(self):
-        """Initialize Redis connection if not already connected."""
-        if self._client is None:
+        """Initialize Redis connection if not already connected and Redis storage is configured."""
+        if self._client is None and is_redis_storage():
             self._connect()
     
     def _connect(self):
         """Establish Redis connection."""
+        if not is_redis_storage():
+            logger.info("📁 File storage configured, skipping Redis connection")
+            return
+        
         try:
             self._client = redis.from_url(
                 REDIS_URL,
@@ -74,10 +69,10 @@ class RedisClient:
             )
             # Test connection
             self._client.ping()
-            logger.info("✅ Connected to Redis")
+            logger.info("✅ Connected to Redis (storage mode: redis)")
         except redis.ConnectionError as e:
-            logger.warning(f"⚠️ Redis connection failed: {e}")
-            logger.info("📁 Falling back to file storage")
+            logger.error(f"❌ Redis connection failed: {e}")
+            logger.error("⚠️ Redis storage is configured but connection failed!")
             self._client = None
     
     @property
@@ -198,6 +193,6 @@ def get_redis() -> RedisClient:
 
 
 def is_redis_available() -> bool:
-    """Check if Redis is available."""
-    return redis_client.is_connected
+    """Check if Redis storage is configured and connected."""
+    return is_redis_storage() and redis_client.is_connected
 

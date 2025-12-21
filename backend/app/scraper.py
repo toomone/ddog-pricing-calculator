@@ -9,6 +9,7 @@ from pathlib import Path
 from datetime import datetime
 
 from .redis_client import get_redis, is_redis_available, RedisKeys
+from .config import get_storage_type
 
 logger = logging.getLogger("pricehound.scraper")
 
@@ -178,7 +179,7 @@ def scrape_pricing_data(region: str = DEFAULT_REGION) -> list[dict]:
 
 
 def save_pricing_data(data: list[dict], region: str = DEFAULT_REGION) -> None:
-    """Save pricing data to Redis (primary) and file (backup)."""
+    """Save pricing data to configured storage (Redis OR file)."""
     region_info = REGIONS.get(region, REGIONS[DEFAULT_REGION])
     site = region_info["site"]
     
@@ -191,55 +192,57 @@ def save_pricing_data(data: list[dict], region: str = DEFAULT_REGION) -> None:
         "source_url": f"{PRICING_BASE_URL}?site={site}"
     }
     
-    # Try Redis first
-    redis = get_redis()
+    storage_type = get_storage_type()
+    
     if is_redis_available():
+        # Save to Redis
+        redis = get_redis()
         redis.set_json(RedisKeys.pricing(region), data)
         redis.set_json(RedisKeys.pricing_metadata(region), metadata)
         logger.info(f"✅ Saved {len(data)} products to Redis for {region}")
-    
-    # Always save to file as backup
-    PRICING_DIR.mkdir(parents=True, exist_ok=True)
-    
-    pricing_file = get_pricing_file(region)
-    with open(pricing_file, 'w') as f:
-        json.dump(data, f, indent=2)
-    
-    metadata_file = get_metadata_file(region)
-    with open(metadata_file, 'w') as f:
-        json.dump(metadata, f, indent=2)
+    else:
+        # Save to file
+        PRICING_DIR.mkdir(parents=True, exist_ok=True)
+        
+        pricing_file = get_pricing_file(region)
+        with open(pricing_file, 'w') as f:
+            json.dump(data, f, indent=2)
+        
+        metadata_file = get_metadata_file(region)
+        with open(metadata_file, 'w') as f:
+            json.dump(metadata, f, indent=2)
+        
+        logger.info(f"✅ Saved {len(data)} products to file for {region}")
 
 
 def load_pricing_data(region: str = DEFAULT_REGION) -> list[dict]:
-    """Load pricing data from Redis (primary) or file (fallback)."""
-    # Try Redis first
+    """Load pricing data from configured storage (Redis OR file)."""
     if is_redis_available():
+        # Load from Redis
         data = get_redis().get_json(RedisKeys.pricing(region))
-        if data:
-            return data
-    
-    # Fallback to file
-    pricing_file = get_pricing_file(region)
-    if not pricing_file.exists():
-        return []
-    with open(pricing_file, 'r') as f:
-        return json.load(f)
+        return data if data else []
+    else:
+        # Load from file
+        pricing_file = get_pricing_file(region)
+        if not pricing_file.exists():
+            return []
+        with open(pricing_file, 'r') as f:
+            return json.load(f)
 
 
 def load_metadata(region: str = DEFAULT_REGION) -> dict:
-    """Load metadata from Redis (primary) or file (fallback)."""
-    # Try Redis first
+    """Load metadata from configured storage (Redis OR file)."""
     if is_redis_available():
+        # Load from Redis
         metadata = get_redis().get_json(RedisKeys.pricing_metadata(region))
-        if metadata:
-            return metadata
-    
-    # Fallback to file
-    metadata_file = get_metadata_file(region)
-    if not metadata_file.exists():
-        return {}
-    with open(metadata_file, 'r') as f:
-        return json.load(f)
+        return metadata if metadata else {}
+    else:
+        # Load from file
+        metadata_file = get_metadata_file(region)
+        if not metadata_file.exists():
+            return {}
+        with open(metadata_file, 'r') as f:
+            return json.load(f)
 
 
 def get_all_regions() -> dict:
@@ -273,8 +276,8 @@ def sync_pricing(region: str = DEFAULT_REGION) -> tuple[bool, str, int]:
         if data:
             save_pricing_data(data, region)
             region_name = REGIONS[region]["name"]
-            storage = "Redis + file" if is_redis_available() else "file"
-            return True, f"Successfully synced {len(data)} products for {region_name} ({storage})", len(data)
+            storage = get_storage_type()
+            return True, f"Successfully synced {len(data)} products for {region_name} (storage: {storage})", len(data)
         else:
             return False, "No pricing data found", 0
     except Exception as e:
@@ -302,7 +305,7 @@ def ensure_pricing_data(region: str = DEFAULT_REGION) -> tuple[bool, str, int]:
         metadata = load_metadata(region)
         last_sync = metadata.get("last_sync", "unknown")
         region_name = REGIONS.get(region, {}).get("name", region)
-        storage = "Redis" if is_redis_available() else "file"
+        storage = get_storage_type()
         return True, f"Loaded {len(existing_data)} products for {region_name} from {storage} (last sync: {last_sync})", len(existing_data)
     
     # No data exists, sync now
