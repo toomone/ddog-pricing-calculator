@@ -126,16 +126,41 @@
 		return '';
 	}
 
-	// Extract multiplier and unit from billing_unit (e.g., "per 20 investigations" → { multiplier: 20, unit: "investigations" })
+	// Parse numbers with suffixes like 1M, 1K, 100K
+	function parseMultiplier(numStr: string): number {
+		const cleaned = numStr.replace(/,/g, '').trim();
+		
+		// Handle suffixes like 1M, 100K
+		const suffixMatch = cleaned.match(/^([\d.]+)\s*([KMB])?$/i);
+		if (suffixMatch) {
+			let num = parseFloat(suffixMatch[1]);
+			const suffix = (suffixMatch[2] || '').toUpperCase();
+			if (suffix === 'K') num *= 1000;
+			else if (suffix === 'M') num *= 1000000;
+			else if (suffix === 'B') num *= 1000000000;
+			return num;
+		}
+		
+		// Handle spelled out numbers
+		const lower = cleaned.toLowerCase();
+		if (lower === 'million') return 1000000;
+		if (lower === 'thousand') return 1000;
+		if (lower === 'billion') return 1000000000;
+		
+		return parseInt(cleaned, 10) || 0;
+	}
+
+	// Extract multiplier and unit from billing_unit (e.g., "Per 100 custom metrics, per month" → { multiplier: 100, unit: "cust. metrics" })
 	function parseBillingUnit(billingUnit: string): { multiplier: number; unit: string; period: string } | null {
 		if (!billingUnit) return null;
 		
 		const period = extractPeriod(billingUnit);
 		
-		// Match patterns like "per 20 investigations", "per 100 metrics per month"
-		const match = billingUnit.match(/per\s+([\d,]+)\s+([a-zA-Z\s]+?)(?:\s+per\s+|$)/i);
+		// Match patterns like "Per 100 custom metrics", "Per 1M indexed logs", "Per million records"
+		// Format: "Per [number] [unit], per [period]" or "Per [number] [unit] ([details]), per [period]"
+		const match = billingUnit.match(/per\s+([\d.,]+[KMB]?|million|thousand|billion)\s+([a-zA-Z\s]+?)(?:\s*[\(,]|$)/i);
 		if (match) {
-			const multiplier = parseInt(match[1].replace(/,/g, ''), 10);
+			const multiplier = parseMultiplier(match[1]);
 			const unit = match[2].trim();
 			if (multiplier > 1) {
 				return { multiplier, unit: abbreviateUnit(unit), period };
