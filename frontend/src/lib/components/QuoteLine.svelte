@@ -84,7 +84,9 @@
 		'ingested spans': 'ing. spans',
 		'indexed logs': 'idx logs',
 		'ingested logs': 'ing. logs',
+		'ingested gb': 'GB',
 		'custom metrics': 'cust. metrics',
+		'ingested custom metrics': 'ing. metrics',
 		'custom events': 'cust. events',
 		'profiled hosts': 'prof. hosts',
 		'profiled containers': 'prof. cont.',
@@ -94,7 +96,26 @@
 		'mobile sessions': 'mob. sess.',
 		'replay sessions': 'replay sess.',
 		'test runs': 'tests',
-		'pipeline executions': 'pipelines'
+		'pipeline executions': 'pipelines',
+		'apm host': 'APM hosts',
+		'apm hosts': 'APM hosts',
+		'infra host': 'hosts',
+		'infra hosts': 'hosts',
+		'database host': 'DB hosts',
+		'database hosts': 'DB hosts',
+		'network host': 'net hosts',
+		'network hosts': 'net hosts',
+		'network device': 'net devices',
+		'network devices': 'net devices',
+		'fargate task': 'tasks',
+		'fargate tasks': 'tasks',
+		'iot device': 'IoT devices',
+		'iot devices': 'IoT devices',
+		'traced invocations': 'invoc.',
+		'active application instance': 'instances',
+		'active function': 'functions',
+		'actively traced application instance': 'instances',
+		'aggregated netflow records': 'records'
 	};
 
 	function abbreviateUnit(unit: string): string {
@@ -156,21 +177,27 @@
 		
 		const period = extractPeriod(billingUnit);
 		
-		// Match patterns like "Per 100 custom metrics", "Per 1M indexed logs", "Per million records"
-		// Format: "Per [number] [unit], per [period]" or "Per [number] [unit] ([details]), per [period]"
-		const match = billingUnit.match(/per\s+([\d.,]+[KMB]?|million|thousand|billion)\s+([a-zA-Z\s]+?)(?:\s*[\(,]|$)/i);
-		if (match) {
-			const multiplier = parseMultiplier(match[1]);
-			const unit = match[2].trim();
-			if (multiplier > 1) {
-				return { multiplier, unit: abbreviateUnit(unit), period };
-			}
+		// Match patterns with numbers: "Per 100 custom metrics", "Per 1M indexed logs", "Per million records"
+		const matchWithNumber = billingUnit.match(/per\s+([\d.,]+[KMB]?|million|thousand|billion)\s+([a-zA-Z\s]+?)(?:\s*[\(,]|$)/i);
+		if (matchWithNumber) {
+			const multiplier = parseMultiplier(matchWithNumber[1]);
+			const unit = matchWithNumber[2].trim();
+			return { multiplier, unit: abbreviateUnit(unit), period };
 		}
+		
+		// Match patterns without numbers: "Per host", "Per APM host", "Per container"
+		const matchSimple = billingUnit.match(/per\s+([a-zA-Z\s]+?)(?:\s*,|$)/i);
+		if (matchSimple) {
+			const unit = matchSimple[1].trim();
+			return { multiplier: 1, unit: abbreviateUnit(unit), period };
+		}
+		
 		return null;
 	}
 
 	$: billingUnitInfo = selectedProduct ? parseBillingUnit(selectedProduct.billing_unit) : null;
 	$: totalUnits = billingUnitInfo ? quantity * billingUnitInfo.multiplier : null;
+	$: showTotalUnits = billingUnitInfo && quantity > 1;
 
 	function handleProductSelect(event: CustomEvent<Product>) {
 		selectedProduct = event.detail;
@@ -243,7 +270,7 @@
 					on:change={handleQuantityChange}
 					class="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-center font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200"
 				/>
-				{#if totalUnits !== null && billingUnitInfo}
+				{#if showTotalUnits && billingUnitInfo}
 					<div class="mt-1 text-[10px] text-center text-muted-foreground font-mono">
 						= {formatNumber(totalUnits)} {billingUnitInfo.unit}{billingUnitInfo.period}
 					</div>
