@@ -54,16 +54,91 @@
 
 	$: visibleColumns = [showAnnual, showMonthly, showOnDemand].filter(Boolean).length;
 
+	// Abbreviate common unit names
+	const unitAbbreviations: Record<string, string> = {
+		'investigations': 'invest.',
+		'investigation': 'invest.',
+		'containers': 'cont.',
+		'container': 'cont.',
+		'metrics': 'metrics',
+		'metric': 'metric',
+		'sessions': 'sess.',
+		'session': 'sess.',
+		'executions': 'exec.',
+		'execution': 'exec.',
+		'requests': 'req.',
+		'request': 'req.',
+		'invocations': 'invoc.',
+		'invocation': 'invoc.',
+		'events': 'events',
+		'event': 'event',
+		'spans': 'spans',
+		'span': 'span',
+		'queries': 'queries',
+		'query': 'query',
+		'hosts': 'hosts',
+		'host': 'host',
+		'functions': 'func.',
+		'function': 'func.',
+		'indexed spans': 'idx spans',
+		'ingested spans': 'ing. spans',
+		'indexed logs': 'idx logs',
+		'ingested logs': 'ing. logs',
+		'custom metrics': 'cust. metrics',
+		'custom events': 'cust. events',
+		'profiled hosts': 'prof. hosts',
+		'profiled containers': 'prof. cont.',
+		'normalized queries': 'norm. queries',
+		'active users': 'users',
+		'browser sessions': 'br. sess.',
+		'mobile sessions': 'mob. sess.',
+		'replay sessions': 'replay sess.',
+		'test runs': 'tests',
+		'pipeline executions': 'pipelines'
+	};
+
+	function abbreviateUnit(unit: string): string {
+		const lowerUnit = unit.toLowerCase();
+		// Check for exact matches first
+		if (unitAbbreviations[lowerUnit]) {
+			return unitAbbreviations[lowerUnit];
+		}
+		// Check for partial matches
+		for (const [key, abbr] of Object.entries(unitAbbreviations)) {
+			if (lowerUnit.includes(key)) {
+				return lowerUnit.replace(key, abbr);
+			}
+		}
+		// Truncate long unit names
+		if (unit.length > 10) {
+			return unit.substring(0, 8) + '.';
+		}
+		return unit;
+	}
+
+	// Extract period from billing unit (per month, per hour, etc.)
+	function extractPeriod(billingUnit: string): string {
+		const lowerUnit = billingUnit.toLowerCase();
+		if (lowerUnit.includes('per month') || lowerUnit.includes('/month')) return '/mo';
+		if (lowerUnit.includes('per hour') || lowerUnit.includes('/hour')) return '/hr';
+		if (lowerUnit.includes('per day') || lowerUnit.includes('/day')) return '/day';
+		if (lowerUnit.includes('per year') || lowerUnit.includes('/year')) return '/yr';
+		return '';
+	}
+
 	// Extract multiplier and unit from billing_unit (e.g., "per 20 investigations" → { multiplier: 20, unit: "investigations" })
-	function parseBillingUnit(billingUnit: string): { multiplier: number; unit: string } | null {
+	function parseBillingUnit(billingUnit: string): { multiplier: number; unit: string; period: string } | null {
 		if (!billingUnit) return null;
-		// Match patterns like "per 20 investigations", "per 100 metrics", "per 1000 spans"
-		const match = billingUnit.match(/per\s+([\d,]+)\s+(.+)/i);
+		
+		const period = extractPeriod(billingUnit);
+		
+		// Match patterns like "per 20 investigations", "per 100 metrics per month"
+		const match = billingUnit.match(/per\s+([\d,]+)\s+([a-zA-Z\s]+?)(?:\s+per\s+|$)/i);
 		if (match) {
 			const multiplier = parseInt(match[1].replace(/,/g, ''), 10);
 			const unit = match[2].trim();
 			if (multiplier > 1) {
-				return { multiplier, unit };
+				return { multiplier, unit: abbreviateUnit(unit), period };
 			}
 		}
 		return null;
@@ -145,7 +220,7 @@
 				/>
 				{#if totalUnits !== null && billingUnitInfo}
 					<div class="mt-1 text-[10px] text-center text-muted-foreground font-mono">
-						= {formatNumber(totalUnits)} {billingUnitInfo.unit}
+						= {formatNumber(totalUnits)} {billingUnitInfo.unit}{billingUnitInfo.period}
 					</div>
 				{/if}
 				{#if totalAllottedForProduct > 0}
