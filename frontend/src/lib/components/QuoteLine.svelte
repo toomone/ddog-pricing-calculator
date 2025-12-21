@@ -54,6 +54,24 @@
 
 	$: visibleColumns = [showAnnual, showMonthly, showOnDemand].filter(Boolean).length;
 
+	// Extract multiplier and unit from billing_unit (e.g., "per 20 investigations" → { multiplier: 20, unit: "investigations" })
+	function parseBillingUnit(billingUnit: string): { multiplier: number; unit: string } | null {
+		if (!billingUnit) return null;
+		// Match patterns like "per 20 investigations", "per 100 metrics", "per 1000 spans"
+		const match = billingUnit.match(/per\s+([\d,]+)\s+(.+)/i);
+		if (match) {
+			const multiplier = parseInt(match[1].replace(/,/g, ''), 10);
+			const unit = match[2].trim();
+			if (multiplier > 1) {
+				return { multiplier, unit };
+			}
+		}
+		return null;
+	}
+
+	$: billingUnitInfo = selectedProduct ? parseBillingUnit(selectedProduct.billing_unit) : null;
+	$: totalUnits = billingUnitInfo ? quantity * billingUnitInfo.multiplier : null;
+
 	function handleProductSelect(event: CustomEvent<Product>) {
 		selectedProduct = event.detail;
 		dispatch('update', { product: selectedProduct, quantity });
@@ -116,7 +134,7 @@
 			</div>
 
 			<!-- Quantity -->
-			<div class="w-24 shrink-0">
+			<div class="w-28 shrink-0">
 				<div class="mb-1.5 h-4"></div>
 				<input
 					type="number"
@@ -125,6 +143,11 @@
 					on:change={handleQuantityChange}
 					class="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-center font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200"
 				/>
+				{#if totalUnits !== null && billingUnitInfo}
+					<div class="mt-1 text-[10px] text-center text-muted-foreground font-mono">
+						= {formatNumber(totalUnits)} {billingUnitInfo.unit}
+					</div>
+				{/if}
 				{#if totalAllottedForProduct > 0}
 					<div class="mt-1 text-[10px] text-center text-datadog-green">
 						+ {formatNumber(totalAllottedForProduct)} included
