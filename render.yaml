@@ -1,0 +1,47 @@
+# Render Blueprint for PriceHound
+# https://render.com/docs/infrastructure-as-code
+
+services:
+  # Backend API (Python/FastAPI)
+  - type: web
+    name: pricehound-api
+    runtime: python
+    plan: free
+    region: frankfurt
+    buildCommand: |
+      cd backend && pip install -r requirements.txt
+    startCommand: |
+      cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12"
+      - key: STORAGE_TYPE
+        value: redis
+      - key: REDIS_URL
+        sync: false  # Set this manually in Render dashboard for security
+    healthCheckPath: /api/health
+    autoDeploy: true
+
+  # Frontend (Static Site)
+  - type: web
+    name: pricehound
+    runtime: static
+    plan: free
+    region: frankfurt
+    buildCommand: |
+      cd frontend && npm install && npm run build
+    staticPublishPath: frontend/build
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=3600
+    routes:
+      # Proxy API requests to backend
+      - type: rewrite
+        source: /api/*
+        destination: https://pricehound-api.onrender.com/api/*
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+    autoDeploy: true
+
