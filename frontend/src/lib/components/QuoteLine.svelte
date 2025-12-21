@@ -54,167 +54,6 @@
 
 	$: visibleColumns = [showAnnual, showMonthly, showOnDemand].filter(Boolean).length;
 
-	// Abbreviate common unit names
-	const unitAbbreviations: Record<string, string> = {
-		'investigations': 'invest.',
-		'investigation': 'invest.',
-		'containers': 'cont.',
-		'container': 'cont.',
-		'metrics': 'metrics',
-		'metric': 'metric',
-		'sessions': 'sess.',
-		'session': 'sess.',
-		'executions': 'exec.',
-		'execution': 'exec.',
-		'requests': 'req.',
-		'request': 'req.',
-		'invocations': 'invoc.',
-		'invocation': 'invoc.',
-		'events': 'events',
-		'event': 'event',
-		'spans': 'spans',
-		'span': 'span',
-		'queries': 'queries',
-		'query': 'query',
-		'hosts': 'hosts',
-		'host': 'host',
-		'functions': 'func.',
-		'function': 'func.',
-		'indexed spans': 'idx spans',
-		'ingested spans': 'ing. spans',
-		'indexed logs': 'idx logs',
-		'ingested logs': 'ing. logs',
-		'ingested gb': 'GB',
-		'custom metrics': 'cust. metrics',
-		'ingested custom metrics': 'ing. metrics',
-		'custom events': 'cust. events',
-		'profiled hosts': 'prof. hosts',
-		'profiled containers': 'prof. cont.',
-		'normalized queries': 'norm. queries',
-		'active users': 'users',
-		'browser sessions': 'br. sess.',
-		'mobile sessions': 'mob. sess.',
-		'replay sessions': 'replay sess.',
-		'test runs': 'tests',
-		'pipeline executions': 'pipelines',
-		'apm host': 'APM hosts',
-		'apm hosts': 'APM hosts',
-		'infra host': 'hosts',
-		'infra hosts': 'hosts',
-		'database host': 'DB hosts',
-		'database hosts': 'DB hosts',
-		'network host': 'net hosts',
-		'network hosts': 'net hosts',
-		'network device': 'net devices',
-		'network devices': 'net devices',
-		'fargate task': 'tasks',
-		'fargate tasks': 'tasks',
-		'iot device': 'IoT devices',
-		'iot devices': 'IoT devices',
-		'traced invocations': 'invoc.',
-		'active application instance': 'instances',
-		'active function': 'functions',
-		'actively traced application instance': 'instances',
-		'aggregated netflow records': 'records'
-	};
-
-	function abbreviateUnit(unit: string): string {
-		const lowerUnit = unit.toLowerCase();
-		// Check for exact matches first
-		if (unitAbbreviations[lowerUnit]) {
-			return unitAbbreviations[lowerUnit];
-		}
-		// Check for partial matches
-		for (const [key, abbr] of Object.entries(unitAbbreviations)) {
-			if (lowerUnit.includes(key)) {
-				return lowerUnit.replace(key, abbr);
-			}
-		}
-		// Truncate long unit names
-		if (unit.length > 10) {
-			return unit.substring(0, 8) + '.';
-		}
-		return unit;
-	}
-
-	// Extract period from billing unit (per month, per hour, etc.)
-	function extractPeriod(billingUnit: string): string {
-		const lowerUnit = billingUnit.toLowerCase();
-		if (lowerUnit.includes('per month') || lowerUnit.includes('/month')) return '/mo';
-		if (lowerUnit.includes('per hour') || lowerUnit.includes('/hour')) return '/hr';
-		if (lowerUnit.includes('per day') || lowerUnit.includes('/day')) return '/day';
-		if (lowerUnit.includes('per year') || lowerUnit.includes('/year')) return '/yr';
-		return '';
-	}
-
-	// Parse numbers with suffixes like 1M, 1K, 100K
-	function parseMultiplier(numStr: string): number {
-		const cleaned = numStr.replace(/,/g, '').trim();
-		
-		// Handle suffixes like 1M, 100K
-		const suffixMatch = cleaned.match(/^([\d.]+)\s*([KMB])?$/i);
-		if (suffixMatch) {
-			let num = parseFloat(suffixMatch[1]);
-			const suffix = (suffixMatch[2] || '').toUpperCase();
-			if (suffix === 'K') num *= 1000;
-			else if (suffix === 'M') num *= 1000000;
-			else if (suffix === 'B') num *= 1000000000;
-			return num;
-		}
-		
-		// Handle spelled out numbers
-		const lower = cleaned.toLowerCase();
-		if (lower === 'million') return 1000000;
-		if (lower === 'thousand') return 1000;
-		if (lower === 'billion') return 1000000000;
-		
-		return parseInt(cleaned, 10) || 0;
-	}
-
-	// Extract multiplier and unit from billing_unit (e.g., "Per 100 custom metrics, per month" → { multiplier: 100, unit: "cust. metrics" })
-	function parseBillingUnit(billingUnit: string): { multiplier: number; unit: string; period: string } | null {
-		if (!billingUnit) return null;
-		
-		const period = extractPeriod(billingUnit);
-		
-		// Match patterns with numbers: "Per 100 custom metrics", "Per 1M indexed logs", "Per million records"
-		const matchWithNumber = billingUnit.match(/^per\s+([\d.,]+[KMB]?|million|thousand|billion)\s+([a-zA-Z\s]+?)(?:\s*[\(,]|$)/i);
-		if (matchWithNumber) {
-			const multiplier = parseMultiplier(matchWithNumber[1]);
-			const unit = matchWithNumber[2].trim();
-			return { multiplier, unit: abbreviateUnit(unit), period };
-		}
-		
-		// Match patterns with number in parentheses: "Per ingested logs (1GB)", "Per GB outbound"
-		const matchParens = billingUnit.match(/^per\s+([a-zA-Z\s]+?)\s*\(([\d.,]+)\s*([a-zA-Z]+)\)/i);
-		if (matchParens) {
-			const baseUnit = matchParens[1].trim();
-			const multiplier = parseMultiplier(matchParens[2]);
-			const unitSuffix = matchParens[3].trim(); // e.g., "GB"
-			return { multiplier, unit: unitSuffix, period };
-		}
-		
-		// Match patterns with unit like "Per GB outbound"
-		const matchUnitFirst = billingUnit.match(/^per\s+(GB|MB|KB|TB)\s+/i);
-		if (matchUnitFirst) {
-			return { multiplier: 1, unit: matchUnitFirst[1].toUpperCase(), period };
-		}
-		
-		// Match patterns without numbers: "Per host", "Per APM host", "Per container"
-		// Use greedy match but stop at comma, parenthesis, or "per" (for "per month")
-		const matchSimple = billingUnit.match(/^per\s+([a-zA-Z\s]+?)(?:\s*[,(]|\s+per\s|$)/i);
-		if (matchSimple) {
-			const unit = matchSimple[1].trim();
-			return { multiplier: 1, unit: abbreviateUnit(unit), period };
-		}
-		
-		return null;
-	}
-
-	$: billingUnitInfo = selectedProduct ? parseBillingUnit(selectedProduct.billing_unit) : null;
-	$: totalUnits = billingUnitInfo ? quantity * billingUnitInfo.multiplier : null;
-	$: showTotalUnits = billingUnitInfo !== null;
-
 	function handleProductSelect(event: CustomEvent<Product>) {
 		selectedProduct = event.detail;
 		dispatch('update', { product: selectedProduct, quantity });
@@ -277,7 +116,7 @@
 			</div>
 
 			<!-- Quantity -->
-			<div class="w-28 shrink-0">
+			<div class="w-24 shrink-0">
 				<div class="mb-1.5 h-4"></div>
 				<input
 					type="number"
@@ -286,11 +125,6 @@
 					on:change={handleQuantityChange}
 					class="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-center font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200"
 				/>
-				{#if showTotalUnits && billingUnitInfo}
-					<div class="mt-1 text-[10px] text-center text-muted-foreground font-mono">
-						= {formatNumber(totalUnits)} {billingUnitInfo.unit}{billingUnitInfo.period}
-					</div>
-				{/if}
 				{#if totalAllottedForProduct > 0}
 					<div class="mt-1 text-[10px] text-center text-datadog-green">
 						+ {formatNumber(totalAllottedForProduct)} included
