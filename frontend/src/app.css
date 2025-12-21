@@ -76,3 +76,51 @@ input[type='number']::-webkit-outer-spin-button {
 	opacity: 1;
 }
 
+/* Print styles - Light theme for PDF/Print */
+@media print {
+	:root {
+		--background: 0 0% 100%;
+		--foreground: 240 10% 10%;
+		--card: 0 0% 100%;
+		--card-foreground: 240 10% 10%;
+		--popover: 0 0% 100%;
+		--popover-foreground: 240 10% 10%;
+		--primary: 270 60% 45%;
+		--primary-foreground: 0 0% 100%;
+		--secondary: 240 5% 96%;
+		--secondary-foreground: 240 10% 10%;
+		--muted: 240 5% 96%;
+		--muted-foreground: 240 5% 45%;
+		--accent: 240 5% 96%;
+		--accent-foreground: 240 10% 10%;
+		--destructive: 0 72% 51%;
+		--destructive-foreground: 0 0% 100%;
+		--border: 240 5% 85%;
+		--input: 240 5% 85%;
+		--ring: 270 60% 45%;
+	}
+
+	body {
+		background: white !important;
+		color: black !important;
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+	}
+
+	.gradient-bg {
+		background: white !important;
+	}
+
+	/* Hide non-essential elements */
+	button:not([data-print]),
+	.print\\:hidden {
+		display: none !important;
+	}
+
+	/* Ensure cards have borders for print */
+	[class*="card"] {
+		border: 1px solid #e5e5e5 !important;
+		box-shadow: none !important;
+	}
+}
+
