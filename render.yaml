@@ -5,13 +5,11 @@ services:
   # Backend API (Python/FastAPI)
   - type: web
     name: pricehound-api
-    runtime: python
+    env: python
     plan: free
     region: frankfurt
-    buildCommand: |
-      cd backend && pip install -r requirements.txt
-    startCommand: |
-      cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    buildCommand: cd backend && pip install -r requirements.txt
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: "3.12"
@@ -25,12 +23,11 @@ services:
   # Frontend (Static Site)
   - type: web
     name: pricehound
-    runtime: static
+    env: static
     plan: free
     region: frankfurt
-    buildCommand: |
-      cd frontend && npm install && npm run build
-    staticPublishPath: frontend/build
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/build
     headers:
       - path: /*
         name: Cache-Control
