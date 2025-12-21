@@ -51,6 +51,9 @@ class Quote(BaseModel):
     total_on_demand: Optional[float] = None
     created_at: str
     updated_at: str
+    # Password protection for editing
+    edit_password_hash: Optional[str] = None  # bcrypt hash, None means no protection
+    is_protected: bool = False  # Convenience flag for frontend
 
 
 class QuoteCreate(BaseModel):
@@ -58,6 +61,24 @@ class QuoteCreate(BaseModel):
     region: str = "us"
     billing_type: str
     items: list[dict]
+    edit_password: Optional[str] = None  # Plain text password, will be hashed
+
+
+class QuoteUpdate(BaseModel):
+    name: Optional[str] = None
+    region: str = "us"
+    billing_type: str
+    items: list[dict]
+    edit_password: Optional[str] = None  # Required if quote is protected
+
+
+class VerifyPasswordRequest(BaseModel):
+    password: str
+
+
+class VerifyPasswordResponse(BaseModel):
+    valid: bool
+    message: str
 
 
 class SyncResponse(BaseModel):

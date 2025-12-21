@@ -1,6 +1,8 @@
 import json
 import uuid
 import logging
+import hashlib
+import secrets
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -8,6 +10,23 @@ from typing import Optional
 from .models import Quote, QuoteLineItem
 from .scraper import load_pricing_data, parse_price
 from .redis_client import get_redis, is_redis_available, RedisKeys
+from .config import get_storage_type
+
+
+def hash_password(password: str) -> str:
+    """Hash a password using SHA-256 with a salt."""
+    salt = secrets.token_hex(16)
+    hash_obj = hashlib.sha256((salt + password).encode())
+    return f"{salt}${hash_obj.hexdigest()}"
+
+
+def verify_password(password: str, password_hash: str) -> bool:
+    """Verify a password against its hash."""
+    if not password_hash or '$' not in password_hash:
+        return False
+    salt, stored_hash = password_hash.split('$', 1)
+    hash_obj = hashlib.sha256((salt + password).encode())
+    return hash_obj.hexdigest() == stored_hash
 
 logger = logging.getLogger("pricehound.quotes")
 
@@ -87,42 +106,41 @@ def get_all_prices_for_product(product_id: str, product_name: str, region: str =
 
 
 def save_quote_file(quote: Quote) -> None:
-    """Save a quote to Redis (primary) and file (backup)."""
+    """Save a quote to configured storage (Redis OR file)."""
     quote_data = quote.model_dump()
     
-    # Try Redis first
-    redis = get_redis()
     if is_redis_available():
+        # Save to Redis
+        redis = get_redis()
         redis.set_json(RedisKeys.quote(quote.id), quote_data)
         # Add to index for listing
         redis.add_to_index(RedisKeys.QUOTES_INDEX, quote.id)
         logger.info(f"✅ Saved quote {quote.id} to Redis")
-    
-    # Always save to file as backup
-    QUOTES_DIR.mkdir(parents=True, exist_ok=True)
-    quote_file = get_quote_file(quote.id)
-    with open(quote_file, 'w') as f:
-        json.dump(quote_data, f, indent=2)
+    else:
+        # Save to file
+        QUOTES_DIR.mkdir(parents=True, exist_ok=True)
+        quote_file = get_quote_file(quote.id)
+        with open(quote_file, 'w') as f:
+            json.dump(quote_data, f, indent=2)
+        logger.info(f"✅ Saved quote {quote.id} to file")
 
 
 def load_quote_file(quote_id: str) -> Optional[dict]:
-    """Load a quote from Redis (primary) or file (fallback)."""
-    # Try Redis first
+    """Load a quote from configured storage (Redis OR file)."""
     if is_redis_available():
-        data = get_redis().get_json(RedisKeys.quote(quote_id))
-        if data:
-            return data
-    
-    # Fallback to file
-    quote_file = get_quote_file(quote_id)
-    if not quote_file.exists():
-        return None
-    with open(quote_file, 'r') as f:
-        return json.load(f)
+        # Load from Redis
+        return get_redis().get_json(RedisKeys.quote(quote_id))
+    else:
+        # Load from file
+        quote_file = get_quote_file(quote_id)
+        if not quote_file.exists():
+            return None
+        with open(quote_file, 'r') as f:
+            return json.load(f)
 
 
-def create_quote(name: Optional[str], region: str, billing_type: str, items: list[dict]) -> Quote:
-    """Create a new quote."""
+def create_quote(name: Optional[str], region: str, billing_type: str, items: list[dict], edit_password: Optional[str] = None) -> Quote:
+    """Create a new quote with optional password protection."""
     quote_id = str(uuid.uuid4())
     now = datetime.utcnow().isoformat()
     
@@ -177,6 +195,9 @@ def create_quote(name: Optional[str], region: str, billing_type: str, items: lis
             allotments=allotments
         ))
     
+    # Hash password if provided
+    password_hash = hash_password(edit_password) if edit_password else None
+    
     quote = Quote(
         id=quote_id,
         name=name or f"Quote {quote_id[:8]}",
@@ -188,7 +209,9 @@ def create_quote(name: Optional[str], region: str, billing_type: str, items: lis
         total_monthly=total_monthly,
         total_on_demand=total_on_demand,
         created_at=now,
-        updated_at=now
+        updated_at=now,
+        edit_password_hash=password_hash,
+        is_protected=password_hash is not None
     )
     
     # Save quote to Redis and file
@@ -205,12 +228,20 @@ def get_quote(quote_id: str) -> Optional[Quote]:
     return None
 
 
-def update_quote(quote_id: str, name: Optional[str], region: str, billing_type: str, items: list[dict]) -> Optional[Quote]:
-    """Update an existing quote."""
+def update_quote(quote_id: str, name: Optional[str], region: str, billing_type: str, items: list[dict], edit_password: Optional[str] = None) -> tuple[Optional[Quote], str]:
+    """Update an existing quote. Returns (quote, error_message)."""
     old_quote_data = load_quote_file(quote_id)
     
     if not old_quote_data:
-        return None
+        return None, "Quote not found"
+    
+    # Check password protection
+    stored_hash = old_quote_data.get('edit_password_hash')
+    if stored_hash:
+        if not edit_password:
+            return None, "Password required to edit this quote"
+        if not verify_password(edit_password, stored_hash):
+            return None, "Invalid password"
     
     now = datetime.utcnow().isoformat()
     
@@ -276,33 +307,51 @@ def update_quote(quote_id: str, name: Optional[str], region: str, billing_type: 
         total_monthly=total_monthly,
         total_on_demand=total_on_demand,
         created_at=old_quote_data.get('created_at', now),
-        updated_at=now
+        updated_at=now,
+        # Preserve password protection
+        edit_password_hash=stored_hash,
+        is_protected=stored_hash is not None
     )
     
     # Save updated quote
     save_quote_file(quote)
     
-    return quote
+    return quote, ""
+
+
+def verify_quote_password(quote_id: str, password: str) -> tuple[bool, str]:
+    """Verify password for a quote. Returns (is_valid, message)."""
+    quote_data = load_quote_file(quote_id)
+    
+    if not quote_data:
+        return False, "Quote not found"
+    
+    stored_hash = quote_data.get('edit_password_hash')
+    if not stored_hash:
+        return True, "Quote is not password protected"
+    
+    if verify_password(password, stored_hash):
+        return True, "Password verified"
+    
+    return False, "Invalid password"
 
 
 def delete_quote(quote_id: str) -> bool:
-    """Delete a quote from Redis and file."""
-    deleted = False
-    
-    # Try Redis first
+    """Delete a quote from configured storage (Redis OR file)."""
     if is_redis_available():
+        # Delete from Redis
         redis = get_redis()
         if redis.delete(RedisKeys.quote(quote_id)):
             redis.remove_from_index(RedisKeys.QUOTES_INDEX, quote_id)
-            deleted = True
-    
-    # Also delete file
-    quote_file = get_quote_file(quote_id)
-    if quote_file.exists():
-        quote_file.unlink()
-        deleted = True
-    
-    return deleted
+            return True
+        return False
+    else:
+        # Delete from file
+        quote_file = get_quote_file(quote_id)
+        if quote_file.exists():
+            quote_file.unlink()
+            return True
+        return False
 
 
 def list_quotes() -> list[Quote]:

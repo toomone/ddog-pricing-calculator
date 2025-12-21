@@ -7,12 +7,12 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 import logging
 
-from .models import PricingItem, Quote, QuoteCreate, SyncResponse
+from .models import PricingItem, Quote, QuoteCreate, QuoteUpdate, SyncResponse, VerifyPasswordRequest, VerifyPasswordResponse
 from .scraper import (
     load_pricing_data, load_metadata, sync_pricing, ensure_pricing_data,
     get_all_regions, get_regions_status, sync_all_regions, DEFAULT_REGION, REGIONS
 )
-from .quotes import create_quote, get_quote, update_quote, delete_quote, list_quotes
+from .quotes import create_quote, get_quote, update_quote, delete_quote, list_quotes, verify_quote_password
 from .allotments_scraper import (
     load_allotments_data, load_allotments_metadata, sync_allotments, 
     ensure_allotments_data, get_allotments_for_product, save_manual_allotments,
@@ -207,15 +207,16 @@ async def get_all_quotes():
 
 @app.post("/api/quotes", response_model=Quote)
 async def create_new_quote(quote_data: QuoteCreate):
-    """Create a new quote."""
-    logger.info(f"📝 Creating new quote: name='{quote_data.name}', region={quote_data.region}, billing={quote_data.billing_type}, items={len(quote_data.items)}")
+    """Create a new quote with optional password protection."""
+    logger.info(f"📝 Creating new quote: name='{quote_data.name}', region={quote_data.region}, billing={quote_data.billing_type}, items={len(quote_data.items)}, protected={quote_data.edit_password is not None}")
     quote = create_quote(
         name=quote_data.name,
         region=quote_data.region,
         billing_type=quote_data.billing_type,
-        items=quote_data.items
+        items=quote_data.items,
+        edit_password=quote_data.edit_password
     )
-    logger.info(f"✅ Quote created: id={quote.id}, total=${quote.total:.2f}")
+    logger.info(f"✅ Quote created: id={quote.id}, total=${quote.total:.2f}, protected={quote.is_protected}")
     return quote
 
 
@@ -232,17 +233,34 @@ async def get_quote_by_id(quote_id: str):
 
 
 @app.put("/api/quotes/{quote_id}", response_model=Quote)
-async def update_existing_quote(quote_id: str, quote_data: QuoteCreate):
-    """Update an existing quote."""
-    quote = update_quote(
+async def update_existing_quote(quote_id: str, quote_data: QuoteUpdate):
+    """Update an existing quote. Requires password if quote is protected."""
+    logger.info(f"📝 Updating quote: {quote_id}")
+    quote, error = update_quote(
         quote_id=quote_id,
         name=quote_data.name,
+        region=quote_data.region,
         billing_type=quote_data.billing_type,
-        items=quote_data.items
+        items=quote_data.items,
+        edit_password=quote_data.edit_password
     )
     if not quote:
+        if "Password required" in error or "Invalid password" in error:
+            logger.warning(f"⚠️ Quote update unauthorized: {quote_id} - {error}")
+            raise HTTPException(status_code=403, detail=error)
+        logger.warning(f"⚠️ Quote not found: {quote_id}")
         raise HTTPException(status_code=404, detail="Quote not found")
+    logger.info(f"✅ Quote updated: {quote_id}")
     return quote
+
+
+@app.post("/api/quotes/{quote_id}/verify-password", response_model=VerifyPasswordResponse)
+async def verify_password_endpoint(quote_id: str, request: VerifyPasswordRequest):
+    """Verify password for a quote."""
+    is_valid, message = verify_quote_password(quote_id, request.password)
+    if not is_valid and message == "Quote not found":
+        raise HTTPException(status_code=404, detail="Quote not found")
+    return VerifyPasswordResponse(valid=is_valid, message=message)
 
 
 @app.delete("/api/quotes/{quote_id}")
