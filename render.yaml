@@ -25,7 +25,6 @@ services:
     name: pricehound
     env: static
     plan: free
-    region: frankfurt
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/build
     headers:
