@@ -1075,7 +1075,7 @@
 					<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 						<path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 3v12" />
 					</svg>
-					<span class="hidden sm:inline">Import</span>
+					<span class="hidden sm:inline">Import JSON</span>
 				</button>
 
 				<!-- Share Button with Dropdown -->
