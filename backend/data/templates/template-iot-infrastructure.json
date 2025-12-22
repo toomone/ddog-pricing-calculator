@@ -2,7 +2,6 @@
   "id": "iot-infrastructure",
   "name": "IoT Project",
   "description": "Monitor IoT devices with metrics, logs, and incident management",
-  "icon": "📡",
   "region": "us",
   "billing_type": "annually",
   "items": [

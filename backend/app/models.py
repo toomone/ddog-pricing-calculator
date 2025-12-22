@@ -99,7 +99,6 @@ class Template(BaseModel):
     id: str
     name: str
     description: str
-    icon: str  # Emoji icon like 🌐
     region: str = "us"
     billing_type: str = "annually"
     items: list[TemplateItem]

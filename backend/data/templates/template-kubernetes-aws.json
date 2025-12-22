@@ -2,7 +2,6 @@
   "id": "kubernetes-aws",
   "name": "Kubernetes on AWS",
   "description": "Full K8s cluster monitoring with containers, cloud costs, and log management",
-  "icon": "☸️",
   "region": "us",
   "billing_type": "annually",
   "items": [

@@ -259,11 +259,7 @@
 	}
 
 	async function applyTemplate(template: Template) {
-		// Clear existing lines
-		lines = [];
-		
-		// Set quote name from template
-		quoteName = template.name;
+		// Keep existing lines and append template items
 		
 		// Change region if different
 		if (template.region !== selectedRegion) {
@@ -324,8 +320,10 @@
 		}
 		
 		if (newLines.length > 0) {
-			lines = newLines;
-			success = `Loaded "${template.name}" template with ${template.items.length} products`;
+			// Filter out empty lines (no product selected) before appending
+			const existingValidLines = lines.filter(l => l.product !== null);
+			lines = [...existingValidLines, ...newLines];
+			success = `Added ${newLines.length} products from "${template.name}"`;
 			setTimeout(() => success = '', 3000);
 		} else {
 			error = 'Could not match any products from the template';
@@ -1553,7 +1551,7 @@
 							>
 								<path d="M9 18l6-6-6-6" />
 							</svg>
-							<span>Start from a template</span>
+							<span>Start from stack example</span>
 						</button>
 						
 						{#if showTemplates}
@@ -1561,12 +1559,11 @@
 								{#each templates as template}
 									<button
 										type="button"
-										class="group flex flex-col items-center gap-2 rounded-xl border-2 border-dashed border-border p-4 transition-all hover:border-datadog-purple hover:bg-datadog-purple/5"
+										class="group flex flex-col items-start gap-1 rounded-xl border-2 border-dashed border-border p-4 transition-all hover:border-datadog-purple hover:bg-datadog-purple/5"
 										on:click={() => applyTemplate(template)}
 									>
-										<span class="text-3xl">{template.icon}</span>
 										<span class="font-medium text-sm group-hover:text-datadog-purple">{template.name}</span>
-										<span class="text-xs text-muted-foreground text-center line-clamp-2">{template.description}</span>
+										<span class="text-xs text-muted-foreground text-left line-clamp-2">{template.description}</span>
 									</button>
 								{/each}
 							</div>

@@ -85,7 +85,6 @@ export interface Template {
 	id: string;
 	name: string;
 	description: string;
-	icon: string;
 	region: string;
 	billing_type: string;
 	items: TemplateItem[];

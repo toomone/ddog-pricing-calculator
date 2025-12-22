@@ -2,7 +2,6 @@
   "id": "website-fullstack",
   "name": "Full Stack Website",
   "description": "Complete observability for a web application with frontend, backend, database, and logs",
-  "icon": "🌐",
   "region": "us",
   "billing_type": "annually",
   "items": [
