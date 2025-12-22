@@ -578,9 +578,7 @@
 				shareUrl = `${window.location.origin}/quote/${quote.id}`;
 				saveModalOpen = false;
 				success = 'Quote updated successfully!';
-				// Clear edit mode
-				editingQuoteId = null;
-				editQuotePassword = null;
+				// Keep edit mode active so user can continue making changes
 			} else {
 				// Create new quote
 				quote = await createQuote(quoteName || null, selectedRegion, 'annually', items, editPassword || null);
