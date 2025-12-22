@@ -16,9 +16,20 @@ services:
       - key: STORAGE_TYPE
         value: redis
       - key: REDIS_URL
-        sync: false  # Set this manually in Render dashboard for security
+        fromService:
+          name: pricehound-redis
+          type: redis
+          property: connectionString
     healthCheckPath: /api/health
     autoDeploy: true
+
+  # Redis Cache
+  - type: redis
+    name: pricehound-redis
+    plan: free
+    region: frankfurt
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []  # Allow all connections (internal only)
 
   # Frontend (Static Site)
   - type: web
