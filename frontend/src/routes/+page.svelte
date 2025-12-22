@@ -1308,7 +1308,7 @@
 							class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors hover:bg-muted rounded-r-lg"
 						>
 							<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-								<path d="M3 6h18M7 12h10M10 18h4" />
+								<path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
 							</svg>
 							<span>Billing</span>
 							<div class="flex items-center gap-0.5">
