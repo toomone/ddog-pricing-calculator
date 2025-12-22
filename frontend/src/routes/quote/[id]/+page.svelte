@@ -161,12 +161,6 @@
 <div class="container mx-auto max-w-4xl px-4 py-8">
 	<!-- Header -->
 	<header class="mb-8">
-		<a href="/" class="mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-datadog-purple">
-			<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-				<path d="M19 12H5M12 19l-7-7 7-7" />
-			</svg>
-			Back to Calculator
-		</a>
 		<div class="flex items-center gap-3">
 			<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-datadog-purple shadow-lg shadow-datadog-purple/25">
 				<svg class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="currentColor">
