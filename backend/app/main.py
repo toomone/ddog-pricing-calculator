@@ -19,7 +19,7 @@ from .allotments_scraper import (
     get_manual_allotments
 )
 from .redis_client import get_redis, is_redis_available
-from .templates import get_all_templates, get_template, seed_default_templates
+from .templates import get_all_templates, get_template, ensure_templates, sync_templates_to_redis
 
 
 # Configure logging
@@ -73,6 +73,10 @@ async def lifespan(app: FastAPI):
     # Startup: ensure pricing data exists for default region
     success, message, count = ensure_pricing_data(DEFAULT_REGION)
     logger.info(f"📊 {message}")
+    
+    # Startup: ensure templates are loaded from files to Redis
+    success, message, count = ensure_templates()
+    logger.info(f"📋 {message}")
     
     # Check if we should sync on startup (data older than 1 hour)
     if should_sync_on_startup():
@@ -349,8 +353,8 @@ async def get_template_by_id(template_id: str):
 
 @app.post("/api/templates/seed")
 async def seed_templates():
-    """Seed default templates into Redis."""
-    logger.info("🌱 Seeding default templates...")
-    count = seed_default_templates()
-    logger.info(f"✅ Seeded {count} templates")
-    return {"success": True, "count": count, "message": f"Seeded {count} templates"}
+    """Sync templates from JSON files to Redis."""
+    logger.info("🔄 Syncing templates from files to Redis...")
+    count = sync_templates_to_redis()
+    logger.info(f"✅ Synced {count} templates")
+    return {"success": True, "count": count, "message": f"Synced {count} templates from files"}

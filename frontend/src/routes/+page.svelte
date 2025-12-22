@@ -276,8 +276,8 @@
 		for (const item of template.items) {
 			// Find matching product by name
 			const matchedProduct = products.find(p => 
-				p.product.toLowerCase().includes(item.product_name.toLowerCase()) ||
-				item.product_name.toLowerCase().includes(p.product.toLowerCase())
+				p.product.toLowerCase().includes(item.product.toLowerCase()) ||
+				item.product.toLowerCase().includes(p.product.toLowerCase())
 			);
 			
 			if (matchedProduct) {

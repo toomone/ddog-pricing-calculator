@@ -87,10 +87,10 @@ class SyncResponse(BaseModel):
     products_count: int
 
 
-# Template models - for example quote templates stored in Redis
+# Template models - for example quote templates stored in Redis/JSON files
 class TemplateItem(BaseModel):
     """Simplified item for templates - just product reference and quantity."""
-    product_name: str  # Product name to match
+    product: str  # Product name to match
     quantity: int
 
 
@@ -101,15 +101,7 @@ class Template(BaseModel):
     description: str
     icon: str  # Emoji icon like 🌐
     region: str = "us"
+    billing_type: str = "annually"
     items: list[TemplateItem]
     created_at: str
-
-
-class TemplateCreate(BaseModel):
-    """Request model for creating a template."""
-    name: str
-    description: str
-    icon: str
-    region: str = "us"
-    items: list[TemplateItem]
 

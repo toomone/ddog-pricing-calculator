@@ -77,7 +77,7 @@ export interface Allotment {
 }
 
 export interface TemplateItem {
-	product_name: string;
+	product: string;
 	quantity: number;
 }
 
@@ -87,6 +87,7 @@ export interface Template {
 	description: string;
 	icon: string;
 	region: string;
+	billing_type: string;
 	items: TemplateItem[];
 	created_at: string;
 }

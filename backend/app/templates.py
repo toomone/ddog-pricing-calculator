@@ -1,12 +1,11 @@
 """
 Template management for PriceHound.
-Handles storage and retrieval of quote templates from Redis.
+Handles storage and retrieval of quote templates from Redis and JSON files.
 """
 
 import json
-import uuid
 import logging
-from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 from .models import Template, TemplateItem
@@ -14,177 +13,133 @@ from .redis_client import get_redis, is_redis_available, RedisKeys
 
 logger = logging.getLogger("pricehound.templates")
 
-
-# Default templates to seed on startup
-DEFAULT_TEMPLATES = [
-    {
-        "id": "website-fullstack",
-        "name": "Full Stack Website",
-        "description": "Complete observability for a web application with frontend, backend, database, and logs",
-        "icon": "🌐",
-        "region": "us",
-        "items": [
-            {"product_name": "APM Hosts", "quantity": 2},
-            {"product_name": "Infrastructure Hosts", "quantity": 3},
-            {"product_name": "RUM Sessions", "quantity": 100000},
-            {"product_name": "Database Hosts", "quantity": 1},
-            {"product_name": "Logs Ingested", "quantity": 10},
-            {"product_name": "Logs Indexed (15-day Retention)", "quantity": 5},
-        ]
-    },
-    {
-        "id": "iot-infrastructure",
-        "name": "IoT Project",
-        "description": "Monitor IoT devices with metrics, logs, and incident management",
-        "icon": "📡",
-        "region": "us",
-        "items": [
-            {"product_name": "Custom Metrics", "quantity": 500},
-            {"product_name": "Infrastructure Hosts", "quantity": 5},
-            {"product_name": "Logs Ingested", "quantity": 50},
-            {"product_name": "Logs Indexed (3-day Retention)", "quantity": 10},
-            {"product_name": "Incident Management (Per User)", "quantity": 5},
-            {"product_name": "On-Call", "quantity": 5},
-        ]
-    },
-    {
-        "id": "kubernetes-aws",
-        "name": "Kubernetes on AWS",
-        "description": "Full K8s cluster monitoring with containers, cloud costs, and log management",
-        "icon": "☸️",
-        "region": "us",
-        "items": [
-            {"product_name": "Infrastructure Hosts", "quantity": 10},
-            {"product_name": "Containers", "quantity": 100},
-            {"product_name": "APM Hosts", "quantity": 5},
-            {"product_name": "Cloud Cost Management", "quantity": 1},
-            {"product_name": "Logs Ingested", "quantity": 100},
-            {"product_name": "Logs Indexed (7-day Retention)", "quantity": 30},
-        ]
-    }
-]
+# Directory paths
+DATA_DIR = Path(__file__).parent.parent / "data"
+TEMPLATES_DIR = DATA_DIR / "templates"
 
 
-def get_all_templates() -> list[Template]:
-    """Get all templates from Redis."""
+def load_templates_from_files() -> list[dict]:
+    """Load all template JSON files from the templates directory."""
+    templates = []
+    
+    if not TEMPLATES_DIR.exists():
+        logger.warning(f"Templates directory not found: {TEMPLATES_DIR}")
+        return templates
+    
+    for template_file in TEMPLATES_DIR.glob("template-*.json"):
+        try:
+            with open(template_file, 'r') as f:
+                template_data = json.load(f)
+                templates.append(template_data)
+                logger.debug(f"Loaded template from {template_file.name}")
+        except Exception as e:
+            logger.error(f"Failed to load template {template_file}: {e}")
+    
+    return templates
+
+
+def sync_templates_to_redis() -> int:
+    """Load templates from JSON files and sync to Redis. Returns count synced."""
     redis_client = get_redis()
     
     if not redis_client or not is_redis_available():
-        logger.warning("Redis not available, returning default templates")
-        return _get_default_templates()
+        logger.warning("Redis not available, cannot sync templates")
+        return 0
     
-    try:
-        # Get all template IDs from index
+    templates_data = load_templates_from_files()
+    count = 0
+    
+    for tmpl_data in templates_data:
+        try:
+            template_id = tmpl_data["id"]
+            
+            # Store template in Redis
+            redis_client.set_json(
+                RedisKeys.template(template_id),
+                tmpl_data
+            )
+            # Add to index
+            redis_client.add_to_index(RedisKeys.TEMPLATES_INDEX, template_id)
+            count += 1
+            logger.info(f"Synced template: {tmpl_data.get('name', template_id)}")
+            
+        except Exception as e:
+            logger.error(f"Failed to sync template {tmpl_data.get('name', 'unknown')}: {e}")
+    
+    return count
+
+
+def ensure_templates() -> tuple[bool, str, int]:
+    """Ensure templates exist in Redis, sync from files if needed."""
+    redis_client = get_redis()
+    
+    if redis_client and is_redis_available():
+        # Check if templates exist in Redis
         template_ids = redis_client.get_index(RedisKeys.TEMPLATES_INDEX)
         
         if not template_ids:
-            # No templates in Redis, seed defaults
-            logger.info("No templates found, seeding defaults...")
-            seed_default_templates()
+            # No templates in Redis, sync from files
+            logger.info("No templates in Redis, syncing from files...")
+            count = sync_templates_to_redis()
+            return True, f"Synced {count} templates from files to Redis", count
+        else:
+            return True, f"Found {len(template_ids)} templates in Redis", len(template_ids)
+    else:
+        # Redis not available, will use file fallback
+        templates = load_templates_from_files()
+        return True, f"Loaded {len(templates)} templates from files (Redis unavailable)", len(templates)
+
+
+def get_all_templates() -> list[Template]:
+    """Get all templates from Redis or files."""
+    redis_client = get_redis()
+    
+    if redis_client and is_redis_available():
+        try:
+            # Get all template IDs from index
             template_ids = redis_client.get_index(RedisKeys.TEMPLATES_INDEX)
-        
-        templates = []
-        for template_id in template_ids:
-            template_data = redis_client.get_json(RedisKeys.template(template_id))
-            if template_data:
-                templates.append(Template(**template_data))
-        
-        # Sort by name for consistent ordering
-        templates.sort(key=lambda t: t.name)
-        return templates
-        
-    except Exception as e:
-        logger.error(f"Failed to get templates from Redis: {e}")
-        return _get_default_templates()
+            
+            if not template_ids:
+                # No templates in Redis, sync from files first
+                sync_templates_to_redis()
+                template_ids = redis_client.get_index(RedisKeys.TEMPLATES_INDEX)
+            
+            templates = []
+            for template_id in template_ids:
+                template_data = redis_client.get_json(RedisKeys.template(template_id))
+                if template_data:
+                    templates.append(_dict_to_template(template_data))
+            
+            # Sort by name for consistent ordering
+            templates.sort(key=lambda t: t.name)
+            return templates
+            
+        except Exception as e:
+            logger.error(f"Failed to get templates from Redis: {e}")
+    
+    # Fallback to loading from files
+    logger.info("Loading templates from files (Redis fallback)")
+    return [_dict_to_template(t) for t in load_templates_from_files()]
 
 
 def get_template(template_id: str) -> Optional[Template]:
     """Get a single template by ID."""
     redis_client = get_redis()
     
-    if not redis_client or not is_redis_available():
-        # Return from defaults if Redis not available
-        for tmpl in DEFAULT_TEMPLATES:
-            if tmpl["id"] == template_id:
-                return _dict_to_template(tmpl)
-        return None
-    
-    try:
-        template_data = redis_client.get_json(RedisKeys.template(template_id))
-        if template_data:
-            return Template(**template_data)
-        return None
-    except Exception as e:
-        logger.error(f"Failed to get template {template_id}: {e}")
-        return None
-
-
-def create_template(
-    name: str,
-    description: str,
-    icon: str,
-    items: list[dict],
-    region: str = "us"
-) -> Template:
-    """Create a new template."""
-    redis_client = get_redis()
-    
-    template_id = str(uuid.uuid4())[:8]  # Short ID for templates
-    now = datetime.utcnow().isoformat()
-    
-    template = Template(
-        id=template_id,
-        name=name,
-        description=description,
-        icon=icon,
-        region=region,
-        items=[TemplateItem(**item) for item in items],
-        created_at=now
-    )
-    
     if redis_client and is_redis_available():
         try:
-            # Store template
-            redis_client.set_json(
-                RedisKeys.template(template_id),
-                template.model_dump()
-            )
-            # Add to index
-            redis_client.add_to_index(RedisKeys.TEMPLATES_INDEX, template_id)
-            logger.info(f"Created template: {name} ({template_id})")
+            template_data = redis_client.get_json(RedisKeys.template(template_id))
+            if template_data:
+                return _dict_to_template(template_data)
         except Exception as e:
-            logger.error(f"Failed to store template in Redis: {e}")
+            logger.error(f"Failed to get template {template_id} from Redis: {e}")
     
-    return template
-
-
-def seed_default_templates() -> int:
-    """Seed the default templates into Redis. Returns count of templates seeded."""
-    redis_client = get_redis()
+    # Fallback to files
+    for tmpl_data in load_templates_from_files():
+        if tmpl_data.get("id") == template_id:
+            return _dict_to_template(tmpl_data)
     
-    if not redis_client or not is_redis_available():
-        logger.warning("Redis not available, cannot seed templates")
-        return 0
-    
-    count = 0
-    for tmpl_data in DEFAULT_TEMPLATES:
-        try:
-            template = _dict_to_template(tmpl_data)
-            
-            # Store template
-            redis_client.set_json(
-                RedisKeys.template(template.id),
-                template.model_dump()
-            )
-            # Add to index
-            redis_client.add_to_index(RedisKeys.TEMPLATES_INDEX, template.id)
-            count += 1
-            logger.info(f"Seeded template: {template.name}")
-            
-        except Exception as e:
-            logger.error(f"Failed to seed template {tmpl_data.get('name')}: {e}")
-    
-    return count
+    return None
 
 
 def _dict_to_template(data: dict) -> Template:
@@ -192,15 +147,10 @@ def _dict_to_template(data: dict) -> Template:
     return Template(
         id=data["id"],
         name=data["name"],
-        description=data["description"],
-        icon=data["icon"],
+        description=data.get("description", ""),
+        icon=data.get("icon", "📋"),
         region=data.get("region", "us"),
-        items=[TemplateItem(**item) for item in data["items"]],
-        created_at=data.get("created_at", datetime.utcnow().isoformat())
+        billing_type=data.get("billing_type", "annually"),
+        items=[TemplateItem(**item) for item in data.get("items", [])],
+        created_at=data.get("created_at", "")
     )
-
-
-def _get_default_templates() -> list[Template]:
-    """Get default templates as Template objects."""
-    return [_dict_to_template(tmpl) for tmpl in DEFAULT_TEMPLATES]
-
