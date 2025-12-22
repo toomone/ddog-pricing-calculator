@@ -25,6 +25,15 @@
 	let regions: Record<string, Region> = {};
 	let allotments: Allotment[] = [];
 	let selectedRegion = 'us';
+	
+	// Region flags mapping
+	const regionFlags: Record<string, string> = {
+		'us': '🇺🇸',
+		'us1-fed': '🇺🇸',
+		'eu1': '🇪🇺',
+		'ap1': '🇯🇵',
+		'ap2': '🇦🇺'
+	};
 	let selectedPlan: 'Pro' | 'Enterprise' = 'Pro';
 	let lines: LineItem[] = [{ id: crypto.randomUUID(), product: null, quantity: 1 }];
 	let quoteName = '';
@@ -1029,7 +1038,7 @@
 						class="h-8 rounded-md border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-datadog-purple cursor-pointer"
 					>
 						{#each Object.entries(regions) as [id, region]}
-							<option value={id}>{region.name}</option>
+							<option value={id}>{regionFlags[id] || '🌍'} {region.name}</option>
 						{/each}
 					</select>
 				</div>
