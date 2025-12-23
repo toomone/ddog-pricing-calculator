@@ -1098,7 +1098,7 @@
 		<!-- Title and Tagline (centered) -->
 		<div class="text-center mb-6">
 			<div class="mb-2 inline-flex items-center gap-3">
-				<img src="/pricehound-logo.png" alt="PriceHound logo" class="h-12 w-12 rounded-xl shadow-lg shadow-datadog-purple/30" />
+				<img src="/pricehound-logo.png" alt="PriceHound logo" class="h-12 w-12" />
 				<h1 class="text-5xl font-bold tracking-tight">
 					<span class="text-datadog-purple">Price</span>Hound
 				</h1>
