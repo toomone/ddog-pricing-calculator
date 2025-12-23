@@ -162,12 +162,8 @@
 	<!-- Header -->
 	<header class="mb-8">
 		<div class="flex items-center gap-3">
-			<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-datadog-purple shadow-lg shadow-datadog-purple/25">
-				<svg class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-					<path d="M12.13 2C6.54 2 2 6.54 2 12.13c0 5.59 4.54 10.13 10.13 10.13 5.59 0 10.13-4.54 10.13-10.13C22.26 6.54 17.72 2 12.13 2zm5.41 14.35c-.31.31-.82.31-1.13 0l-3.07-3.07-1.17 1.17 3.07 3.07c.31.31.31.82 0 1.13-.31.31-.82.31-1.13 0l-3.07-3.07-1.93 1.93c-.31.31-.82.31-1.13 0-.31-.31-.31-.82 0-1.13l1.93-1.93-3.07-3.07c-.31-.31-.31-.82 0-1.13.31-.31.82-.31 1.13 0l3.07 3.07 1.17-1.17-3.07-3.07c-.31-.31-.31-.82 0-1.13.31-.31.82-.31 1.13 0l3.07 3.07 1.93-1.93c.31-.31.82-.31 1.13 0 .31.31.31.82 0 1.13l-1.93 1.93 3.07 3.07c.31.31.31.82 0 1.13z"/>
-				</svg>
-			</div>
-			<h1 class="text-2xl font-bold tracking-tight">Shared Quote</h1>
+			<img src="/pricehound-logo.png" alt="PriceHound logo" class="h-10 w-10 rounded-lg shadow-lg shadow-datadog-purple/25" />
+			<h1 class="text-3xl font-bold tracking-tight">Shared Quote</h1>
 		</div>
 	</header>
 
