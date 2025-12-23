@@ -14,6 +14,15 @@
 	let indexingPercentage = 15; // Percentage of logs to index
 	let retentionDays: 3 | 7 | 15 | 30 = 15;
 
+	// Additional options (collapsible)
+	let showAdditionalOptions = false;
+	let enableFlexStarter = false;
+	let enableFlexStorage = false;
+	let enableForwarding = false;
+	let flexStarterGB = 10; // GB per month
+	let flexStorageGB = 50; // GB per month
+	let forwardingGB = 20; // GB per month
+
 	// Use case presets
 	const useCasePresets = [
 		{ name: 'Minimal (Errors only)', percentage: 5, description: 'Index only errors and critical events' },
@@ -46,6 +55,11 @@
 		p.billing_unit.toLowerCase().includes(`${retentionDays}-day`)
 	);
 
+	// Additional products
+	$: flexStarterProduct = products.find(p => p.product === 'Flex Logs Starter');
+	$: flexStorageProduct = products.find(p => p.product === 'Flex Logs Storage');
+	$: forwardingProduct = products.find(p => p.product === 'Logs - Forwarding to Custom Destinations');
+
 	// Parse prices
 	function parsePrice(priceStr: string | null): number {
 		if (!priceStr) return 0;
@@ -55,16 +69,24 @@
 
 	$: ingestionPrice = parsePrice(ingestionProduct?.billed_annually);
 	$: indexedPrice = parsePrice(indexedProduct?.billed_annually);
+	$: flexStarterPrice = parsePrice(flexStarterProduct?.billed_annually);
+	$: flexStoragePrice = parsePrice(flexStorageProduct?.billed_annually);
+	$: forwardingPrice = parsePrice(forwardingProduct?.billed_annually);
 
 	// Calculate costs
 	$: ingestionCost = ingestedLogsGB * ingestionPrice;
 	$: indexedCost = indexedLogsInMillions * indexedPrice;
-	$: totalMonthlyCost = ingestionCost + indexedCost;
+	$: flexStarterCost = enableFlexStarter ? flexStarterGB * flexStarterPrice : 0;
+	$: flexStorageCost = enableFlexStorage ? flexStorageGB * flexStoragePrice : 0;
+	$: forwardingCost = enableForwarding ? forwardingGB * forwardingPrice : 0;
+	$: additionalCost = flexStarterCost + flexStorageCost + forwardingCost;
+	$: totalMonthlyCost = ingestionCost + indexedCost + additionalCost;
 	$: totalAnnualCost = totalMonthlyCost * 12;
 
 	// Cost breakdown percentages
 	$: ingestionCostPercent = totalMonthlyCost > 0 ? (ingestionCost / totalMonthlyCost) * 100 : 0;
 	$: indexedCostPercent = totalMonthlyCost > 0 ? (indexedCost / totalMonthlyCost) * 100 : 0;
+	$: additionalCostPercent = totalMonthlyCost > 0 ? (additionalCost / totalMonthlyCost) * 100 : 0;
 
 	function applyPreset(percentage: number) {
 		indexingPercentage = percentage;
@@ -79,6 +101,19 @@
 		
 		if (indexedProduct && indexedLogsInMillions > 0) {
 			items.push({ product: indexedProduct, quantity: Math.ceil(indexedLogsInMillions) });
+		}
+
+		// Additional products
+		if (enableFlexStarter && flexStarterProduct && flexStarterGB > 0) {
+			items.push({ product: flexStarterProduct, quantity: Math.ceil(flexStarterGB) });
+		}
+		
+		if (enableFlexStorage && flexStorageProduct && flexStorageGB > 0) {
+			items.push({ product: flexStorageProduct, quantity: Math.ceil(flexStorageGB) });
+		}
+		
+		if (enableForwarding && forwardingProduct && forwardingGB > 0) {
+			items.push({ product: forwardingProduct, quantity: Math.ceil(forwardingGB) });
 		}
 		
 		if (items.length > 0) {
@@ -194,6 +229,126 @@
 			</div>
 		</div>
 
+		<!-- Additional Options (Collapsible) -->
+		<div class="border border-border rounded-lg overflow-hidden">
+			<button
+				type="button"
+				class="w-full flex items-center justify-between p-4 text-left hover:bg-muted/50 transition-colors"
+				on:click={() => showAdditionalOptions = !showAdditionalOptions}
+			>
+				<div class="flex items-center gap-2">
+					<svg class="h-5 w-5 text-datadog-blue" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M12 5v14M5 12h14" />
+					</svg>
+					<span class="font-medium">Additional Log Options</span>
+					{#if enableFlexStarter || enableFlexStorage || enableForwarding}
+						<span class="text-xs bg-datadog-blue/10 text-datadog-blue px-2 py-0.5 rounded-full">
+							{[enableFlexStarter, enableFlexStorage, enableForwarding].filter(Boolean).length} selected
+						</span>
+					{/if}
+				</div>
+				<svg 
+					class="h-4 w-4 text-muted-foreground transition-transform {showAdditionalOptions ? 'rotate-180' : ''}" 
+					viewBox="0 0 24 24" 
+					fill="none" 
+					stroke="currentColor" 
+					stroke-width="2"
+				>
+					<path d="M6 9l6 6 6-6" />
+				</svg>
+			</button>
+			
+			{#if showAdditionalOptions}
+				<div class="p-4 pt-0 space-y-4 border-t border-border">
+					<p class="text-xs text-muted-foreground">Add Flex Logs for cost-effective long-term storage or forward logs to external destinations.</p>
+					
+					<!-- Flex Logs Starter -->
+					<div class="flex items-start gap-3 p-3 rounded-lg border {enableFlexStarter ? 'border-datadog-blue bg-datadog-blue/5' : 'border-border'}">
+						<input 
+							type="checkbox" 
+							id="flexStarter"
+							bind:checked={enableFlexStarter}
+							class="mt-1 h-4 w-4 rounded border-border accent-datadog-blue"
+						/>
+						<div class="flex-1 min-w-0">
+							<label for="flexStarter" class="font-medium text-sm cursor-pointer">Flex Logs Starter</label>
+							<p class="text-xs text-muted-foreground mt-0.5">Cost-effective compute for querying archived logs</p>
+							{#if enableFlexStarter}
+								<div class="mt-2 flex items-center gap-2">
+									<Input 
+										type="number" 
+										bind:value={flexStarterGB} 
+										min="1" 
+										class="w-24 font-mono text-sm"
+									/>
+									<span class="text-xs text-muted-foreground">GB/month</span>
+									{#if flexStarterPrice > 0}
+										<span class="text-xs text-datadog-blue ml-auto">{formatCurrency(flexStarterCost)}/mo</span>
+									{/if}
+								</div>
+							{/if}
+						</div>
+					</div>
+
+					<!-- Flex Logs Storage -->
+					<div class="flex items-start gap-3 p-3 rounded-lg border {enableFlexStorage ? 'border-datadog-blue bg-datadog-blue/5' : 'border-border'}">
+						<input 
+							type="checkbox" 
+							id="flexStorage"
+							bind:checked={enableFlexStorage}
+							class="mt-1 h-4 w-4 rounded border-border accent-datadog-blue"
+						/>
+						<div class="flex-1 min-w-0">
+							<label for="flexStorage" class="font-medium text-sm cursor-pointer">Flex Logs Storage</label>
+							<p class="text-xs text-muted-foreground mt-0.5">Long-term storage for compliance and historical analysis</p>
+							{#if enableFlexStorage}
+								<div class="mt-2 flex items-center gap-2">
+									<Input 
+										type="number" 
+										bind:value={flexStorageGB} 
+										min="1" 
+										class="w-24 font-mono text-sm"
+									/>
+									<span class="text-xs text-muted-foreground">GB/month</span>
+									{#if flexStoragePrice > 0}
+										<span class="text-xs text-datadog-blue ml-auto">{formatCurrency(flexStorageCost)}/mo</span>
+									{/if}
+								</div>
+							{/if}
+						</div>
+					</div>
+
+					<!-- Log Forwarding -->
+					<div class="flex items-start gap-3 p-3 rounded-lg border {enableForwarding ? 'border-datadog-orange bg-datadog-orange/5' : 'border-border'}">
+						<input 
+							type="checkbox" 
+							id="forwarding"
+							bind:checked={enableForwarding}
+							class="mt-1 h-4 w-4 rounded border-border accent-datadog-orange"
+						/>
+						<div class="flex-1 min-w-0">
+							<label for="forwarding" class="font-medium text-sm cursor-pointer">Logs Forwarding to Custom Destinations</label>
+							<p class="text-xs text-muted-foreground mt-0.5">Forward logs to S3, Azure, GCS, or other destinations</p>
+							{#if enableForwarding}
+								<div class="mt-2 flex items-center gap-2">
+									<Input 
+										type="number" 
+										bind:value={forwardingGB} 
+										min="1" 
+										class="w-24 font-mono text-sm"
+									/>
+									<span class="text-xs text-muted-foreground">GB/month</span>
+									{#if forwardingPrice > 0}
+										<span class="text-xs text-datadog-orange ml-auto">{formatCurrency(forwardingCost)}/mo</span>
+									{/if}
+								</div>
+							{/if}
+						</div>
+					</div>
+				</div>
+			{/if}
+		</div>
+
 		<!-- Results Section -->
 		<div class="rounded-xl border border-border bg-muted/30 p-5 space-y-4">
 			<h3 class="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Calculation Results</h3>
@@ -245,6 +400,43 @@
 					</div>
 				</div>
 
+				<!-- Additional Costs -->
+				{#if enableFlexStarter}
+					<div class="flex items-center justify-between py-2 border-b border-border">
+						<div class="flex items-center gap-2">
+							<div class="w-3 h-3 rounded bg-datadog-green"></div>
+							<span class="text-sm">Flex Logs Starter ({flexStarterGB} GB)</span>
+						</div>
+						<div class="text-right">
+							<span class="font-mono font-medium">{formatCurrency(flexStarterCost)}</span>
+						</div>
+					</div>
+				{/if}
+				
+				{#if enableFlexStorage}
+					<div class="flex items-center justify-between py-2 border-b border-border">
+						<div class="flex items-center gap-2">
+							<div class="w-3 h-3 rounded bg-datadog-green"></div>
+							<span class="text-sm">Flex Logs Storage ({flexStorageGB} GB)</span>
+						</div>
+						<div class="text-right">
+							<span class="font-mono font-medium">{formatCurrency(flexStorageCost)}</span>
+						</div>
+					</div>
+				{/if}
+				
+				{#if enableForwarding}
+					<div class="flex items-center justify-between py-2 border-b border-border">
+						<div class="flex items-center gap-2">
+							<div class="w-3 h-3 rounded bg-datadog-orange"></div>
+							<span class="text-sm">Log Forwarding ({forwardingGB} GB)</span>
+						</div>
+						<div class="text-right">
+							<span class="font-mono font-medium">{formatCurrency(forwardingCost)}</span>
+						</div>
+					</div>
+				{/if}
+
 				<!-- Total -->
 				<div class="flex items-center justify-between pt-2">
 					<span class="font-semibold">Total Monthly</span>
@@ -272,8 +464,15 @@
 						title="Indexed: {indexedCostPercent.toFixed(0)}%"
 					></div>
 				{/if}
+				{#if additionalCostPercent > 0}
+					<div 
+						class="bg-datadog-green transition-all duration-300" 
+						style="width: {additionalCostPercent}%"
+						title="Additional: {additionalCostPercent.toFixed(0)}%"
+					></div>
+				{/if}
 			</div>
-			<div class="flex justify-center gap-6 text-xs">
+			<div class="flex justify-center flex-wrap gap-4 text-xs">
 				<div class="flex items-center gap-1.5">
 					<div class="w-2.5 h-2.5 rounded bg-datadog-blue"></div>
 					<span>Ingestion</span>
@@ -282,6 +481,12 @@
 					<div class="w-2.5 h-2.5 rounded bg-datadog-purple"></div>
 					<span>Indexed</span>
 				</div>
+				{#if additionalCost > 0}
+					<div class="flex items-center gap-1.5">
+						<div class="w-2.5 h-2.5 rounded bg-datadog-green"></div>
+						<span>Flex/Forwarding</span>
+					</div>
+				{/if}
 			</div>
 		</div>
 
