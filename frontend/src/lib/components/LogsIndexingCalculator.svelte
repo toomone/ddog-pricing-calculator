@@ -2,6 +2,7 @@
 	import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
+	import { Badge } from '$lib/components/ui/badge';
 	import { formatCurrency, formatNumber } from '$lib/utils';
 	import type { Product } from '$lib/api';
 
@@ -272,7 +273,8 @@
 						/>
 						<div class="flex-1 min-w-0">
 							<label for="flexStarter" class="font-medium text-sm cursor-pointer">Flex Logs Starter</label>
-							<p class="text-xs text-muted-foreground mt-0.5">Cost-effective compute for querying archived logs. Adapted for users who ingest less than 1TB per day.</p>
+							<Badge variant="outline" class="ml-2 text-xs">Per 1M events stored (6, 12 or 15 months retention), per month</Badge>
+							<p class="text-xs text-muted-foreground mt-1">Cost-effective compute for querying archived logs. Adapted for users who ingest less than 1TB per day.</p>
 							{#if enableFlexStarter}
 								<div class="mt-2 flex items-center gap-2">
 									<Input 
@@ -300,7 +302,8 @@
 						/>
 						<div class="flex-1 min-w-0">
 							<label for="flexStorage" class="font-medium text-sm cursor-pointer">Flex Logs Storage</label>
-							<p class="text-xs text-muted-foreground mt-0.5">Long-term storage for compliance and historical analysis. + compute price, ask your Sales Rep.</p>
+							<Badge variant="outline" class="ml-2 text-xs">Per 1M events stored, per month</Badge>
+							<p class="text-xs text-muted-foreground mt-1">Long-term storage for compliance and historical analysis. + compute price, ask your Sales Rep.</p>
 							{#if enableFlexStorage}
 								<div class="mt-2 flex items-center gap-2">
 									<Input 
