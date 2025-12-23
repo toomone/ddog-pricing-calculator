@@ -8,6 +8,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { fetchQuote, verifyQuotePassword, type Quote } from '$lib/api';
 	import { formatCurrency, formatNumber } from '$lib/utils';
+	import ModeToggle from '$lib/components/ModeToggle.svelte';
 
 	let quote: Quote | null = null;
 	let loading = true;
@@ -161,9 +162,12 @@
 <div class="container mx-auto max-w-4xl px-4 py-8">
 	<!-- Header -->
 	<header class="mb-8">
-		<div class="flex items-center gap-3">
-			<img src="/pricehound-logo.png" alt="PriceHound logo" class="h-[60px] w-[60px]" />
-			<h1 class="text-3xl font-bold tracking-tight">Shared Quote</h1>
+		<div class="flex items-center justify-between">
+			<div class="flex items-center gap-3">
+				<img src="/pricehound-logo.png" alt="PriceHound logo" class="h-[60px] w-[60px]" />
+				<h1 class="text-3xl font-bold tracking-tight">Shared Quote</h1>
+			</div>
+			<ModeToggle />
 		</div>
 	</header>
 

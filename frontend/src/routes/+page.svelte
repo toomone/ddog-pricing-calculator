@@ -7,6 +7,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import QuoteLine from '$lib/components/QuoteLine.svelte';
 	import LogsIndexingCalculator from '$lib/components/LogsIndexingCalculator.svelte';
+	import ModeToggle from '$lib/components/ModeToggle.svelte';
 	import { fetchProducts, fetchMetadata, createQuote, updateQuote, fetchRegions, fetchAllotments, initAllotments, syncPricing, fetchTemplates, type Product, type PricingMetadata, type Region, type Allotment, type Template } from '$lib/api';
 	import { formatCurrency, parsePrice, formatNumber, isPercentagePrice, parsePercentage } from '$lib/utils';
 
@@ -1094,7 +1095,11 @@
 
 <div class="container mx-auto max-w-7xl px-4 py-8">
 	<!-- Header -->
-	<header class="mb-8">
+	<header class="mb-8 relative">
+		<!-- Theme Toggle (top right) -->
+		<div class="absolute top-0 right-0">
+			<ModeToggle />
+		</div>
 		<!-- Title and Tagline (centered) -->
 		<div class="text-center mb-6">
 			<div class="mb-2 inline-flex items-center gap-3">
