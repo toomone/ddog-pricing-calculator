@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fade, slide } from 'svelte/transition';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '$lib/components/ui/card';
@@ -1200,7 +1201,7 @@
 
 					<!-- Dropdown Menu -->
 					{#if shareMenuOpen}
-						<div class="absolute right-0 top-full mt-2 w-56 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
+						<div transition:fade={{ duration: 100 }} class="absolute right-0 top-full mt-2 w-56 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
 							<button
 								type="button"
 								class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
@@ -1272,20 +1273,20 @@
 
 	<!-- Alerts -->
 	{#if error}
-		<div class="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
+		<div transition:fade={{ duration: 200 }} class="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
 			{error}
 		</div>
 	{/if}
 
 	{#if success}
-		<div class="mb-6 rounded-lg border border-datadog-green/50 bg-datadog-green/10 p-4 text-datadog-green">
+		<div transition:fade={{ duration: 200 }} class="mb-6 rounded-lg border border-datadog-green/50 bg-datadog-green/10 p-4 text-datadog-green">
 			{success}
 		</div>
 	{/if}
 
 	<!-- Edit Mode Banner -->
 	{#if editingQuoteId}
-		<div class="mb-4 flex items-center gap-3 rounded-lg border border-datadog-green/50 bg-datadog-green/10 px-4 py-3">
+		<div transition:slide={{ duration: 200 }} class="mb-4 flex items-center gap-3 rounded-lg border border-datadog-green/50 bg-datadog-green/10 px-4 py-3">
 			<svg class="h-5 w-5 text-datadog-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 				<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
 				<path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -1306,7 +1307,7 @@
 
 	<!-- Share URL Display -->
 	{#if shareUrl}
-		<div class="mb-4 flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3">
+		<div transition:slide={{ duration: 200 }} class="mb-4 flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3">
 			<span class="text-sm text-muted-foreground">Public URL:</span>
 			<a 
 				href={shareUrl} 
@@ -1422,7 +1423,7 @@
 						</button>
 
 						{#if billingMenuOpen}
-							<div class="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
+							<div transition:fade={{ duration: 100 }} class="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
 								<button
 									type="button"
 									class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
@@ -1557,7 +1558,7 @@
 
 				<!-- Templates Dropdown -->
 				{#if templates.length > 0 && showTemplates}
-					<div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+					<div transition:slide={{ duration: 200 }} class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
 						{#each templates as template}
 							<button
 								type="button"
@@ -1737,6 +1738,7 @@
 {#if importModalOpen}
 	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 	<div 
+		transition:fade={{ duration: 150 }}
 		class="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm"
 		on:click|self={() => importModalOpen = false}
 		on:keydown={(e) => e.key === 'Escape' && (importModalOpen = false)}
@@ -1744,7 +1746,7 @@
 		aria-modal="true"
 		tabindex="-1"
 	>
-		<div class="relative w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl">
+		<div transition:fade={{ duration: 150, delay: 50 }} class="relative w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl">
 			<!-- Close Button -->
 			<button
 				type="button"
@@ -1837,6 +1839,7 @@
 {#if saveModalOpen}
 	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 	<div 
+		transition:fade={{ duration: 150 }}
 		class="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm"
 		on:click|self={() => saveModalOpen = false}
 		on:keydown={(e) => e.key === 'Escape' && (saveModalOpen = false)}
@@ -1844,7 +1847,7 @@
 		aria-modal="true"
 		tabindex="-1"
 	>
-		<div class="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl">
+		<div transition:fade={{ duration: 150, delay: 50 }} class="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl">
 			<!-- Close Button -->
 			<button
 				type="button"

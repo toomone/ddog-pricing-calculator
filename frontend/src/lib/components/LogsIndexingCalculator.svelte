@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { slide } from 'svelte/transition';
 	import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -260,7 +261,7 @@
 			</button>
 			
 			{#if showAdditionalOptions}
-				<div class="p-4 pt-0 space-y-4 border-t border-border">
+				<div transition:slide={{ duration: 200 }} class="p-4 pt-0 space-y-4 border-t border-border">
 					<p class="text-xs text-muted-foreground">Add Flex Logs for cost-effective long-term storage or forward logs to external destinations.</p>
 					
 					<!-- Flex Logs Starter -->

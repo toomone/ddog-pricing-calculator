@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '$lib/components/ui/card';
@@ -372,7 +373,7 @@
 					</Button>
 					
 					{#if tierMenuOpen}
-						<div class="absolute left-0 top-full mt-2 w-48 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
+						<div transition:fade={{ duration: 100 }} class="absolute left-0 top-full mt-2 w-48 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
 							<button
 								type="button"
 								class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
@@ -473,6 +474,7 @@
 {#if passwordModalOpen}
 	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 	<div 
+		transition:fade={{ duration: 150 }}
 		class="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm"
 		on:click|self={() => passwordModalOpen = false}
 		on:keydown={(e) => e.key === 'Escape' && (passwordModalOpen = false)}
@@ -480,7 +482,7 @@
 		aria-modal="true"
 		tabindex="-1"
 	>
-		<div class="relative w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl">
+		<div transition:fade={{ duration: 150, delay: 50 }} class="relative w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl">
 			<!-- Close Button -->
 			<button
 				type="button"
