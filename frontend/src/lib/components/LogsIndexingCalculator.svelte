@@ -300,7 +300,7 @@
 						/>
 						<div class="flex-1 min-w-0">
 							<label for="flexStorage" class="font-medium text-sm cursor-pointer">Flex Logs Storage</label>
-							<p class="text-xs text-muted-foreground mt-0.5">Long-term storage for compliance and historical analysis</p>
+							<p class="text-xs text-muted-foreground mt-0.5">Long-term storage for compliance and historical analysis. + compute price, ask your Sales Rep.</p>
 							{#if enableFlexStorage}
 								<div class="mt-2 flex items-center gap-2">
 									<Input 
