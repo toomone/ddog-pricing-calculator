@@ -162,7 +162,7 @@
 	<!-- Header -->
 	<header class="mb-8">
 		<div class="flex items-center gap-3">
-			<img src="/pricehound-logo.png" alt="PriceHound logo" class="h-10 w-10" />
+			<img src="/pricehound-logo.png" alt="PriceHound logo" class="h-[60px] w-[60px]" />
 			<h1 class="text-3xl font-bold tracking-tight">Shared Quote</h1>
 		</div>
 	</header>
