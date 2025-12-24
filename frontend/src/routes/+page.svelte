@@ -1639,45 +1639,43 @@
 					{#each groupedLines.sortedCategories as category (category)}
 						{@const categoryLines = groupedLines.groups[category]}
 						{#if categoryLines.length > 1}
-							<!-- Multiple products in same category: show grouped -->
-							<div 
-								class="rounded-xl border border-border/30 bg-muted/20 p-3 space-y-3"
-								in:fly={{ y: -20, duration: 200 }}
-							>
-								<div class="flex items-center gap-2 px-1">
-									<span class="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{category}</span>
-									<span class="text-xs text-muted-foreground/60">({categoryLines.length} products)</span>
-								</div>
-								{#each categoryLines as line, index (line.id)}
-									{@const lineAllotments = lines.filter(l => l.isAllotment && l.parentLineId === line.id).map(l => ({
-										product: l.product,
-										includedQuantity: l.includedQuantity || 0,
-										allotmentInfo: l.allotmentInfo || null
-									}))}
-									<div
-										out:fade={{ duration: 150 }}
-										animate:flip={{ duration: 200 }}
-									>
-										<QuoteLine
-											products={filteredProducts}
-											{index}
-											{showAnnual}
-											{showMonthly}
-											{showOnDemand}
-											selectedProduct={line.product}
-											quantity={line.quantity}
-											isAllotment={false}
-											includedQuantity={0}
-											allotmentInfo={null}
-											totalAllottedForProduct={getTotalAllottedForProduct(line.product?.product)}
-											{lineAllotments}
-											hideCategory={true}
-											on:update={(e) => updateLine(line.id, e.detail.product, e.detail.quantity)}
-											on:remove={() => removeLine(line.id)}
-										/>
+							<!-- Multiple products in same category: connected with thin lines -->
+							{#each categoryLines as line, index (line.id)}
+								{@const lineAllotments = lines.filter(l => l.isAllotment && l.parentLineId === line.id).map(l => ({
+									product: l.product,
+									includedQuantity: l.includedQuantity || 0,
+									allotmentInfo: l.allotmentInfo || null
+								}))}
+								{#if index > 0}
+									<!-- Thin connecting line between grouped products -->
+									<div class="flex items-center gap-2 -my-2 ml-4">
+										<div class="h-px flex-1 bg-border/50"></div>
 									</div>
-								{/each}
-							</div>
+								{/if}
+								<div
+									in:fly={{ y: -20, duration: 200 }}
+									out:fade={{ duration: 150 }}
+									animate:flip={{ duration: 200 }}
+								>
+									<QuoteLine
+										products={filteredProducts}
+										{index}
+										{showAnnual}
+										{showMonthly}
+										{showOnDemand}
+										selectedProduct={line.product}
+										quantity={line.quantity}
+										isAllotment={false}
+										includedQuantity={0}
+										allotmentInfo={null}
+										totalAllottedForProduct={getTotalAllottedForProduct(line.product?.product)}
+										{lineAllotments}
+										hideCategory={index > 0}
+										on:update={(e) => updateLine(line.id, e.detail.product, e.detail.quantity)}
+										on:remove={() => removeLine(line.id)}
+									/>
+								</div>
+							{/each}
 						{:else}
 							<!-- Single product in category: show normally with category label -->
 							{#each categoryLines as line, index (line.id)}
