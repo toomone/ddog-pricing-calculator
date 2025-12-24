@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '$lib/components/ui/card';
@@ -8,6 +9,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { fetchQuote, verifyQuotePassword, type Quote } from '$lib/api';
 	import { formatCurrency, formatNumber } from '$lib/utils';
+	import ModeToggle from '$lib/components/ModeToggle.svelte';
 
 	let quote: Quote | null = null;
 	let loading = true;
@@ -161,13 +163,12 @@
 <div class="container mx-auto max-w-4xl px-4 py-8">
 	<!-- Header -->
 	<header class="mb-8">
-		<div class="flex items-center gap-3">
-			<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-datadog-purple shadow-lg shadow-datadog-purple/25">
-				<svg class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-					<path d="M12.13 2C6.54 2 2 6.54 2 12.13c0 5.59 4.54 10.13 10.13 10.13 5.59 0 10.13-4.54 10.13-10.13C22.26 6.54 17.72 2 12.13 2zm5.41 14.35c-.31.31-.82.31-1.13 0l-3.07-3.07-1.17 1.17 3.07 3.07c.31.31.31.82 0 1.13-.31.31-.82.31-1.13 0l-3.07-3.07-1.93 1.93c-.31.31-.82.31-1.13 0-.31-.31-.31-.82 0-1.13l1.93-1.93-3.07-3.07c-.31-.31-.31-.82 0-1.13.31-.31.82-.31 1.13 0l3.07 3.07 1.17-1.17-3.07-3.07c-.31-.31-.31-.82 0-1.13.31-.31.82-.31 1.13 0l3.07 3.07 1.93-1.93c.31-.31.82-.31 1.13 0 .31.31.31.82 0 1.13l-1.93 1.93 3.07 3.07c.31.31.31.82 0 1.13z"/>
-				</svg>
+		<div class="flex items-center justify-between">
+			<div class="flex items-center gap-3">
+				<img src="/pricehound-logo.png" alt="PriceHound logo" class="h-[60px] w-[60px]" />
+				<h1 class="text-3xl font-bold tracking-tight">Shared Quote</h1>
 			</div>
-			<h1 class="text-2xl font-bold tracking-tight">Shared Quote</h1>
+			<ModeToggle />
 		</div>
 	</header>
 
@@ -372,7 +373,7 @@
 					</Button>
 					
 					{#if tierMenuOpen}
-						<div class="absolute left-0 top-full mt-2 w-48 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
+						<div transition:fade={{ duration: 100 }} class="absolute left-0 top-full mt-2 w-48 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
 							<button
 								type="button"
 								class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
@@ -473,6 +474,7 @@
 {#if passwordModalOpen}
 	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 	<div 
+		transition:fade={{ duration: 150 }}
 		class="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm"
 		on:click|self={() => passwordModalOpen = false}
 		on:keydown={(e) => e.key === 'Escape' && (passwordModalOpen = false)}
@@ -480,7 +482,7 @@
 		aria-modal="true"
 		tabindex="-1"
 	>
-		<div class="relative w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl">
+		<div transition:fade={{ duration: 150, delay: 50 }} class="relative w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl">
 			<!-- Close Button -->
 			<button
 				type="button"

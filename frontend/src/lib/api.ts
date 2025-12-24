@@ -76,6 +76,21 @@ export interface Allotment {
 	allotted_product_id?: string;
 }
 
+export interface TemplateItem {
+	product: string;
+	quantity: number;
+}
+
+export interface Template {
+	id: string;
+	name: string;
+	description: string;
+	region: string;
+	billing_type: string;
+	items: TemplateItem[];
+	created_at: string;
+}
+
 export async function fetchRegions(): Promise<Record<string, Region>> {
 	const response = await fetch(`${API_BASE}/regions`);
 	if (!response.ok) throw new Error('Failed to fetch regions');
@@ -186,6 +201,18 @@ export async function fetchProductAllotments(productName: string): Promise<Allot
 export async function initAllotments(): Promise<{ success: boolean; message: string }> {
 	const response = await fetch(`${API_BASE}/allotments/init`, { method: 'POST' });
 	if (!response.ok) throw new Error('Failed to initialize allotments');
+	return response.json();
+}
+
+export async function fetchTemplates(): Promise<Template[]> {
+	const response = await fetch(`${API_BASE}/templates`);
+	if (!response.ok) throw new Error('Failed to fetch templates');
+	return response.json();
+}
+
+export async function fetchTemplate(templateId: string): Promise<Template> {
+	const response = await fetch(`${API_BASE}/templates/${templateId}`);
+	if (!response.ok) throw new Error('Template not found');
 	return response.json();
 }
 

@@ -23,6 +23,8 @@ class RedisKeys:
     ALLOTMENTS_MANUAL = "allotments:manual"
     QUOTE = "quote:{quote_id}"
     QUOTES_INDEX = "quotes:index"
+    TEMPLATE = "template:{template_id}"
+    TEMPLATES_INDEX = "templates:index"
     
     @staticmethod
     def pricing(region: str) -> str:
@@ -35,6 +37,10 @@ class RedisKeys:
     @staticmethod
     def quote(quote_id: str) -> str:
         return f"quote:{quote_id}"
+    
+    @staticmethod
+    def template(template_id: str) -> str:
+        return f"template:{template_id}"
 
 
 class RedisClient:

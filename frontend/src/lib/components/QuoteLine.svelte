@@ -136,7 +136,7 @@
 			<div class="flex gap-2" style="width: {visibleColumns * 110}px;">
 				{#if showAnnual}
 					<div class="flex-1 text-center min-w-[100px]">
-						<label class="mb-1.5 block text-xs font-medium text-datadog-green">Annually</label>
+						<span class="mb-1.5 block text-xs font-medium text-datadog-green">Annually</span>
 						<div class="rounded-lg bg-datadog-green/10 border border-datadog-green/20 px-2 py-2">
 							<div class="font-mono text-sm font-semibold text-datadog-green truncate">
 								{#if !selectedProduct}
@@ -162,7 +162,7 @@
 
 				{#if showMonthly}
 					<div class="flex-1 text-center min-w-[100px]">
-						<label class="mb-1.5 block text-xs font-medium text-datadog-blue">Monthly</label>
+						<span class="mb-1.5 block text-xs font-medium text-datadog-blue">Monthly</span>
 						<div class="rounded-lg bg-datadog-blue/10 border border-datadog-blue/20 px-2 py-2">
 							<div class="font-mono text-sm font-semibold text-datadog-blue truncate">
 								{#if !selectedProduct}
@@ -188,7 +188,7 @@
 
 				{#if showOnDemand}
 					<div class="flex-1 text-center min-w-[100px]">
-						<label class="mb-1.5 block text-xs font-medium text-datadog-orange">On-Demand</label>
+						<span class="mb-1.5 block text-xs font-medium text-datadog-orange">On-Demand</span>
 						<div class="rounded-lg bg-datadog-orange/10 border border-datadog-orange/20 px-2 py-2">
 							<div class="font-mono text-sm font-semibold text-datadog-orange truncate">
 								{#if !selectedProduct}

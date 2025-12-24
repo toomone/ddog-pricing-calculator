@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fade, slide, fly } from 'svelte/transition';
+	import { flip } from 'svelte/animate';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '$lib/components/ui/card';
@@ -7,7 +9,8 @@
 	import { Input } from '$lib/components/ui/input';
 	import QuoteLine from '$lib/components/QuoteLine.svelte';
 	import LogsIndexingCalculator from '$lib/components/LogsIndexingCalculator.svelte';
-	import { fetchProducts, fetchMetadata, createQuote, updateQuote, fetchRegions, fetchAllotments, initAllotments, syncPricing, type Product, type PricingMetadata, type Region, type Allotment } from '$lib/api';
+	import ModeToggle from '$lib/components/ModeToggle.svelte';
+	import { fetchProducts, fetchMetadata, createQuote, updateQuote, fetchQuote, verifyQuotePassword, fetchRegions, fetchAllotments, initAllotments, syncPricing, fetchTemplates, type Product, type PricingMetadata, type Region, type Allotment, type Template } from '$lib/api';
 	import { formatCurrency, parsePrice, formatNumber, isPercentagePrice, parsePercentage } from '$lib/utils';
 
 	interface LineItem {
@@ -58,6 +61,14 @@
 	let editingQuoteId: string | null = null;
 	let editQuotePassword: string | null = null;
 	
+	// Edit mode password modal (for loading from URL)
+	let editPasswordModalOpen = false;
+	let editPasswordInput = '';
+	let editPasswordError = '';
+	let pendingEditQuoteId: string | null = null;
+	let pendingEditQuote: any = null;
+	let verifyingEditPassword = false;
+	
 	// Billing visibility toggles
 	let showAnnual = true;
 	let showMonthly = true;
@@ -65,6 +76,11 @@
 	
 	// Tools visibility
 	let showLogsCalculator = false;
+	
+	// Templates
+	let templates: Template[] = [];
+	let showTemplates = false;
+	let loadingTemplates = false;
 	
 	// Filter products based on selected plan (show selected plan + "All" products)
 	// Products without a plan field are treated as "All" (available to all plans)
@@ -199,6 +215,24 @@
 		await loadRegions();
 		await loadAllotments();
 		await loadProducts();
+		await loadTemplates();
+		
+		// Check for edit parameter (editing existing quote)
+		const editParam = $page.url.searchParams.get('edit');
+		if (editParam) {
+			// Try to parse as JSON (legacy format from quote page redirect)
+			try {
+				const editData = JSON.parse(decodeURIComponent(editParam));
+				await loadEditQuote(editData);
+				// Update URL to simple format (bookmarkable)
+				goto(`/?edit=${editData.quoteId}`, { replaceState: true });
+				return;
+			} catch (e) {
+				// Not JSON, treat as simple quote ID (bookmarkable URL)
+				await loadEditFromQuoteId(editParam);
+				return;
+			}
+		}
 		
 		// Check for edit parameter (editing existing quote)
 		const editParam = $page.url.searchParams.get('edit');
@@ -239,6 +273,93 @@
 		} catch (e) {
 			console.error('Failed to load allotments:', e);
 		}
+	}
+
+	async function loadTemplates() {
+		loadingTemplates = true;
+		try {
+			templates = await fetchTemplates();
+		} catch (e) {
+			console.error('Failed to load templates:', e);
+		} finally {
+			loadingTemplates = false;
+		}
+	}
+
+	async function applyTemplate(template: Template) {
+		// Keep existing lines and append template items
+		
+		// Change region if different
+		if (template.region !== selectedRegion) {
+			selectedRegion = template.region;
+			await loadProducts();
+		}
+		
+		// Map template items to lines
+		const newLines: LineItem[] = [];
+		for (const item of template.items) {
+			// Find matching product by name
+			const matchedProduct = products.find(p => 
+				p.product.toLowerCase().includes(item.product.toLowerCase()) ||
+				item.product.toLowerCase().includes(p.product.toLowerCase())
+			);
+			
+			if (matchedProduct) {
+				const lineId = crypto.randomUUID();
+				newLines.push({
+					id: lineId,
+					product: matchedProduct,
+					quantity: item.quantity
+				});
+				
+				// Find and add allotments for this product
+				const productAllotmentsRaw = allotments.filter(a => 
+					a.parent_product_id === matchedProduct.id
+				);
+				const seenAllotments = new Set<string>();
+				const productAllotments = productAllotmentsRaw.filter(a => {
+					const key = a.allotted_product;
+					if (seenAllotments.has(key)) return false;
+					seenAllotments.add(key);
+					return true;
+				});
+				
+				for (const allotment of productAllotments) {
+					const allottedProduct = products.find(p => 
+						p.id === allotment.allotted_product_id
+					) || products.find(p =>
+						p.product.toLowerCase().includes(allotment.allotted_product.toLowerCase())
+					);
+					
+					if (allottedProduct) {
+						const includedQty = allotment.quantity_per_parent * item.quantity;
+						newLines.push({
+							id: crypto.randomUUID(),
+							product: allottedProduct,
+							quantity: includedQty,
+							isAllotment: true,
+							parentLineId: lineId,
+							allotmentInfo: allotment,
+							includedQuantity: includedQty
+						});
+					}
+				}
+			}
+		}
+		
+		if (newLines.length > 0) {
+			// Filter out empty lines (no product selected) before appending
+			const existingValidLines = lines.filter(l => l.product !== null);
+			lines = [...existingValidLines, ...newLines];
+			success = `Added ${newLines.length} products from "${template.name}"`;
+			setTimeout(() => success = '', 3000);
+		} else {
+			error = 'Could not match any products from the template';
+			setTimeout(() => error = '', 5000);
+		}
+		
+		// Collapse templates section after applying
+		showTemplates = false;
 	}
 
 	async function loadClonedQuote(cloneData: { name: string; items: { id?: string; product: string; quantity: number }[] }) {
@@ -310,6 +431,103 @@
 			success = 'Editing quote. Make your changes and save.';
 			setTimeout(() => success = '', 5000);
 		}
+	}
+
+	async function loadEditFromQuoteId(quoteId: string) {
+		// Fetch the quote from API
+		try {
+			const quote = await fetchQuote(quoteId);
+			
+			if (quote.is_protected) {
+				// Quote is protected, show password modal
+				pendingEditQuoteId = quoteId;
+				pendingEditQuote = quote;
+				editPasswordModalOpen = true;
+			} else {
+				// Not protected, load directly
+				await loadQuoteIntoEditor(quote, null);
+			}
+		} catch (e) {
+			console.error('Failed to fetch quote:', e);
+			error = 'Quote not found or could not be loaded.';
+			setTimeout(() => error = '', 5000);
+			goto('/', { replaceState: true });
+		}
+	}
+
+	async function loadQuoteIntoEditor(quote: any, password: string | null) {
+		editingQuoteId = quote.id;
+		editQuotePassword = password;
+		quoteName = quote.name || '';
+		
+		// Set region
+		if (quote.region && quote.region !== selectedRegion) {
+			selectedRegion = quote.region;
+			await loadProducts();
+		}
+		
+		// Map items to lines
+		const newLines: LineItem[] = [];
+		for (const item of quote.items) {
+			let matchedProduct = item.id 
+				? products.find(p => p.id === item.id)
+				: null;
+			
+			if (!matchedProduct) {
+				matchedProduct = products.find(p => p.product === item.product);
+			}
+			
+			if (matchedProduct) {
+				newLines.push({
+					id: crypto.randomUUID(),
+					product: matchedProduct,
+					quantity: item.quantity
+				});
+			}
+		}
+		
+		if (newLines.length > 0) {
+			lines = newLines;
+			success = 'Editing quote. Make your changes and save.';
+			setTimeout(() => success = '', 5000);
+		}
+		
+		// Set the share URL
+		shareUrl = `${window.location.origin}/quote/${quote.id}`;
+	}
+
+	async function verifyAndLoadEditQuote() {
+		if (!pendingEditQuoteId || !pendingEditQuote) return;
+		
+		verifyingEditPassword = true;
+		editPasswordError = '';
+		
+		try {
+			const isValid = await verifyQuotePassword(pendingEditQuoteId, editPasswordInput);
+			
+			if (isValid) {
+				await loadQuoteIntoEditor(pendingEditQuote, editPasswordInput);
+				editPasswordModalOpen = false;
+				editPasswordInput = '';
+				pendingEditQuoteId = null;
+				pendingEditQuote = null;
+			} else {
+				editPasswordError = 'Incorrect password';
+			}
+		} catch (e) {
+			editPasswordError = 'Failed to verify password';
+		} finally {
+			verifyingEditPassword = false;
+		}
+	}
+
+	function cancelEditPasswordModal() {
+		editPasswordModalOpen = false;
+		editPasswordInput = '';
+		editPasswordError = '';
+		pendingEditQuoteId = null;
+		pendingEditQuote = null;
+		goto('/', { replaceState: true });
 	}
 
 	async function loadRegions() {
@@ -1001,16 +1219,16 @@
 
 <div class="container mx-auto max-w-7xl px-4 py-8">
 	<!-- Header -->
-	<header class="mb-8">
+	<header class="mb-8 relative">
+		<!-- Theme Toggle (top right) -->
+		<div class="absolute top-0 right-0">
+			<ModeToggle />
+		</div>
 		<!-- Title and Tagline (centered) -->
 		<div class="text-center mb-6">
 			<div class="mb-2 inline-flex items-center gap-3">
-				<div class="flex h-12 w-12 items-center justify-center rounded-xl bg-datadog-purple shadow-lg shadow-datadog-purple/30">
-					<svg class="h-7 w-7 text-white" viewBox="0 0 24 24" fill="currentColor">
-						<path d="M12.13 2C6.54 2 2 6.54 2 12.13c0 5.59 4.54 10.13 10.13 10.13 5.59 0 10.13-4.54 10.13-10.13C22.26 6.54 17.72 2 12.13 2zm5.41 14.35c-.31.31-.82.31-1.13 0l-3.07-3.07-1.17 1.17 3.07 3.07c.31.31.31.82 0 1.13-.31.31-.82.31-1.13 0l-3.07-3.07-1.93 1.93c-.31.31-.82.31-1.13 0-.31-.31-.31-.82 0-1.13l1.93-1.93-3.07-3.07c-.31-.31-.31-.82 0-1.13.31-.31.82-.31 1.13 0l3.07 3.07 1.17-1.17-3.07-3.07c-.31-.31-.31-.82 0-1.13.31-.31.82-.31 1.13 0l3.07 3.07 1.93-1.93c.31-.31.82-.31 1.13 0 .31.31.31.82 0 1.13l-1.93 1.93 3.07 3.07c.31.31.31.82 0 1.13z"/>
-					</svg>
-				</div>
-				<h1 class="text-4xl font-bold tracking-tight">
+				<img src="/pricehound-logo.png" alt="PriceHound logo" class="h-[68px] w-[68px]" />
+				<h1 class="text-5xl font-bold tracking-tight">
 					<span class="text-datadog-purple">Price</span>Hound
 				</h1>
 			</div>
@@ -1106,7 +1324,7 @@
 
 					<!-- Dropdown Menu -->
 					{#if shareMenuOpen}
-						<div class="absolute right-0 top-full mt-2 w-56 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
+						<div transition:fade={{ duration: 100 }} class="absolute right-0 top-full mt-2 w-56 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
 							<button
 								type="button"
 								class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
@@ -1178,20 +1396,20 @@
 
 	<!-- Alerts -->
 	{#if error}
-		<div class="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
+		<div transition:fade={{ duration: 200 }} class="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
 			{error}
 		</div>
 	{/if}
 
 	{#if success}
-		<div class="mb-6 rounded-lg border border-datadog-green/50 bg-datadog-green/10 p-4 text-datadog-green">
+		<div transition:fade={{ duration: 200 }} class="mb-6 rounded-lg border border-datadog-green/50 bg-datadog-green/10 p-4 text-datadog-green">
 			{success}
 		</div>
 	{/if}
 
 	<!-- Edit Mode Banner -->
 	{#if editingQuoteId}
-		<div class="mb-4 flex items-center gap-3 rounded-lg border border-datadog-green/50 bg-datadog-green/10 px-4 py-3">
+		<div transition:slide={{ duration: 200 }} class="mb-4 flex items-center gap-3 rounded-lg border border-datadog-green/50 bg-datadog-green/10 px-4 py-3">
 			<svg class="h-5 w-5 text-datadog-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 				<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
 				<path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -1212,7 +1430,7 @@
 
 	<!-- Share URL Display -->
 	{#if shareUrl}
-		<div class="mb-4 flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3">
+		<div transition:slide={{ duration: 200 }} class="mb-4 flex items-center gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3">
 			<span class="text-sm text-muted-foreground">Public URL:</span>
 			<a 
 				href={shareUrl} 
@@ -1275,7 +1493,7 @@
 								on:click={() => editingQuoteName = true}
 							>
 								<CardTitle class="group-hover:text-datadog-purple transition-colors">
-									{quoteName || 'Quote Items'}
+									{quoteName || 'Quote for your project'}
 								</CardTitle>
 								<svg class="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 									<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
@@ -1328,7 +1546,7 @@
 						</button>
 
 						{#if billingMenuOpen}
-							<div class="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
+							<div transition:fade={{ duration: 100 }} class="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
 								<button
 									type="button"
 									class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
@@ -1392,39 +1610,65 @@
 							includedQuantity: l.includedQuantity || 0,
 							allotmentInfo: l.allotmentInfo || null
 						}))}
-						<QuoteLine
-							products={filteredProducts}
-							{index}
-							{showAnnual}
-							{showMonthly}
-							{showOnDemand}
-							selectedProduct={line.product}
-							quantity={line.quantity}
-							isAllotment={false}
-							includedQuantity={0}
-							allotmentInfo={null}
-							totalAllottedForProduct={getTotalAllottedForProduct(line.product?.product)}
-							{lineAllotments}
-							on:update={(e) => updateLine(line.id, e.detail.product, e.detail.quantity)}
-							on:remove={() => removeLine(line.id)}
-						/>
+						<div
+							in:fly={{ y: -20, duration: 200 }}
+							out:fade={{ duration: 150 }}
+							animate:flip={{ duration: 200 }}
+						>
+							<QuoteLine
+								products={filteredProducts}
+								{index}
+								{showAnnual}
+								{showMonthly}
+								{showOnDemand}
+								selectedProduct={line.product}
+								quantity={line.quantity}
+								isAllotment={false}
+								includedQuantity={0}
+								allotmentInfo={null}
+								totalAllottedForProduct={getTotalAllottedForProduct(line.product?.product)}
+								{lineAllotments}
+								on:update={(e) => updateLine(line.id, e.detail.product, e.detail.quantity)}
+								on:remove={() => removeLine(line.id)}
+							/>
+						</div>
 					{/each}
 				</div>
 
-				<div class="mt-4 inline-flex w-full rounded-lg border-2 border-dashed border-border hover:border-foreground/30 transition-all">
+				<div class="mt-4 flex flex-wrap items-center gap-3">
+					<div class="inline-flex rounded-lg border border-border overflow-hidden">
+						<button
+							type="button"
+							class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-muted"
+							on:click={addLine}
+						>
+							<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+								<path d="M12 5v14M5 12h14" />
+							</svg>
+							Add Product
+						</button>
+						{#if templates.length > 0}
+							<button
+								type="button"
+								class="inline-flex items-center gap-1 px-3 py-2.5 text-sm text-muted-foreground hover:text-datadog-purple hover:bg-muted border-l border-border transition-colors"
+								on:click={() => showTemplates = !showTemplates}
+							>
+								<span>or stack example</span>
+								<svg 
+									class="h-3 w-3 transition-transform {showTemplates ? 'rotate-180' : ''}" 
+									viewBox="0 0 24 24" 
+									fill="none" 
+									stroke="currentColor" 
+									stroke-width="2"
+								>
+									<path d="M6 9l6 6 6-6" />
+								</svg>
+							</button>
+						{/if}
+					</div>
 					<button
 						type="button"
-						class="flex-1 inline-flex items-center justify-center gap-2 py-5 text-sm font-semibold transition-colors hover:bg-muted rounded-l-md"
-						on:click={addLine}
-					>
-						<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-							<path d="M12 5v14M5 12h14" />
-						</svg>
-						Add Product
-					</button>
-					<button
-						type="button"
-						class="inline-flex items-center justify-center gap-2 px-3 py-3 text-xs font-medium transition-colors border-l-2 border-dashed border-border rounded-r-md {showLogsCalculator ? 'bg-datadog-purple text-white hover:bg-datadog-purple/90' : 'hover:bg-muted'}"
+						class="ml-auto inline-flex items-center gap-2 px-3 py-2.5 text-xs font-medium rounded-lg border border-border transition-colors {showLogsCalculator ? 'bg-datadog-purple text-white hover:bg-datadog-purple/90' : 'hover:bg-muted'}"
 						on:click={() => showLogsCalculator = !showLogsCalculator}
 						title="Log Indexing Estimator"
 					>
@@ -1440,6 +1684,22 @@
 						</span>
 					</button>
 				</div>
+
+				<!-- Templates Dropdown -->
+				{#if templates.length > 0 && showTemplates}
+					<div transition:slide={{ duration: 200 }} class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+						{#each templates as template}
+							<button
+								type="button"
+								class="group flex flex-col items-start gap-1 rounded-xl border border-border p-4 transition-all hover:border-datadog-purple hover:bg-datadog-purple/5"
+								on:click={() => applyTemplate(template)}
+							>
+								<span class="font-medium text-sm group-hover:text-datadog-purple">{template.name}</span>
+								<span class="text-xs text-muted-foreground text-left line-clamp-2">{template.description}</span>
+							</button>
+						{/each}
+					</div>
+				{/if}
 			{/if}
 		</CardContent>
 	</Card>
@@ -1607,6 +1867,7 @@
 {#if importModalOpen}
 	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 	<div 
+		transition:fade={{ duration: 150 }}
 		class="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm"
 		on:click|self={() => importModalOpen = false}
 		on:keydown={(e) => e.key === 'Escape' && (importModalOpen = false)}
@@ -1614,7 +1875,7 @@
 		aria-modal="true"
 		tabindex="-1"
 	>
-		<div class="relative w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl">
+		<div transition:fade={{ duration: 150, delay: 50 }} class="relative w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl">
 			<!-- Close Button -->
 			<button
 				type="button"
@@ -1707,6 +1968,7 @@
 {#if saveModalOpen}
 	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 	<div 
+		transition:fade={{ duration: 150 }}
 		class="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm"
 		on:click|self={() => saveModalOpen = false}
 		on:keydown={(e) => e.key === 'Escape' && (saveModalOpen = false)}
@@ -1714,7 +1976,7 @@
 		aria-modal="true"
 		tabindex="-1"
 	>
-		<div class="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl">
+		<div transition:fade={{ duration: 150, delay: 50 }} class="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl">
 			<!-- Close Button -->
 			<button
 				type="button"
@@ -1819,6 +2081,104 @@
 					{/if}
 				</Button>
 			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Edit Password Modal (for loading from bookmarked URL) -->
+{#if editPasswordModalOpen}
+	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+	<div 
+		transition:fade={{ duration: 150 }}
+		class="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+		on:click|self={cancelEditPasswordModal}
+		on:keydown={(e) => e.key === 'Escape' && cancelEditPasswordModal()}
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
+	>
+		<div transition:fade={{ duration: 150, delay: 50 }} class="relative w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl">
+			<!-- Close Button -->
+			<button
+				type="button"
+				class="absolute right-4 top-4 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+				on:click={cancelEditPasswordModal}
+			>
+				<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M18 6L6 18M6 6l12 12" />
+				</svg>
+			</button>
+
+			<div class="flex items-center gap-3 mb-6">
+				<div class="flex h-11 w-11 items-center justify-center rounded-xl bg-datadog-purple shadow-lg shadow-datadog-purple/30">
+					<svg class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+						<path d="M7 11V7a5 5 0 0110 0v4" />
+					</svg>
+				</div>
+				<div>
+					<h2 class="text-xl font-semibold">Protected Quote</h2>
+					<p class="text-sm text-muted-foreground">Enter password to edit</p>
+				</div>
+			</div>
+
+			{#if pendingEditQuote}
+				<div class="mb-4 rounded-lg border border-border bg-muted/30 p-3">
+					<p class="text-sm font-medium">{pendingEditQuote.name || 'Untitled Quote'}</p>
+					<p class="text-xs text-muted-foreground">{pendingEditQuote.items?.length || 0} items</p>
+				</div>
+			{/if}
+
+			<form on:submit|preventDefault={verifyAndLoadEditQuote} class="space-y-4">
+				<div class="space-y-2">
+					<label for="editPasswordInput" class="text-sm font-medium">Password</label>
+					<Input 
+						id="editPasswordInput"
+						type="password" 
+						bind:value={editPasswordInput}
+						placeholder="Enter quote password"
+						class="font-mono"
+						autofocus
+					/>
+					{#if editPasswordError}
+						<p class="text-sm text-destructive">{editPasswordError}</p>
+					{/if}
+				</div>
+
+				<div class="flex gap-3">
+					<Button 
+						type="button"
+						variant="outline" 
+						class="flex-1"
+						on:click={cancelEditPasswordModal}
+					>
+						Cancel
+					</Button>
+					<Button 
+						type="submit"
+						class="flex-1 bg-datadog-purple hover:bg-datadog-purple/90"
+						disabled={verifyingEditPassword || !editPasswordInput}
+					>
+						{#if verifyingEditPassword}
+							<svg class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M21 12a9 9 0 11-6.219-8.56" />
+							</svg>
+							Verifying...
+						{:else}
+							<svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" />
+								<polyline points="10 17 15 12 10 7" />
+								<line x1="15" y1="12" x2="3" y2="12" />
+							</svg>
+							Unlock & Edit
+						{/if}
+					</Button>
+				</div>
+			</form>
+
+			<p class="mt-4 text-center text-xs text-muted-foreground">
+				Or <a href="/quote/{pendingEditQuoteId}" class="text-datadog-purple hover:underline">view without editing</a>
+			</p>
 		</div>
 	</div>
 {/if}

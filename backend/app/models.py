@@ -86,3 +86,21 @@ class SyncResponse(BaseModel):
     message: str
     products_count: int
 
+
+# Template models - for example quote templates stored in Redis/JSON files
+class TemplateItem(BaseModel):
+    """Simplified item for templates - just product reference and quantity."""
+    product: str  # Product name to match
+    quantity: int
+
+
+class Template(BaseModel):
+    """Quote template that users can load as a starting point."""
+    id: str
+    name: str
+    description: str
+    region: str = "us"
+    billing_type: str = "annually"
+    items: list[TemplateItem]
+    created_at: str
+
