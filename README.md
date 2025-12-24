@@ -22,10 +22,11 @@
 ### 📊 Build Your Quote
 
 - **Smart Product Search** — Quickly find any Datadog product from 100+ options with instant search
-- **Multi-Region Support** — Switch between US, EU, AP1, AP2 regions with accurate regional pricing
+- **Multi-Region Support** — Switch between US, US1-FED (Government), EU, AP1, AP2, and more with accurate regional pricing
+- **Pro/Enterprise Filtering** — Filter products by plan tier to see only relevant options
 - **Flexible Billing** — Compare Annual, Monthly, and On-Demand pricing side by side
 - **Real-time Calculations** — Watch totals update instantly as you build your quote
-- **Allotment Tracking** — Automatically displays included allotments (e.g., containers with Infrastructure Hosts)
+- **Allotment Tracking** — Automatically displays included allotments (scraped from [Datadog's allotments page](https://www.datadoghq.com/pricing/allotments/))
 
 ### 🚀 Quick Start Templates
 
@@ -93,11 +94,20 @@ Calculate log costs with visual breakdowns.
 
 ### Quick Start
 
+**One-command startup (recommended):**
+
 ```bash
-# Clone the repository
+# Clone and run
 git clone https://github.com/toomone/ddog-pricing-calculator.git
 cd ddog-pricing-calculator
+./run.sh
+```
 
+The `run.sh` script automatically sets up virtual environments, installs dependencies, and starts both services.
+
+**Manual setup:**
+
+```bash
 # Backend setup
 cd backend
 python -m venv venv
@@ -148,6 +158,12 @@ npm run dev
 
 ## 🔌 API Reference
 
+### Health & Status
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/health` | Health check endpoint |
+
 ### Products & Pricing
 
 | Method | Endpoint | Description |
@@ -156,7 +172,7 @@ npm run dev
 | GET | `/api/pricing` | Get full pricing data |
 | POST | `/api/pricing/sync` | Force sync from Datadog |
 | GET | `/api/regions` | List available regions |
-| GET | `/api/allotments` | Get allotment mappings |
+| GET | `/api/allotments` | Get allotment mappings (auto-scraped from Datadog) |
 
 ### Quotes
 
@@ -183,18 +199,21 @@ npm run dev
 ddog-pricing-calculator/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py           # FastAPI application & routes
-│   │   ├── models.py         # Pydantic models
-│   │   ├── scraper.py        # Datadog pricing scraper
-│   │   ├── quotes.py         # Quote CRUD operations
-│   │   ├── templates.py      # Template management
-│   │   ├── redis_client.py   # Redis connection & utilities
-│   │   └── config.py         # Environment configuration
+│   │   ├── main.py              # FastAPI application & routes
+│   │   ├── models.py            # Pydantic models
+│   │   ├── scraper.py           # Datadog pricing scraper
+│   │   ├── allotments_scraper.py # Allotments data scraper
+│   │   ├── quotes.py            # Quote CRUD operations
+│   │   ├── templates.py         # Template management
+│   │   ├── redis_client.py      # Redis connection & utilities
+│   │   └── config.py            # Environment configuration
 │   ├── data/
-│   │   ├── pricing/          # Cached pricing by region
-│   │   ├── quotes/           # Stored quotes (file fallback)
-│   │   └── templates/        # Template JSON files
+│   │   ├── pricing/             # Cached pricing by region
+│   │   ├── quotes/              # Stored quotes (file fallback)
+│   │   └── templates/           # Template JSON files
+│   ├── tests/                   # Pytest test suite
 │   └── requirements.txt
+├── run.sh                       # One-command dev startup
 ├── frontend/
 │   ├── src/
 │   │   ├── lib/
@@ -247,6 +266,24 @@ The project includes a `render.yaml` Blueprint for easy deployment:
 |----------|-------------|---------|
 | `STORAGE_TYPE` | `redis` or `file` | `file` |
 | `REDIS_URL` | Redis connection string | — |
+
+---
+
+## 🧪 Development
+
+### Running Tests
+
+```bash
+cd backend
+source venv/bin/activate
+pytest
+```
+
+The test suite covers:
+- API endpoints (`test_main.py`)
+- Quote operations (`test_quotes.py`)
+- Pricing scraper (`test_scraper.py`)
+- Allotment logic (`test_allotments.py`)
 
 ---
 

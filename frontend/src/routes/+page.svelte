@@ -10,7 +10,7 @@
 	import QuoteLine from '$lib/components/QuoteLine.svelte';
 	import LogsIndexingCalculator from '$lib/components/LogsIndexingCalculator.svelte';
 	import ModeToggle from '$lib/components/ModeToggle.svelte';
-	import { fetchProducts, fetchMetadata, createQuote, updateQuote, fetchQuote, verifyQuotePassword, fetchRegions, fetchAllotments, initAllotments, syncPricing, fetchTemplates, type Product, type PricingMetadata, type Region, type Allotment, type Template } from '$lib/api';
+	import { fetchProducts, fetchMetadata, createQuote, updateQuote, fetchQuote, verifyQuotePassword, fetchRegions, fetchAllotments, initAllotments, syncPricing, fetchTemplates, fetchCategoryOrder, type Product, type PricingMetadata, type Region, type Allotment, type Template } from '$lib/api';
 	import { formatCurrency, parsePrice, formatNumber, isPercentagePrice, parsePercentage } from '$lib/utils';
 
 	interface LineItem {
@@ -82,12 +82,24 @@
 	let showTemplates = false;
 	let loadingTemplates = false;
 	
-	// Filter products based on selected plan (show selected plan + "All" products)
+	// Category order for sorting products
+	let categoryOrder: Record<string, number> = {};
+	
+	// Filter products based on selected plan and sort by category
 	// Products without a plan field are treated as "All" (available to all plans)
-	$: filteredProducts = products.filter(p => {
-		const productPlan = p.plan || 'All';
-		return productPlan === selectedPlan || productPlan === 'All';
-	});
+	$: filteredProducts = products
+		.filter(p => {
+			const productPlan = p.plan || 'All';
+			return productPlan === selectedPlan || productPlan === 'All';
+		})
+		.sort((a, b) => {
+			// First sort by category order
+			const catOrderA = categoryOrder[a.category || 'Other'] ?? 99;
+			const catOrderB = categoryOrder[b.category || 'Other'] ?? 99;
+			if (catOrderA !== catOrderB) return catOrderA - catOrderB;
+			// Then sort alphabetically within category
+			return a.product.localeCompare(b.product);
+		});
 
 	$: lastSyncFormatted = metadata?.last_sync
 		? new Date(metadata.last_sync).toLocaleString('en-US', {
@@ -232,20 +244,6 @@
 				await loadEditFromQuoteId(editParam);
 				return;
 			}
-		}
-		
-		// Check for edit parameter (editing existing quote)
-		const editParam = $page.url.searchParams.get('edit');
-		if (editParam) {
-			try {
-				const editData = JSON.parse(decodeURIComponent(editParam));
-				await loadEditQuote(editData);
-				// Remove the edit param from URL
-				goto('/', { replaceState: true });
-			} catch (e) {
-				console.error('Failed to parse edit data:', e);
-			}
-			return;
 		}
 		
 		// Check for clone parameter
@@ -542,12 +540,17 @@
 		loading = true;
 		error = '';
 		try {
-			[products, metadata] = await Promise.all([
+			// Load products, metadata, and category order in parallel
+			const [productsData, metadataData, categoryOrderData] = await Promise.all([
 				fetchProducts(selectedRegion),
-				fetchMetadata(selectedRegion)
+				fetchMetadata(selectedRegion),
+				fetchCategoryOrder().catch(() => ({})) // Fallback to empty if categories API fails
 			]);
-			// Sort products alphabetically by name
-			products = products.sort((a, b) => a.product.localeCompare(b.product));
+			products = productsData;
+			metadata = metadataData;
+			categoryOrder = categoryOrderData;
+			
+			// Note: Sorting is handled by the reactive filteredProducts statement
 			if (products.length === 0) {
 				error = 'No products found. Please wait for automatic sync or check backend connection.';
 			}

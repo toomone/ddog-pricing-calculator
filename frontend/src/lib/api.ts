@@ -3,11 +3,18 @@ const API_BASE = '/api';
 export interface Product {
 	id: string;
 	product: string;
+	category: string; // 'Infrastructure', 'Logs', 'Security', etc.
 	plan: string; // 'Pro', 'Enterprise', or 'All'
 	billing_unit: string;
 	billed_annually: string | null;
 	billed_month_to_month: string | null;
 	on_demand: string | null;
+}
+
+export interface Category {
+	name: string;
+	order: number;
+	keywords?: string[];
 }
 
 export interface Region {
@@ -106,6 +113,18 @@ export async function fetchRegionsStatus(): Promise<RegionStatus[]> {
 export async function fetchProducts(region: string = 'us'): Promise<Product[]> {
 	const response = await fetch(`${API_BASE}/products?region=${region}`);
 	if (!response.ok) throw new Error('Failed to fetch products');
+	return response.json();
+}
+
+export async function fetchCategories(): Promise<Category[]> {
+	const response = await fetch(`${API_BASE}/categories`);
+	if (!response.ok) throw new Error('Failed to fetch categories');
+	return response.json();
+}
+
+export async function fetchCategoryOrder(): Promise<Record<string, number>> {
+	const response = await fetch(`${API_BASE}/categories/order`);
+	if (!response.ok) throw new Error('Failed to fetch category order');
 	return response.json();
 }
 

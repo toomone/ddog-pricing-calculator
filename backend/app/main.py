@@ -10,7 +10,8 @@ import logging
 from .models import PricingItem, Quote, QuoteCreate, QuoteUpdate, SyncResponse, VerifyPasswordRequest, VerifyPasswordResponse, Template
 from .scraper import (
     load_pricing_data, load_metadata, sync_pricing, ensure_pricing_data,
-    get_all_regions, get_regions_status, sync_all_regions, DEFAULT_REGION, REGIONS
+    get_all_regions, get_regions_status, sync_all_regions, DEFAULT_REGION, REGIONS,
+    get_categories, sync_categories, get_category_order
 )
 from .quotes import create_quote, get_quote, update_quote, delete_quote, list_quotes, verify_quote_password
 from .allotments_scraper import (
@@ -148,6 +149,45 @@ async def get_regions_sync_status():
     """Get sync status for all regions."""
     return get_regions_status()
 
+
+# ================================
+# Categories Endpoints
+# ================================
+
+@app.get("/api/categories")
+async def list_categories():
+    """Get all product categories with their order.
+    
+    Categories are used to group products in the UI (e.g., Infrastructure, Logs, Security).
+    """
+    categories = get_categories()
+    return categories
+
+
+@app.get("/api/categories/order")
+async def get_categories_order():
+    """Get a mapping of category names to their display order.
+    
+    Useful for sorting products by category in the frontend.
+    """
+    return get_category_order()
+
+
+@app.post("/api/categories/sync")
+async def sync_categories_endpoint():
+    """Re-sync product categories from Datadog pricing page."""
+    logger.info("🔄 Manual category sync requested")
+    success, message, count = sync_categories()
+    if success:
+        logger.info(f"✅ Category sync successful: {count} categories")
+    else:
+        logger.warning(f"⚠️ Category sync failed: {message}")
+    return {"success": success, "message": message, "count": count}
+
+
+# ================================
+# Pricing Endpoints
+# ================================
 
 @app.get("/api/pricing", response_model=list[PricingItem])
 async def get_pricing(region: str = Query(default=DEFAULT_REGION, description="Datadog region")):
