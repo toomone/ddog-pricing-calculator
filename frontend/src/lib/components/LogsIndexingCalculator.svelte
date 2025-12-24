@@ -21,8 +21,8 @@
 	let enableFlexStarter = false;
 	let enableFlexStorage = false;
 	let enableForwarding = false;
-	let flexStarterGB = 10; // GB per month
-	let flexStorageGB = 50; // GB per month
+	let flexStarterEvents = 10; // Million events per month
+	let flexStorageEvents = 50; // Million events per month
 	let forwardingGB = 20; // GB per month
 
 	// Use case presets
@@ -78,8 +78,8 @@
 	// Calculate costs
 	$: ingestionCost = ingestedLogsGB * ingestionPrice;
 	$: indexedCost = indexedLogsInMillions * indexedPrice;
-	$: flexStarterCost = enableFlexStarter ? flexStarterGB * flexStarterPrice : 0;
-	$: flexStorageCost = enableFlexStorage ? flexStorageGB * flexStoragePrice : 0;
+	$: flexStarterCost = enableFlexStarter ? flexStarterEvents * flexStarterPrice : 0;
+	$: flexStorageCost = enableFlexStorage ? flexStorageEvents * flexStoragePrice : 0;
 	$: forwardingCost = enableForwarding ? forwardingGB * forwardingPrice : 0;
 	$: additionalCost = flexStarterCost + flexStorageCost + forwardingCost;
 	$: totalMonthlyCost = ingestionCost + indexedCost + additionalCost;
@@ -106,12 +106,12 @@
 		}
 
 		// Additional products
-		if (enableFlexStarter && flexStarterProduct && flexStarterGB > 0) {
-			items.push({ product: flexStarterProduct, quantity: Math.ceil(flexStarterGB) });
+		if (enableFlexStarter && flexStarterProduct && flexStarterEvents > 0) {
+			items.push({ product: flexStarterProduct, quantity: Math.ceil(flexStarterEvents) });
 		}
 		
-		if (enableFlexStorage && flexStorageProduct && flexStorageGB > 0) {
-			items.push({ product: flexStorageProduct, quantity: Math.ceil(flexStorageGB) });
+		if (enableFlexStorage && flexStorageProduct && flexStorageEvents > 0) {
+			items.push({ product: flexStorageProduct, quantity: Math.ceil(flexStorageEvents) });
 		}
 		
 		if (enableForwarding && forwardingProduct && forwardingGB > 0) {
@@ -280,11 +280,11 @@
 								<div class="mt-2 flex items-center gap-2">
 									<Input 
 										type="number" 
-										bind:value={flexStarterGB} 
+										bind:value={flexStarterEvents} 
 										min="1" 
 										class="w-24 font-mono text-sm"
 									/>
-									<span class="text-xs text-muted-foreground">GB/month</span>
+									<span class="text-xs text-muted-foreground">M events/month</span>
 									{#if flexStarterPrice > 0}
 										<span class="text-xs text-datadog-blue ml-auto">{formatCurrency(flexStarterCost)}/mo</span>
 									{/if}
@@ -309,11 +309,11 @@
 								<div class="mt-2 flex items-center gap-2">
 									<Input 
 										type="number" 
-										bind:value={flexStorageGB} 
+										bind:value={flexStorageEvents} 
 										min="1" 
 										class="w-24 font-mono text-sm"
 									/>
-									<span class="text-xs text-muted-foreground">GB/month</span>
+									<span class="text-xs text-muted-foreground">M events/month</span>
 									{#if flexStoragePrice > 0}
 										<span class="text-xs text-datadog-blue ml-auto">{formatCurrency(flexStorageCost)}/mo</span>
 									{/if}
@@ -409,7 +409,7 @@
 					<div class="flex items-center justify-between py-2 border-b border-border">
 						<div class="flex items-center gap-2">
 							<div class="w-3 h-3 rounded bg-datadog-green"></div>
-							<span class="text-sm">Flex Logs Starter ({flexStarterGB} GB)</span>
+							<span class="text-sm">Flex Logs Starter ({flexStarterEvents}M events)</span>
 						</div>
 						<div class="text-right">
 							<span class="font-mono font-medium">{formatCurrency(flexStarterCost)}</span>
@@ -421,7 +421,7 @@
 					<div class="flex items-center justify-between py-2 border-b border-border">
 						<div class="flex items-center gap-2">
 							<div class="w-3 h-3 rounded bg-datadog-green"></div>
-							<span class="text-sm">Flex Logs Storage ({flexStorageGB} GB)</span>
+							<span class="text-sm">Flex Logs Storage ({flexStorageEvents}M events)</span>
 						</div>
 						<div class="text-right">
 							<span class="font-mono font-medium">{formatCurrency(flexStorageCost)}</span>
