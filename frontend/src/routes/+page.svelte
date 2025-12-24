@@ -10,7 +10,7 @@
 	import QuoteLine from '$lib/components/QuoteLine.svelte';
 	import LogsIndexingCalculator from '$lib/components/LogsIndexingCalculator.svelte';
 	import ModeToggle from '$lib/components/ModeToggle.svelte';
-	import { fetchProducts, fetchMetadata, createQuote, updateQuote, fetchRegions, fetchAllotments, initAllotments, syncPricing, fetchTemplates, type Product, type PricingMetadata, type Region, type Allotment, type Template } from '$lib/api';
+	import { fetchProducts, fetchMetadata, createQuote, updateQuote, fetchQuote, verifyQuotePassword, fetchRegions, fetchAllotments, initAllotments, syncPricing, fetchTemplates, type Product, type PricingMetadata, type Region, type Allotment, type Template } from '$lib/api';
 	import { formatCurrency, parsePrice, formatNumber, isPercentagePrice, parsePercentage } from '$lib/utils';
 
 	interface LineItem {
@@ -60,6 +60,14 @@
 	// Edit mode (editing existing quote)
 	let editingQuoteId: string | null = null;
 	let editQuotePassword: string | null = null;
+	
+	// Edit mode password modal (for loading from URL)
+	let editPasswordModalOpen = false;
+	let editPasswordInput = '';
+	let editPasswordError = '';
+	let pendingEditQuoteId: string | null = null;
+	let pendingEditQuote: any = null;
+	let verifyingEditPassword = false;
 	
 	// Billing visibility toggles
 	let showAnnual = true;
@@ -212,15 +220,18 @@
 		// Check for edit parameter (editing existing quote)
 		const editParam = $page.url.searchParams.get('edit');
 		if (editParam) {
+			// Try to parse as JSON (legacy format from quote page redirect)
 			try {
 				const editData = JSON.parse(decodeURIComponent(editParam));
 				await loadEditQuote(editData);
-				// Remove the edit param from URL
-				goto('/', { replaceState: true });
+				// Update URL to simple format (bookmarkable)
+				goto(`/?edit=${editData.quoteId}`, { replaceState: true });
+				return;
 			} catch (e) {
-				console.error('Failed to parse edit data:', e);
+				// Not JSON, treat as simple quote ID (bookmarkable URL)
+				await loadEditFromQuoteId(editParam);
+				return;
 			}
-			return;
 		}
 		
 		// Check for clone parameter
@@ -406,6 +417,103 @@
 			success = 'Editing quote. Make your changes and save.';
 			setTimeout(() => success = '', 5000);
 		}
+	}
+
+	async function loadEditFromQuoteId(quoteId: string) {
+		// Fetch the quote from API
+		try {
+			const quote = await fetchQuote(quoteId);
+			
+			if (quote.is_protected) {
+				// Quote is protected, show password modal
+				pendingEditQuoteId = quoteId;
+				pendingEditQuote = quote;
+				editPasswordModalOpen = true;
+			} else {
+				// Not protected, load directly
+				await loadQuoteIntoEditor(quote, null);
+			}
+		} catch (e) {
+			console.error('Failed to fetch quote:', e);
+			error = 'Quote not found or could not be loaded.';
+			setTimeout(() => error = '', 5000);
+			goto('/', { replaceState: true });
+		}
+	}
+
+	async function loadQuoteIntoEditor(quote: any, password: string | null) {
+		editingQuoteId = quote.id;
+		editQuotePassword = password;
+		quoteName = quote.name || '';
+		
+		// Set region
+		if (quote.region && quote.region !== selectedRegion) {
+			selectedRegion = quote.region;
+			await loadProducts();
+		}
+		
+		// Map items to lines
+		const newLines: LineItem[] = [];
+		for (const item of quote.items) {
+			let matchedProduct = item.id 
+				? products.find(p => p.id === item.id)
+				: null;
+			
+			if (!matchedProduct) {
+				matchedProduct = products.find(p => p.product === item.product);
+			}
+			
+			if (matchedProduct) {
+				newLines.push({
+					id: crypto.randomUUID(),
+					product: matchedProduct,
+					quantity: item.quantity
+				});
+			}
+		}
+		
+		if (newLines.length > 0) {
+			lines = newLines;
+			success = 'Editing quote. Make your changes and save.';
+			setTimeout(() => success = '', 5000);
+		}
+		
+		// Set the share URL
+		shareUrl = `${window.location.origin}/quote/${quote.id}`;
+	}
+
+	async function verifyAndLoadEditQuote() {
+		if (!pendingEditQuoteId || !pendingEditQuote) return;
+		
+		verifyingEditPassword = true;
+		editPasswordError = '';
+		
+		try {
+			const isValid = await verifyQuotePassword(pendingEditQuoteId, editPasswordInput);
+			
+			if (isValid) {
+				await loadQuoteIntoEditor(pendingEditQuote, editPasswordInput);
+				editPasswordModalOpen = false;
+				editPasswordInput = '';
+				pendingEditQuoteId = null;
+				pendingEditQuote = null;
+			} else {
+				editPasswordError = 'Incorrect password';
+			}
+		} catch (e) {
+			editPasswordError = 'Failed to verify password';
+		} finally {
+			verifyingEditPassword = false;
+		}
+	}
+
+	function cancelEditPasswordModal() {
+		editPasswordModalOpen = false;
+		editPasswordInput = '';
+		editPasswordError = '';
+		pendingEditQuoteId = null;
+		pendingEditQuote = null;
+		goto('/', { replaceState: true });
 	}
 
 	async function loadRegions() {
@@ -1959,6 +2067,104 @@
 					{/if}
 				</Button>
 			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- Edit Password Modal (for loading from bookmarked URL) -->
+{#if editPasswordModalOpen}
+	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+	<div 
+		transition:fade={{ duration: 150 }}
+		class="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+		on:click|self={cancelEditPasswordModal}
+		on:keydown={(e) => e.key === 'Escape' && cancelEditPasswordModal()}
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
+	>
+		<div transition:fade={{ duration: 150, delay: 50 }} class="relative w-full max-w-sm rounded-2xl border border-border bg-card p-6 shadow-2xl">
+			<!-- Close Button -->
+			<button
+				type="button"
+				class="absolute right-4 top-4 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+				on:click={cancelEditPasswordModal}
+			>
+				<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M18 6L6 18M6 6l12 12" />
+				</svg>
+			</button>
+
+			<div class="flex items-center gap-3 mb-6">
+				<div class="flex h-11 w-11 items-center justify-center rounded-xl bg-datadog-purple shadow-lg shadow-datadog-purple/30">
+					<svg class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+						<path d="M7 11V7a5 5 0 0110 0v4" />
+					</svg>
+				</div>
+				<div>
+					<h2 class="text-xl font-semibold">Protected Quote</h2>
+					<p class="text-sm text-muted-foreground">Enter password to edit</p>
+				</div>
+			</div>
+
+			{#if pendingEditQuote}
+				<div class="mb-4 rounded-lg border border-border bg-muted/30 p-3">
+					<p class="text-sm font-medium">{pendingEditQuote.name || 'Untitled Quote'}</p>
+					<p class="text-xs text-muted-foreground">{pendingEditQuote.items?.length || 0} items</p>
+				</div>
+			{/if}
+
+			<form on:submit|preventDefault={verifyAndLoadEditQuote} class="space-y-4">
+				<div class="space-y-2">
+					<label for="editPasswordInput" class="text-sm font-medium">Password</label>
+					<Input 
+						id="editPasswordInput"
+						type="password" 
+						bind:value={editPasswordInput}
+						placeholder="Enter quote password"
+						class="font-mono"
+						autofocus
+					/>
+					{#if editPasswordError}
+						<p class="text-sm text-destructive">{editPasswordError}</p>
+					{/if}
+				</div>
+
+				<div class="flex gap-3">
+					<Button 
+						type="button"
+						variant="outline" 
+						class="flex-1"
+						on:click={cancelEditPasswordModal}
+					>
+						Cancel
+					</Button>
+					<Button 
+						type="submit"
+						class="flex-1 bg-datadog-purple hover:bg-datadog-purple/90"
+						disabled={verifyingEditPassword || !editPasswordInput}
+					>
+						{#if verifyingEditPassword}
+							<svg class="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M21 12a9 9 0 11-6.219-8.56" />
+							</svg>
+							Verifying...
+						{:else}
+							<svg class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" />
+								<polyline points="10 17 15 12 10 7" />
+								<line x1="15" y1="12" x2="3" y2="12" />
+							</svg>
+							Unlock & Edit
+						{/if}
+					</Button>
+				</div>
+			</form>
+
+			<p class="mt-4 text-center text-xs text-muted-foreground">
+				Or <a href="/quote/{pendingEditQuoteId}" class="text-datadog-purple hover:underline">view without editing</a>
+			</p>
 		</div>
 	</div>
 {/if}
