@@ -39,7 +39,7 @@
 	$: groupedProducts = (() => {
 		const groups: Record<string, Product[]> = {};
 		for (const product of filteredProducts) {
-			const category = product.category || 'Other';
+			const category = product.category || 'Specific';
 			if (!groups[category]) {
 				groups[category] = [];
 			}
@@ -49,7 +49,7 @@
 		const result: CategoryGroup[] = [];
 		const seenCategories = new Set<string>();
 		for (const product of filteredProducts) {
-			const category = product.category || 'Other';
+			const category = product.category || 'Specific';
 			if (!seenCategories.has(category)) {
 				seenCategories.add(category);
 				result.push({ name: category, products: groups[category] });

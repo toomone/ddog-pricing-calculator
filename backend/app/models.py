@@ -7,7 +7,7 @@ class PricingItem(BaseModel):
     id: Optional[str] = None
     region: str
     product: str
-    category: str = "Other"  # Product category (Infrastructure, Logs, Security, etc.)
+    category: str = "Specific"  # Product category (Infrastructure, Logs, Security, etc.)
     plan: str = "All"  # 'Pro', 'Enterprise', or 'All' (available to all plans)
     billing_unit: str
     billed_annually: Optional[str] = None

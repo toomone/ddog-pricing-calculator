@@ -145,28 +145,47 @@ def get_categories_file() -> Path:
 
 
 def match_product_to_category(product_name: str, categories: list[dict] = None) -> str:
-    """Find which category a product belongs to using keyword matching.
+    """Find which category a product belongs to.
+    
+    First tries exact match using 'products' list (from scraped data),
+    then falls back to keyword matching using 'keywords' list.
     
     Args:
         product_name: The product name to categorize
-        categories: List of category dicts with 'name' and 'keywords' fields.
+        categories: List of category dicts with 'name' and 'products' or 'keywords' fields.
                    Uses DEFAULT_CATEGORIES if not provided.
     
     Returns:
-        Category name or 'Other' if no match found.
+        Category name or 'Specific' if no match found.
     """
     if categories is None:
         categories = DEFAULT_CATEGORIES
     
     product_lower = product_name.lower()
+    product_words = set(product_lower.split())
     
+    # First: Try exact match from scraped product lists
+    for category in categories:
+        products = category.get("products", [])
+        for prod in products:
+            if prod.lower() in product_lower or product_lower in prod.lower():
+                return category["name"]
+    
+    # Second: Try keyword matching (fallback for DEFAULT_CATEGORIES)
+    # Use word-boundary matching for short keywords to avoid false positives
     for category in categories:
         keywords = category.get("keywords", [])
         for keyword in keywords:
-            if keyword.lower() in product_lower:
+            keyword_lower = keyword.lower()
+            # For short keywords (<=3 chars), require exact word match
+            if len(keyword_lower) <= 3:
+                if keyword_lower in product_words:
+                    return category["name"]
+            # For longer keywords, allow substring match
+            elif keyword_lower in product_lower:
                 return category["name"]
     
-    return "Other"
+    return "Specific"
 
 
 def scrape_product_categories() -> list[dict]:
@@ -538,5 +557,5 @@ def get_category_order() -> dict[str, int]:
     order_map = {}
     for cat in categories:
         order_map[cat["name"]] = cat.get("order", 50)
-    order_map["Other"] = 99
+    order_map["Specific"] = 99
     return order_map
