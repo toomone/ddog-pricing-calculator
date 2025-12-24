@@ -107,8 +107,8 @@
 	>
 		<!-- Category Label (hidden when grouped) -->
 		{#if selectedProduct?.category && !hideCategory}
-			<div class="absolute -top-2.5 left-4">
-				<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground border border-border/50">
+			<div class="absolute -top-3 left-4">
+				<span class="inline-flex items-center px-2.5 py-1 rounded text-[11px] font-medium bg-muted text-muted-foreground border border-border/50">
 					{selectedProduct.category}
 				</span>
 			</div>
