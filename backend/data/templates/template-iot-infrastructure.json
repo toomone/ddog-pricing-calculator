@@ -6,10 +6,10 @@
   "billing_type": "annually",
   "items": [
     {"product": "Custom Metrics", "quantity": 500},
-    {"product": "Infrastructure Hosts", "quantity": 5},
-    {"product": "Logs Ingested", "quantity": 50},
-    {"product": "Logs Indexed (3-day Retention)", "quantity": 10},
-    {"product": "Incident Management (Per User)", "quantity": 5},
+    {"product": "Infrastructure Pro", "quantity": 5},
+    {"product": "Logs - Ingestion", "quantity": 50},
+    {"product": "Logs - Indexed Log Events", "quantity": 10},
+    {"product": "Incident Management", "quantity": 5},
     {"product": "On-Call", "quantity": 5}
   ],
   "created_at": "2025-01-01T00:00:00.000000"

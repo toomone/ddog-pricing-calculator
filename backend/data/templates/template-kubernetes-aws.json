@@ -5,12 +5,12 @@
   "region": "us",
   "billing_type": "annually",
   "items": [
-    {"product": "Infrastructure Hosts", "quantity": 10},
-    {"product": "Containers", "quantity": 100},
-    {"product": "APM Hosts", "quantity": 5},
+    {"product": "Infrastructure Pro", "quantity": 10},
+    {"product": "Container Monitoring", "quantity": 100},
+    {"product": "APM Pro", "quantity": 5},
     {"product": "Cloud Cost Management", "quantity": 1},
-    {"product": "Logs Ingested", "quantity": 100},
-    {"product": "Logs Indexed (7-day Retention)", "quantity": 30}
+    {"product": "Logs - Ingestion", "quantity": 100},
+    {"product": "Logs - Indexed Log Events", "quantity": 30}
   ],
   "created_at": "2025-01-01T00:00:00.000000"
 }
