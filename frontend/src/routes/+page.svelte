@@ -5,6 +5,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import escapeHtml from 'escape-html';
+	import { toast } from 'svelte-sonner';
 	import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -47,8 +48,6 @@
 	let loading = false;
 	let saving = false;
 	let syncing = false;
-	let error = '';
-	let success = '';
 	let shareUrl = '';
 	let shareMenuOpen = false;
 	let filterMenuOpen = false;
@@ -380,11 +379,9 @@
 			// Filter out empty lines (no product selected) before appending
 			const existingValidLines = lines.filter(l => l.product !== null);
 			lines = [...existingValidLines, ...newLines];
-			success = `Added ${newLines.length} products from "${template.name}"`;
-			setTimeout(() => success = '', 3000);
+			toast.success(`Added ${newLines.length} products from "${template.name}"`);
 		} else {
-			error = 'Could not match any products from the template';
-			setTimeout(() => error = '', 5000);
+			toast.error('Could not match any products from the template');
 		}
 		
 		// Collapse templates section after applying
@@ -417,8 +414,7 @@
 		
 		if (newLines.length > 0) {
 			lines = newLines;
-			success = 'Quote cloned successfully! You can now edit it.';
-			setTimeout(() => success = '', 5000);
+			toast.success('Quote cloned successfully! You can now edit it.');
 		}
 	}
 
@@ -457,8 +453,7 @@
 		
 		if (newLines.length > 0) {
 			lines = newLines;
-			success = 'Editing quote. Make your changes and save.';
-			setTimeout(() => success = '', 5000);
+			toast.success('Editing quote. Make your changes and save.');
 		}
 	}
 
@@ -478,8 +473,7 @@
 			}
 		} catch (e) {
 			console.error('Failed to fetch quote:', e);
-			error = 'Quote not found or could not be loaded.';
-			setTimeout(() => error = '', 5000);
+			toast.error('Quote not found or could not be loaded.');
 			goto('/', { replaceState: true });
 		}
 	}
@@ -519,8 +513,7 @@
 		
 		if (newLines.length > 0) {
 			lines = newLines;
-			success = 'Editing quote. Make your changes and save.';
-			setTimeout(() => success = '', 5000);
+			toast.success('Editing quote. Make your changes and save.');
 		}
 		
 		// Set the share URL
@@ -571,7 +564,6 @@
 
 	async function loadProducts() {
 		loading = true;
-		error = '';
 		try {
 			// Load products, metadata, and category order in parallel
 			const [productsData, metadataData, categoryOrderData] = await Promise.all([
@@ -585,10 +577,10 @@
 			
 			// Note: Sorting is handled by the reactive filteredProducts statement
 			if (products.length === 0) {
-				error = 'No products found. Please wait for automatic sync or check backend connection.';
+				toast.error('No products found. Please wait for automatic sync or check backend connection.');
 			}
 		} catch (e) {
-			error = 'Failed to load products. Make sure the backend is running.';
+			toast.error('Failed to load products. Make sure the backend is running.');
 		} finally {
 			loading = false;
 		}
@@ -596,14 +588,12 @@
 
 	async function handleSync() {
 		syncing = true;
-		error = '';
 		try {
 			await syncPricing(selectedRegion);
 			await loadProducts();
-			success = 'Pricing data synced successfully!';
-			setTimeout(() => success = '', 3000);
+			toast.success('Pricing data synced successfully!');
 		} catch (e) {
-			error = 'Failed to sync pricing data.';
+			toast.error('Failed to sync pricing data.');
 		} finally {
 			syncing = false;
 		}
@@ -692,8 +682,7 @@
 		
 		// Close the calculator
 		showLogsCalculator = false;
-		success = `Added ${items.length} item(s) to quote`;
-		setTimeout(() => success = '', 3000);
+		toast.success(`Added ${items.length} item(s) to quote`);
 	}
 
 	function removeLine(id: string) {
@@ -782,7 +771,7 @@
 
 	function openSaveModal() {
 		if (validLines.length === 0) {
-			error = 'Please add at least one product to share';
+			toast.error('Please add at least one product to share');
 			return;
 		}
 		
@@ -808,7 +797,6 @@
 		}
 
 		saving = true;
-		error = '';
 		passwordError = '';
 
 		try {
@@ -840,18 +828,19 @@
 				quote = await updateQuote(editingQuoteId, quoteName || null, selectedRegion, 'annually', items, editQuotePassword, quoteDescription || null);
 				shareUrl = `${window.location.origin}/quote/${quote.id}`;
 				saveModalOpen = false;
-				success = 'Quote updated successfully!';
+				toast.success('Quote updated successfully!');
 				// Keep edit mode active so user can continue making changes
 			} else {
 				// Create new quote
 				quote = await createQuote(quoteName || null, selectedRegion, 'annually', items, editPassword || null, quoteDescription || null);
 				shareUrl = `${window.location.origin}/quote/${quote.id}`;
 				saveModalOpen = false;
-				success = quote.is_protected ? 'Quote saved with password protection!' : 'Quote saved!';
+				toast.success(quote.is_protected ? 'Quote saved with password protection!' : 'Quote saved!', {
+					description: 'Your public URL is ready to share'
+				});
 			}
-			setTimeout(() => success = '', 3000);
 		} catch (e: any) {
-			error = e.message || 'Failed to save quote';
+			toast.error(e.message || 'Failed to save quote');
 		} finally {
 			saving = false;
 		}
@@ -859,9 +848,8 @@
 
 	function copyShareUrl() {
 		navigator.clipboard.writeText(shareUrl);
-		success = 'URL copied to clipboard!';
+		toast.success('URL copied to clipboard!');
 		shareMenuOpen = false;
-		setTimeout(() => success = '', 3000);
 	}
 
 	function downloadPDF() {
@@ -919,8 +907,7 @@
 		document.body.removeChild(link);
 		
 		shareMenuOpen = false;
-		success = 'CSV exported successfully!';
-		setTimeout(() => success = '', 3000);
+		toast.success('CSV exported successfully!');
 	}
 
 	function generatePrintContent() {
@@ -1096,8 +1083,7 @@
 		URL.revokeObjectURL(url);
 		
 		shareMenuOpen = false;
-		success = 'JSON exported successfully!';
-		setTimeout(() => success = '', 3000);
+		toast.success('JSON exported successfully!');
 	}
 
 	function handleDragOver(event: DragEvent) {
@@ -1129,7 +1115,7 @@
 
 	async function processImportFile(file: File) {
 		if (!file.name.endsWith('.json')) {
-			error = 'Please select a JSON file';
+			toast.error('Please select a JSON file');
 			return;
 		}
 
@@ -1139,7 +1125,7 @@
 			
 			// Validate structure
 			if (!data.items || !Array.isArray(data.items)) {
-				error = 'Invalid JSON format: missing items array';
+				toast.error('Invalid JSON format: missing items array');
 				return;
 			}
 
@@ -1247,10 +1233,9 @@
 			}
 
 			importModalOpen = false;
-			success = `Imported ${data.items.length} products successfully!`;
-			setTimeout(() => success = '', 3000);
+			toast.success(`Imported ${data.items.length} products successfully!`);
 		} catch (e) {
-			error = 'Failed to parse JSON file';
+			toast.error('Failed to parse JSON file');
 		}
 	}
 </script>
@@ -1426,19 +1411,6 @@
 		</div>
 	</div>
 
-
-	<!-- Alerts -->
-	{#if error}
-		<div transition:fade={{ duration: 200 }} class="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
-			{error}
-		</div>
-	{/if}
-
-	{#if success}
-		<div transition:fade={{ duration: 200 }} class="mb-6 rounded-lg border border-datadog-green/50 bg-datadog-green/10 p-4 text-datadog-green">
-			{success}
-		</div>
-	{/if}
 
 	<!-- Edit Mode Banner -->
 	{#if editingQuoteId}
@@ -2047,10 +2019,6 @@
 				</p>
 				<p class="mt-1 text-xs text-muted-foreground">JSON files only</p>
 			</div>
-
-			{#if error}
-				<p class="mt-4 text-sm text-red-500">{error}</p>
-			{/if}
 		</div>
 	</div>
 {/if}
