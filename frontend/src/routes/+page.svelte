@@ -40,7 +40,9 @@
 	let selectedPlan: 'Pro' | 'Enterprise' = 'Pro';
 	let lines: LineItem[] = [{ id: crypto.randomUUID(), product: null, quantity: 1 }];
 	let quoteName = '';
+	let quoteDescription = '';
 	let editingQuoteName = false;
+	let showDescriptionEditor = false;
 	let loading = false;
 	let saving = false;
 	let syncing = false;
@@ -485,6 +487,8 @@
 		editingQuoteId = quote.id;
 		editQuotePassword = password;
 		quoteName = quote.name || '';
+		quoteDescription = quote.description || '';
+		showDescriptionEditor = !!quote.description;
 		
 		// Set region
 		if (quote.region && quote.region !== selectedRegion) {
@@ -832,14 +836,14 @@
 			let quote;
 			if (editingQuoteId) {
 				// Update existing quote
-				quote = await updateQuote(editingQuoteId, quoteName || null, selectedRegion, 'annually', items, editQuotePassword);
+				quote = await updateQuote(editingQuoteId, quoteName || null, selectedRegion, 'annually', items, editQuotePassword, quoteDescription || null);
 				shareUrl = `${window.location.origin}/quote/${quote.id}`;
 				saveModalOpen = false;
 				success = 'Quote updated successfully!';
 				// Keep edit mode active so user can continue making changes
 			} else {
 				// Create new quote
-				quote = await createQuote(quoteName || null, selectedRegion, 'annually', items, editPassword || null);
+				quote = await createQuote(quoteName || null, selectedRegion, 'annually', items, editPassword || null, quoteDescription || null);
 				shareUrl = `${window.location.origin}/quote/${quote.id}`;
 				saveModalOpen = false;
 				success = quote.is_protected ? 'Quote saved with password protection!' : 'Quote saved!';
@@ -964,6 +968,7 @@
 			<body>
 				<h1>PriceHound Quote${quoteName ? `: ${quoteName}` : ''}</h1>
 				<p class="date">Generated on ${date}</p>
+				${quoteDescription ? `<p style="color: #666; margin-bottom: 24px; white-space: pre-wrap;">${quoteDescription}</p>` : ''}
 				
 				<table>
 					<thead>
@@ -1043,6 +1048,7 @@
 	function exportJSON() {
 		const exportData = {
 			name: quoteName || 'PriceHound Quote',
+			description: quoteDescription || null,
 			region: selectedRegion,
 			plan: selectedPlan,
 			created_at: new Date().toISOString(),
@@ -1139,6 +1145,12 @@
 			// Set quote name if present
 			if (data.name) {
 				quoteName = data.name;
+			}
+
+			// Set description if present
+			if (data.description) {
+				quoteDescription = data.description;
+				showDescriptionEditor = true;
 			}
 
 			// Set plan if present and valid
@@ -1496,32 +1508,60 @@
 						</svg>
 					</div>
 					<div>
-						{#if editingQuoteName}
-							<input
-								bind:value={quoteName}
-								placeholder="Enter quote name..."
-								class="text-lg font-semibold h-8 px-2 rounded border border-input bg-background focus:outline-none focus:ring-2 focus:ring-datadog-purple"
-								autofocus
-								on:blur={() => editingQuoteName = false}
-								on:keydown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') editingQuoteName = false; }}
-							/>
-						{:else}
-							<!-- svelte-ignore a11y-click-events-have-key-events -->
-							<!-- svelte-ignore a11y-no-static-element-interactions -->
-							<div 
-								class="group flex items-center gap-2 cursor-pointer"
-								on:click={() => editingQuoteName = true}
+						<div class="flex items-center gap-2">
+							{#if editingQuoteName}
+								<input
+									bind:value={quoteName}
+									placeholder="Enter quote name..."
+									class="text-lg font-semibold h-8 px-2 rounded border border-input bg-background focus:outline-none focus:ring-2 focus:ring-datadog-purple"
+									autofocus
+									on:blur={() => editingQuoteName = false}
+									on:keydown={(e) => { if (e.key === 'Enter' || e.key === 'Escape') editingQuoteName = false; }}
+								/>
+							{:else}
+								<!-- svelte-ignore a11y-click-events-have-key-events -->
+								<!-- svelte-ignore a11y-no-static-element-interactions -->
+								<div 
+									class="group flex items-center gap-2 cursor-pointer"
+									on:click={() => editingQuoteName = true}
+								>
+									<CardTitle class="group-hover:text-datadog-purple transition-colors">
+										{quoteName || 'Name your quote here'}
+									</CardTitle>
+									<svg class="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+										<path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+									</svg>
+								</div>
+							{/if}
+							<!-- Description toggle button -->
+							<button
+								type="button"
+								class="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors {quoteDescription || showDescriptionEditor ? 'text-foreground bg-muted' : ''}"
+								title="{quoteDescription ? 'Edit description' : 'Add description'}"
+								on:click={() => showDescriptionEditor = !showDescriptionEditor}
 							>
-								<CardTitle class="group-hover:text-datadog-purple transition-colors">
-									{quoteName || 'Name your quote here'}
-								</CardTitle>
-								<svg class="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-									<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-									<path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+								<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+									<polyline points="14 2 14 8 20 8" />
+									<line x1="16" y1="13" x2="8" y2="13" />
+									<line x1="16" y1="17" x2="8" y2="17" />
 								</svg>
+							</button>
+						</div>
+						<CardDescription>All products and related quantities</CardDescription>
+						
+						<!-- Collapsible description editor -->
+						{#if showDescriptionEditor || quoteDescription}
+							<div class="mt-3" transition:slide={{ duration: 200 }}>
+								<textarea
+									bind:value={quoteDescription}
+									placeholder="Add a description for this quote..."
+									class="w-full px-3 py-2 text-sm rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+									rows="2"
+								></textarea>
 							</div>
 						{/if}
-						<CardDescription>All products and related quantities</CardDescription>
 					</div>
 				</div>
 				

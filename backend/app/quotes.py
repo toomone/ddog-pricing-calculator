@@ -185,7 +185,7 @@ def load_quote_file(quote_id: str) -> Optional[dict]:
             return json.load(f)
 
 
-def create_quote(name: Optional[str], region: str, billing_type: str, items: list[dict], edit_password: Optional[str] = None) -> Quote:
+def create_quote(name: Optional[str], region: str, billing_type: str, items: list[dict], edit_password: Optional[str] = None, description: Optional[str] = None) -> Quote:
     """Create a new quote with optional password protection."""
     quote_id = str(uuid.uuid4())
     now = datetime.utcnow().isoformat()
@@ -247,6 +247,7 @@ def create_quote(name: Optional[str], region: str, billing_type: str, items: lis
     quote = Quote(
         id=quote_id,
         name=name or f"Quote {quote_id[:8]}",
+        description=description,
         region=region,
         billing_type=billing_type,
         items=quote_items,
@@ -274,7 +275,7 @@ def get_quote(quote_id: str) -> Optional[Quote]:
     return None
 
 
-def update_quote(quote_id: str, name: Optional[str], region: str, billing_type: str, items: list[dict], edit_password: Optional[str] = None) -> tuple[Optional[Quote], str]:
+def update_quote(quote_id: str, name: Optional[str], region: str, billing_type: str, items: list[dict], edit_password: Optional[str] = None, description: Optional[str] = None) -> tuple[Optional[Quote], str]:
     """Update an existing quote. Returns (quote, error_message)."""
     old_quote_data = load_quote_file(quote_id)
     
@@ -345,6 +346,7 @@ def update_quote(quote_id: str, name: Optional[str], region: str, billing_type: 
     quote = Quote(
         id=quote_id,
         name=name or old_quote_data.get('name', f"Quote {quote_id[:8]}"),
+        description=description if description is not None else old_quote_data.get('description'),
         region=region,
         billing_type=billing_type,
         items=quote_items,

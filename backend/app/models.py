@@ -43,6 +43,7 @@ class QuoteLineItem(BaseModel):
 class Quote(BaseModel):
     id: str
     name: Optional[str] = None
+    description: Optional[str] = None  # Optional quote description
     region: str = "us"  # Datadog region
     billing_type: str  # 'annually', 'monthly', 'on_demand'
     items: list[QuoteLineItem]
@@ -59,6 +60,7 @@ class Quote(BaseModel):
 
 class QuoteCreate(BaseModel):
     name: Optional[str] = None
+    description: Optional[str] = None
     region: str = "us"
     billing_type: str
     items: list[dict]
@@ -67,6 +69,7 @@ class QuoteCreate(BaseModel):
 
 class QuoteUpdate(BaseModel):
     name: Optional[str] = None
+    description: Optional[str] = None
     region: str = "us"
     billing_type: str
     items: list[dict]

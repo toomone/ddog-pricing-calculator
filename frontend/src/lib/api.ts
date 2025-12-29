@@ -54,6 +54,7 @@ export interface QuoteLineItem {
 export interface Quote {
 	id: string;
 	name: string | null;
+	description: string | null;
 	region: string;
 	billing_type: string;
 	items: QuoteLineItem[];
@@ -155,12 +156,13 @@ export async function createQuote(
 	region: string,
 	billing_type: string,
 	items: { id?: string; product: string; quantity: number; allotments?: { id?: string; allotted_product: string; quantity_included: number; allotted_unit: string }[] }[],
-	edit_password?: string | null
+	edit_password?: string | null,
+	description?: string | null
 ): Promise<Quote> {
 	const response = await fetch(`${API_BASE}/quotes`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ name, region, billing_type, items, edit_password: edit_password || null })
+		body: JSON.stringify({ name, region, billing_type, items, edit_password: edit_password || null, description: description || null })
 	});
 	if (!response.ok) throw new Error('Failed to create quote');
 	return response.json();
@@ -178,12 +180,13 @@ export async function updateQuote(
 	region: string,
 	billing_type: string,
 	items: { id?: string; product: string; quantity: number; allotments?: { id?: string; allotted_product: string; quantity_included: number; allotted_unit: string }[] }[],
-	edit_password?: string | null
+	edit_password?: string | null,
+	description?: string | null
 ): Promise<Quote> {
 	const response = await fetch(`${API_BASE}/quotes/${quoteId}`, {
 		method: 'PUT',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ name, region, billing_type, items, edit_password: edit_password || null })
+		body: JSON.stringify({ name, region, billing_type, items, edit_password: edit_password || null, description: description || null })
 	});
 	if (!response.ok) {
 		const error = await response.json().catch(() => ({ detail: 'Failed to update quote' }));

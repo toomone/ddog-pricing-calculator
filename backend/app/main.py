@@ -287,7 +287,8 @@ async def create_new_quote(quote_data: QuoteCreate):
         region=quote_data.region,
         billing_type=quote_data.billing_type,
         items=quote_data.items,
-        edit_password=quote_data.edit_password
+        edit_password=quote_data.edit_password,
+        description=quote_data.description
     )
     logger.info(f"✅ Quote created: id={quote.id}, total=${quote.total:.2f}, protected={quote.is_protected}")
     return quote
@@ -315,7 +316,8 @@ async def update_existing_quote(quote_id: str, quote_data: QuoteUpdate):
         region=quote_data.region,
         billing_type=quote_data.billing_type,
         items=quote_data.items,
-        edit_password=quote_data.edit_password
+        edit_password=quote_data.edit_password,
+        description=quote_data.description
     )
     if not quote:
         if "Password required" in error or "Invalid password" in error:

@@ -203,6 +203,9 @@
 								day: 'numeric'
 							})}
 						</CardDescription>
+						{#if quote.description}
+							<p class="mt-2 text-sm text-muted-foreground whitespace-pre-wrap">{quote.description}</p>
+						{/if}
 					</div>
 					<div class="flex flex-wrap gap-2">
 						<Badge variant="outline" class="text-sm">
