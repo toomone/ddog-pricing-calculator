@@ -1499,8 +1499,8 @@
 		<CardHeader>
 			<div class="flex flex-wrap items-start justify-between gap-4">
 				<div class="flex items-center gap-3">
-					<div class="flex h-9 w-9 items-center justify-center rounded-sm bg-black">
-						<svg class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<div class="flex h-9 w-9 items-center justify-center rounded-sm bg-white border border-border">
+						<svg class="h-5 w-5 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 							<circle cx="9" cy="21" r="1" />
 							<circle cx="20" cy="21" r="1" />
 							<path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
@@ -1817,8 +1817,8 @@
 		<Card class="mb-6 relative z-0">
 			<CardHeader>
 				<div class="flex items-center gap-3">
-					<div class="flex h-9 w-9 items-center justify-center rounded-sm bg-black">
-						<svg class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<div class="flex h-9 w-9 items-center justify-center rounded-sm bg-white border border-border">
+						<svg class="h-5 w-5 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 							<path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
 						</svg>
 					</div>
@@ -2097,8 +2097,8 @@
 			</button>
 
 			<div class="flex items-center gap-3 mb-6">
-				<div class="flex h-9 w-9 items-center justify-center rounded-sm bg-black">
-					<svg class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<div class="flex h-9 w-9 items-center justify-center rounded-sm bg-white border border-border">
+					<svg class="h-5 w-5 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 						<path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
 						<path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
 					</svg>
@@ -2218,8 +2218,8 @@
 			</button>
 
 			<div class="flex items-center gap-3 mb-6">
-				<div class="flex h-9 w-9 items-center justify-center rounded-sm bg-black">
-					<svg class="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+				<div class="flex h-9 w-9 items-center justify-center rounded-sm bg-white border border-border">
+					<svg class="h-5 w-5 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 						<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
 						<path d="M7 11V7a5 5 0 0110 0v4" />
 					</svg>
