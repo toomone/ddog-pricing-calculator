@@ -1541,17 +1541,22 @@
 				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<div class="inline-flex items-center rounded-lg border border-input bg-background" on:click|stopPropagation>
 					<!-- Plan Selector (Left) -->
-					<div class="inline-flex items-center p-1 border-r border-input gap-0.5">
+					<div class="relative inline-grid grid-cols-2 p-1 border-r border-input bg-muted/50 rounded-md">
+						<!-- Sliding indicator -->
+						<div 
+							class="absolute inset-y-1 w-[calc(50%-2px)] bg-foreground rounded-md shadow-sm transition-transform duration-300 ease-out {selectedPlan === 'Enterprise' ? 'translate-x-[calc(100%+4px)]' : 'translate-x-0'}"
+							style="left: 4px;"
+						></div>
 						<button
 							type="button"
-							class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-300 ease-out {selectedPlan === 'Pro' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}"
+							class="relative z-10 px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-300 {selectedPlan === 'Pro' ? 'text-background' : 'text-muted-foreground hover:text-foreground'}"
 							on:click={() => selectedPlan = 'Pro'}
 						>
 							Pro
 						</button>
 						<button
 							type="button"
-							class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-300 ease-out {selectedPlan === 'Enterprise' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}"
+							class="relative z-10 px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-300 {selectedPlan === 'Enterprise' ? 'text-background' : 'text-muted-foreground hover:text-foreground'}"
 							on:click={() => selectedPlan = 'Enterprise'}
 						>
 							Enterprise
