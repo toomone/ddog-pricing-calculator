@@ -1549,14 +1549,14 @@
 						></div>
 						<button
 							type="button"
-							class="relative z-10 px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-300 {selectedPlan === 'Pro' ? 'text-background' : 'text-muted-foreground hover:text-foreground'}"
+							class="relative z-10 px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-300 text-center {selectedPlan === 'Pro' ? 'text-background' : 'text-muted-foreground hover:text-foreground'}"
 							on:click={() => selectedPlan = 'Pro'}
 						>
 							Pro
 						</button>
 						<button
 							type="button"
-							class="relative z-10 px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-300 {selectedPlan === 'Enterprise' ? 'text-background' : 'text-muted-foreground hover:text-foreground'}"
+							class="relative z-10 px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-300 text-center {selectedPlan === 'Enterprise' ? 'text-background' : 'text-muted-foreground hover:text-foreground'}"
 							on:click={() => selectedPlan = 'Enterprise'}
 						>
 							Enterprise
