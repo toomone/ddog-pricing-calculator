@@ -64,7 +64,7 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			fontFamily: {
-				sans: ['JetBrains Mono', 'Fira Code', 'monospace'],
+				sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
 				mono: ['JetBrains Mono', 'Fira Code', 'monospace']
 			}
 		}
