@@ -7,7 +7,7 @@
 
 <div
 	class={cn(
-		'rounded-2xl border-2 border-border/50 bg-card text-card-foreground shadow-xl backdrop-blur-sm',
+		'rounded border border-border/50 bg-card text-card-foreground shadow-sm',
 		className
 	)}
 	{...$$restProps}
