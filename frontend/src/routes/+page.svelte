@@ -1790,24 +1790,6 @@
 							</svg>
 							Add Product
 						</button>
-						{#if templates.length > 0}
-							<button
-								type="button"
-								class="inline-flex items-center gap-1 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted border-l border-border transition-colors"
-								on:click={() => showTemplates = !showTemplates}
-							>
-								<span>Predefined Stack</span>
-								<svg 
-									class="h-3 w-3 transition-transform {showTemplates ? 'rotate-180' : ''}" 
-									viewBox="0 0 24 24" 
-									fill="none" 
-									stroke="currentColor" 
-									stroke-width="2"
-								>
-									<path d="M6 9l6 6 6-6" />
-								</svg>
-							</button>
-						{/if}
 						<button
 							type="button"
 							class="inline-flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted border-l border-border transition-colors {showLogsCalculator ? 'bg-muted text-foreground' : ''}"
@@ -1820,8 +1802,31 @@
 								<line x1="16" y1="13" x2="8" y2="13" />
 								<line x1="16" y1="17" x2="8" y2="17" />
 							</svg>
-							<span class="hidden sm:inline">Log Estimator</span>
-						</button>
+							<span class="hidden sm:inline">Log Indexing <br/> Estimator</span>
+						</button>						
+						{#if templates.length > 0}
+							<button
+								type="button"
+								class="inline-flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted border-l border-border transition-colors"
+								on:click={() => showTemplates = !showTemplates}
+							>
+								<svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<path d="M12 2L2 7l10 5 10-5-10-5z" />
+									<path d="M2 17l10 5 10-5" />
+									<path d="M2 12l10 5 10-5" />
+								</svg>
+								<span class="hidden sm:inline">Predefined <br/> Stack</span>
+								<svg 
+									class="h-3 w-3 transition-transform {showTemplates ? 'rotate-180' : ''}" 
+									viewBox="0 0 24 24" 
+									fill="none" 
+									stroke="currentColor" 
+									stroke-width="2"
+								>
+									<path d="M6 9l6 6 6-6" />
+								</svg>
+							</button>
+						{/if}
 					</div>
 				</div>
 
