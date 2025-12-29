@@ -1541,17 +1541,22 @@
 				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<div class="inline-flex items-center rounded-lg border border-input bg-background" on:click|stopPropagation>
 					<!-- Plan Selector (Left) -->
-					<div class="inline-flex items-center p-1 border-r border-input">
+					<div class="relative inline-flex items-center p-1 border-r border-input">
+						<!-- Sliding background indicator -->
+						<div 
+							class="absolute h-[calc(100%-8px)] top-1 rounded-md bg-foreground transition-all duration-200 ease-out"
+							style="width: {selectedPlan === 'Pro' ? '42px' : '82px'}; left: {selectedPlan === 'Pro' ? '4px' : '50px'};"
+						></div>
 						<button
 							type="button"
-							class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 {selectedPlan === 'Pro' ? 'bg-foreground text-background shadow-sm' : 'hover:bg-muted'}"
+							class="relative z-10 px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-200 {selectedPlan === 'Pro' ? 'text-background' : 'hover:text-foreground'}"
 							on:click={() => selectedPlan = 'Pro'}
 						>
 							Pro
 						</button>
 						<button
 							type="button"
-							class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 {selectedPlan === 'Enterprise' ? 'bg-foreground text-background shadow-sm' : 'hover:bg-muted'}"
+							class="relative z-10 px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-200 {selectedPlan === 'Enterprise' ? 'text-background' : 'hover:text-foreground'}"
 							on:click={() => selectedPlan = 'Enterprise'}
 						>
 							Enterprise
