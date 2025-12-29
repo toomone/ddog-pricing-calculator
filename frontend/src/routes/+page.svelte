@@ -1524,7 +1524,7 @@
 								on:click={() => editingQuoteName = true}
 							>
 								<CardTitle class="group-hover:text-datadog-purple transition-colors">
-									{quoteName || 'Name the customer quote here'}
+									{quoteName || 'Name your quote here'}
 								</CardTitle>
 								<svg class="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 									<path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
@@ -1541,22 +1541,17 @@
 				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<div class="inline-flex items-center rounded-lg border border-input bg-background" on:click|stopPropagation>
 					<!-- Plan Selector (Left) -->
-					<div class="relative inline-flex items-center p-1 border-r border-input">
-						<!-- Sliding background indicator -->
-						<div 
-							class="absolute h-[calc(100%-8px)] top-1 rounded-md bg-foreground transition-all duration-200 ease-out"
-							style="width: {selectedPlan === 'Pro' ? '44px' : '90px'}; left: {selectedPlan === 'Pro' ? '4px' : '52px'};"
-						></div>
+					<div class="inline-flex items-center p-1 border-r border-input gap-0.5">
 						<button
 							type="button"
-							class="relative z-10 px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-200 {selectedPlan === 'Pro' ? 'text-background' : 'hover:text-foreground'}"
+							class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 {selectedPlan === 'Pro' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}"
 							on:click={() => selectedPlan = 'Pro'}
 						>
 							Pro
 						</button>
 						<button
 							type="button"
-							class="relative z-10 px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-200 {selectedPlan === 'Enterprise' ? 'text-background' : 'hover:text-foreground'}"
+							class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 {selectedPlan === 'Enterprise' ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground hover:bg-muted'}"
 							on:click={() => selectedPlan = 'Enterprise'}
 						>
 							Enterprise
