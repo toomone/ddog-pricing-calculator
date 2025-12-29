@@ -18,7 +18,7 @@
 	// User inputs
 	let ingestedLogsGB = 100;
 	let avgLogSizeKB = 2;
-	let indexingPercentage = 15;
+	let indexingPercentage = 30;
 	let retentionDays: 3 | 7 | 15 | 30 = 15;
 
 	// Additional options
