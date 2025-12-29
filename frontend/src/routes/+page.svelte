@@ -1553,7 +1553,7 @@
 						<CardDescription>All products and related quantities</CardDescription>
 						
 						<!-- Collapsible description editor -->
-						{#if showDescriptionEditor || quoteDescription}
+						{#if showDescriptionEditor}
 							<div class="mt-3" transition:slide={{ duration: 200 }}>
 								<textarea
 									bind:value={quoteDescription}
