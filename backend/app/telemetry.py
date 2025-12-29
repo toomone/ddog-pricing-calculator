@@ -64,9 +64,11 @@ def setup_otlp_logging() -> bool:
             "host.name": hostname,
         })
         
-        # Datadog HTTP log intake endpoint
-        # Note: Datadog uses their HTTP intake API, not standard OTLP endpoint
-        otlp_endpoint = f"https://http-intake.logs.{dd_site}/api/v2/logs"
+        # Datadog OTLP intake endpoint for logs
+        # Format: https://otlp.{site}/v1/logs
+        otlp_endpoint = f"https://otlp.{dd_site}/v1/logs"
+        
+        logger.info(f"🔗 OTLP endpoint: {otlp_endpoint}")
         
         # Create OTLP exporter with Datadog API key header
         exporter = OTLPLogExporter(
