@@ -470,7 +470,7 @@
 				on:click={addToQuote}
 				disabled={!ingestionProduct || !indexedProduct}
 			>
-				Add to Quote
+				+ Add to Quote
 			</Button>
 		</div>
 

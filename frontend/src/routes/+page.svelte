@@ -1544,14 +1544,14 @@
 					<div class="inline-flex items-center p-1 border-r border-input">
 						<button
 							type="button"
-							class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors {selectedPlan === 'Pro' ? 'bg-foreground text-background' : 'hover:bg-muted'}"
+							class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 {selectedPlan === 'Pro' ? 'bg-foreground text-background shadow-sm' : 'hover:bg-muted'}"
 							on:click={() => selectedPlan = 'Pro'}
 						>
 							Pro
 						</button>
 						<button
 							type="button"
-							class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors {selectedPlan === 'Enterprise' ? 'bg-foreground text-background' : 'hover:bg-muted'}"
+							class="px-3 py-1.5 text-sm font-medium rounded-md transition-all duration-200 {selectedPlan === 'Enterprise' ? 'bg-foreground text-background shadow-sm' : 'hover:bg-muted'}"
 							on:click={() => selectedPlan = 'Enterprise'}
 						>
 							Enterprise
