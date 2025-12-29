@@ -1778,14 +1778,14 @@
 					{/each}
 				</div>
 
-				<div class="mt-4 flex flex-wrap items-center gap-3">
-					<div class="inline-flex rounded-lg border border-border overflow-hidden">
+				<div class="mt-4">
+					<div class="inline-flex rounded-sm border border-border overflow-hidden">
 						<button
 							type="button"
 							class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-muted"
 							on:click={addLine}
 						>
-							<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+							<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
 								<path d="M12 5v14M5 12h14" />
 							</svg>
 							Add Product
@@ -1796,7 +1796,7 @@
 								class="inline-flex items-center gap-1 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted border-l border-border transition-colors"
 								on:click={() => showTemplates = !showTemplates}
 							>
-								<span>or add a predifined stack</span>
+								<span>Predefined Stack</span>
 								<svg 
 									class="h-3 w-3 transition-transform {showTemplates ? 'rotate-180' : ''}" 
 									viewBox="0 0 24 24" 
@@ -1808,24 +1808,21 @@
 								</svg>
 							</button>
 						{/if}
+						<button
+							type="button"
+							class="inline-flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted border-l border-border transition-colors {showLogsCalculator ? 'bg-muted text-foreground' : ''}"
+							on:click={() => showLogsCalculator = !showLogsCalculator}
+							title="Log Indexing Estimator"
+						>
+							<svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+								<polyline points="14 2 14 8 20 8" />
+								<line x1="16" y1="13" x2="8" y2="13" />
+								<line x1="16" y1="17" x2="8" y2="17" />
+							</svg>
+							<span class="hidden sm:inline">Log Estimator</span>
+						</button>
 					</div>
-					<button
-						type="button"
-						class="ml-auto inline-flex items-center gap-2 px-3 py-2.5 text-xs font-medium rounded-lg border border-border transition-colors {showLogsCalculator ? 'bg-datadog-purple text-white hover:bg-datadog-purple/90' : 'hover:bg-muted'}"
-						on:click={() => showLogsCalculator = !showLogsCalculator}
-						title="Log Indexing Estimator"
-					>
-						<svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-							<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-							<polyline points="14 2 14 8 20 8" />
-							<line x1="16" y1="13" x2="8" y2="13" />
-							<line x1="16" y1="17" x2="8" y2="17" />
-						</svg>
-						<span class="hidden sm:flex flex-col leading-tight text-center">
-							<span>Log Indexing</span>
-							<span>Estimator</span>
-						</span>
-					</button>
 				</div>
 
 				<!-- Templates Dropdown -->
