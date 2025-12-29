@@ -3,7 +3,6 @@
 	import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	import { Badge } from '$lib/components/ui/badge';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { formatCurrency, formatNumber } from '$lib/utils';
 	import type { Product } from '$lib/api';
@@ -264,14 +263,14 @@
 						{#each retentionOptions as option}
 							<button
 								type="button"
-							class="p-4 border text-left transition-all rounded-sm
-								{retentionDays === option.days 
-									? 'border-foreground bg-muted' 
-									: 'border-border hover:border-foreground/50 hover:bg-muted/50'}"
+								class="p-3 border text-left transition-all rounded-sm
+									{retentionDays === option.days 
+										? 'border-foreground bg-muted' 
+										: 'border-border hover:border-foreground/50 hover:bg-muted/50'}"
 								on:click={() => retentionDays = option.days}
 							>
-								<div class="font-bold text-lg">{option.label}</div>
-								<div class="text-sm text-muted-foreground">{option.description}</div>
+								<div class="font-semibold text-sm">{option.label}</div>
+								<div class="text-xs text-muted-foreground">{option.description}</div>
 							</button>
 						{/each}
 					</div>
@@ -282,17 +281,17 @@
 							{#each useCasePresets as preset}
 								<button
 									type="button"
-								class="p-4 border text-left transition-all rounded-sm
-									{indexingPercentage === preset.percentage 
-										? 'border-foreground bg-muted' 
-										: 'border-border hover:border-foreground/50 hover:bg-muted/50'}"
+									class="p-3 border text-left transition-all rounded-sm
+										{indexingPercentage === preset.percentage 
+											? 'border-foreground bg-muted' 
+											: 'border-border hover:border-foreground/50 hover:bg-muted/50'}"
 									on:click={() => indexingPercentage = preset.percentage}
 								>
 									<div class="flex items-center justify-between">
-										<span class="font-bold">{preset.name}</span>
-										<Badge variant="outline">{preset.percentage}%</Badge>
+										<span class="font-semibold text-sm">{preset.name}</span>
+										<span class="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">{preset.percentage}%</span>
 									</div>
-									<div class="text-sm text-muted-foreground">{preset.description}</div>
+									<div class="text-xs text-muted-foreground">{preset.description}</div>
 								</button>
 							{/each}
 						</div>

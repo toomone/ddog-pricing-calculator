@@ -1761,7 +1761,7 @@
 								class="inline-flex items-center gap-1 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted border-l border-border transition-colors"
 								on:click={() => showTemplates = !showTemplates}
 							>
-								<span>or stack example</span>
+								<span>or add a predifined stack</span>
 								<svg 
 									class="h-3 w-3 transition-transform {showTemplates ? 'rotate-180' : ''}" 
 									viewBox="0 0 24 24" 
