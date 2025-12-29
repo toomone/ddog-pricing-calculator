@@ -12,6 +12,7 @@
     "@sveltejs/adapter-static": "^3.0.0",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^3.0.0",
+    "@types/escape-html": "^1.0.4",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32",
     "svelte": "^4.2.8",
@@ -22,6 +23,7 @@
   "dependencies": {
     "bits-ui": "^0.21.0",
     "clsx": "^2.1.0",
+    "escape-html": "^1.0.3",
     "lucide-svelte": "^0.303.0",
     "mode-watcher": "^0.3.1",
     "tailwind-merge": "^2.2.0",

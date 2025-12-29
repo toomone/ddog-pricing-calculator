@@ -4,6 +4,7 @@
 	import { flip } from 'svelte/animate';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import escapeHtml from 'escape-html';
 	import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -931,7 +932,7 @@
 		
 		const rows = validLines.map(line => `
 			<tr>
-				<td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">${line.product?.product}</td>
+				<td style="padding: 12px; border-bottom: 1px solid #e5e5e5;">${escapeHtml(line.product?.product || '')}</td>
 				<td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: center;">${line.quantity}</td>
 				<td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: right; color: #3ecfa8;">${formatCurrency(parsePrice(line.product?.billed_annually) * line.quantity)}</td>
 				<td style="padding: 12px; border-bottom: 1px solid #e5e5e5; text-align: right; color: #632ca6;">${formatCurrency(parsePrice(line.product?.billed_month_to_month) * line.quantity)}</td>
@@ -966,9 +967,9 @@
 				</style>
 			</head>
 			<body>
-				<h1>PriceHound Quote${quoteName ? `: ${quoteName}` : ''}</h1>
+				<h1>PriceHound Quote${quoteName ? `: ${escapeHtml(quoteName)}` : ''}</h1>
 				<p class="date">Generated on ${date}</p>
-				${quoteDescription ? `<p style="color: #666; margin-bottom: 24px; white-space: pre-wrap;">${quoteDescription}</p>` : ''}
+				${quoteDescription ? `<p style="color: #666; margin-bottom: 24px; white-space: pre-wrap;">${escapeHtml(quoteDescription)}</p>` : ''}
 				
 				<table>
 					<thead>
