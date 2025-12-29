@@ -1544,8 +1544,8 @@
 					<div class="relative inline-grid grid-cols-2 p-1 border-r border-input bg-muted/50 rounded-md">
 						<!-- Sliding indicator -->
 						<div 
-							class="absolute inset-y-1 w-[calc(50%-2px)] bg-foreground rounded-md shadow-sm transition-transform duration-300 ease-out {selectedPlan === 'Enterprise' ? 'translate-x-[calc(100%+4px)]' : 'translate-x-0'}"
-							style="left: 4px;"
+							class="absolute inset-1 w-[calc(50%-4px)] bg-foreground rounded-md shadow-sm transition-all duration-300 ease-out"
+							style="left: {selectedPlan === 'Pro' ? '4px' : 'calc(50% + 0px)'};"
 						></div>
 						<button
 							type="button"
