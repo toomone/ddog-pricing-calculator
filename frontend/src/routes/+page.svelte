@@ -1295,7 +1295,7 @@
 				<!-- Separator -->
 				<div class="h-6 w-px bg-border"></div>
 
-				<!-- Pricing Info & Sync Button -->
+				<!-- Pricing Info -->
 				<div class="flex items-center gap-2">
 					<div class="text-xs text-muted-foreground hidden sm:block">
 						{#if loading}
@@ -1308,17 +1308,6 @@
 							{/if}
 						{/if}
 					</div>
-					<button
-						type="button"
-						on:click={handleSync}
-						disabled={syncing}
-						class="inline-flex items-center justify-center rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50"
-						title="Sync pricing data now"
-					>
-						<svg class="h-4 w-4 {syncing ? 'animate-spin' : ''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-							<path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-						</svg>
-					</button>
 				</div>
 			</div>
 
