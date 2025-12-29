@@ -397,33 +397,42 @@
 				<div class="space-y-3 text-sm">
 					<div>
 						<div class="flex items-center gap-2">
-							<div class="w-2 h-2 bg-foreground/40"></div>
+							<div class="w-2 h-2 bg-sky-500"></div>
 							<span>Ingestion</span>
 						</div>
 						<div class="font-mono text-right">{formatCurrency(ingestionCost)}</div>
 					</div>
 					<div>
 						<div class="flex items-center gap-2">
-							<div class="w-2 h-2 bg-foreground/70"></div>
+							<div class="w-2 h-2 bg-amber-500"></div>
 							<span>Indexed ({retentionDays}d)</span>
 						</div>
 						<div class="font-mono text-right">{formatCurrency(indexedCost)}</div>
 					</div>
 					{#if enableFlexStarter}
 						<div class="flex items-start justify-between">
-							<span>Flex Starter</span>
+							<div class="flex items-center gap-2">
+								<div class="w-2 h-2 bg-emerald-500"></div>
+								<span>Flex Starter</span>
+							</div>
 							<span class="font-mono text-right">{formatCurrency(flexStarterCost)}</span>
 						</div>
 					{/if}
 					{#if enableFlexStorage}
 						<div class="flex items-start justify-between">
-							<span>Flex Storage</span>
+							<div class="flex items-center gap-2">
+								<div class="w-2 h-2 bg-emerald-500"></div>
+								<span>Flex Storage</span>
+							</div>
 							<span class="font-mono text-right">{formatCurrency(flexStorageCost)}</span>
 						</div>
 					{/if}
 					{#if enableForwarding}
 						<div class="flex items-start justify-between">
-							<span>Forwarding</span>
+							<div class="flex items-center gap-2">
+								<div class="w-2 h-2 bg-emerald-500"></div>
+								<span>Forwarding</span>
+							</div>
 							<span class="font-mono text-right">{formatCurrency(forwardingCost)}</span>
 						</div>
 					{/if}
@@ -433,10 +442,10 @@
 				{#if totalMonthlyCost > 0}
 					<div class="mt-4">
 						<div class="h-2 flex overflow-hidden rounded-sm">
-							<div class="bg-foreground/40" style="width: {(ingestionCost / totalMonthlyCost) * 100}%"></div>
-							<div class="bg-foreground/70" style="width: {(indexedCost / totalMonthlyCost) * 100}%"></div>
+							<div class="bg-sky-500" style="width: {(ingestionCost / totalMonthlyCost) * 100}%"></div>
+							<div class="bg-amber-500" style="width: {(indexedCost / totalMonthlyCost) * 100}%"></div>
 							{#if additionalCost > 0}
-								<div class="bg-foreground" style="width: {(additionalCost / totalMonthlyCost) * 100}%"></div>
+								<div class="bg-emerald-500" style="width: {(additionalCost / totalMonthlyCost) * 100}%"></div>
 							{/if}
 						</div>
 					</div>
