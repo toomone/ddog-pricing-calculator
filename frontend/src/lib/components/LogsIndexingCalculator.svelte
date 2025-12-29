@@ -384,19 +384,19 @@
 			<div class="p-6">
 				<h4 class="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-4">Cost Breakdown</h4>
 				<div class="space-y-3 text-sm">
-					<div class="flex items-start justify-between">
+					<div>
 						<div class="flex items-center gap-2">
-							<div class="w-2 h-2 bg-datadog-blue mt-1"></div>
+							<div class="w-2 h-2 bg-datadog-blue"></div>
 							<span>Ingestion</span>
 						</div>
-						<span class="font-mono text-right">{formatCurrency(ingestionCost)}</span>
+						<div class="font-mono text-right">{formatCurrency(ingestionCost)}</div>
 					</div>
-					<div class="flex items-start justify-between">
+					<div>
 						<div class="flex items-center gap-2">
-							<div class="w-2 h-2 bg-datadog-purple mt-1"></div>
+							<div class="w-2 h-2 bg-datadog-purple"></div>
 							<span>Indexed ({retentionDays}d)</span>
 						</div>
-						<span class="font-mono text-right">{formatCurrency(indexedCost)}</span>
+						<div class="font-mono text-right">{formatCurrency(indexedCost)}</div>
 					</div>
 					{#if enableFlexStarter}
 						<div class="flex items-start justify-between text-datadog-blue">
