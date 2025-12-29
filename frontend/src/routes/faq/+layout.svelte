@@ -1,5 +1,4 @@
 <script>
-	import { Card, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 </script>
 
@@ -15,12 +14,10 @@
 			</Button>
 		</div>
 
-		<!-- FAQ Content Card -->
-		<Card class="border-border">
-			<CardContent class="faq-content p-6 md:p-8">
-				<slot />
-			</CardContent>
-		</Card>
+		<!-- FAQ Content -->
+		<div class="faq-content">
+			<slot />
+		</div>
 
 		<!-- Footer -->
 		<footer class="mt-8 text-center text-xs text-muted-foreground">
