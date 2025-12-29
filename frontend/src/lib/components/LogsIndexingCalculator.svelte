@@ -384,36 +384,36 @@
 			<div class="p-6">
 				<h4 class="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-4">Cost Breakdown</h4>
 				<div class="space-y-3 text-sm">
-					<div class="flex justify-between">
+					<div class="flex items-start justify-between">
 						<div class="flex items-center gap-2">
-							<div class="w-2 h-2 bg-datadog-blue"></div>
+							<div class="w-2 h-2 bg-datadog-blue mt-1"></div>
 							<span>Ingestion</span>
 						</div>
-						<span class="font-mono">{formatCurrency(ingestionCost)}</span>
+						<span class="font-mono text-right">{formatCurrency(ingestionCost)}</span>
 					</div>
-					<div class="flex justify-between">
+					<div class="flex items-start justify-between">
 						<div class="flex items-center gap-2">
-							<div class="w-2 h-2 bg-datadog-purple"></div>
+							<div class="w-2 h-2 bg-datadog-purple mt-1"></div>
 							<span>Indexed ({retentionDays}d)</span>
 						</div>
-						<span class="font-mono">{formatCurrency(indexedCost)}</span>
+						<span class="font-mono text-right">{formatCurrency(indexedCost)}</span>
 					</div>
 					{#if enableFlexStarter}
-						<div class="flex justify-between text-datadog-blue">
+						<div class="flex items-start justify-between text-datadog-blue">
 							<span>Flex Starter</span>
-							<span class="font-mono">{formatCurrency(flexStarterCost)}</span>
+							<span class="font-mono text-right">{formatCurrency(flexStarterCost)}</span>
 						</div>
 					{/if}
 					{#if enableFlexStorage}
-						<div class="flex justify-between text-datadog-blue">
+						<div class="flex items-start justify-between text-datadog-blue">
 							<span>Flex Storage</span>
-							<span class="font-mono">{formatCurrency(flexStorageCost)}</span>
+							<span class="font-mono text-right">{formatCurrency(flexStorageCost)}</span>
 						</div>
 					{/if}
 					{#if enableForwarding}
-						<div class="flex justify-between text-datadog-orange">
+						<div class="flex items-start justify-between text-datadog-orange">
 							<span>Forwarding</span>
-							<span class="font-mono">{formatCurrency(forwardingCost)}</span>
+							<span class="font-mono text-right">{formatCurrency(forwardingCost)}</span>
 						</div>
 					{/if}
 				</div>
@@ -432,13 +432,13 @@
 				{/if}
 
 				<div class="mt-4 pt-4 border-t border-border">
-					<div class="flex justify-between items-center">
-						<span class="font-medium">Monthly</span>
-						<span class="font-mono font-bold text-lg text-datadog-green">{formatCurrency(totalMonthlyCost)}</span>
+					<div class="flex justify-between items-center text-muted-foreground text-xs">
+						<span>Monthly</span>
+						<span class="font-mono">{formatCurrency(totalMonthlyCost)}</span>
 					</div>
-					<div class="flex justify-between items-center text-muted-foreground text-xs mt-1">
-						<span>Annual estimate</span>
-						<span class="font-mono">{formatCurrency(totalMonthlyCost * 12)}</span>
+					<div class="flex justify-between items-center mt-2">
+						<span class="font-medium">Annual</span>
+						<span class="font-mono font-bold text-lg text-datadog-green">{formatCurrency(totalMonthlyCost * 12)}</span>
 					</div>
 				</div>
 			</div>
