@@ -122,21 +122,12 @@
 				{/if}
 			</div>
 
-			<!-- Right: Total + Button -->
-			<div class="flex items-center gap-4">
-				<div class="text-right">
-					<div class="text-2xl font-bold font-mono text-datadog-green">
-						{formatCurrency(totalMonthlyCost)}
-					</div>
-					<div class="text-xs text-muted-foreground">per month</div>
+			<!-- Right: Total -->
+			<div class="text-right">
+				<div class="text-2xl font-bold font-mono text-datadog-green">
+					{formatCurrency(totalMonthlyCost)}
 				</div>
-				<Button 
-					class="bg-datadog-purple hover:bg-datadog-purple/90"
-					on:click={addToQuote}
-					disabled={!ingestionProduct || !indexedProduct}
-				>
-					Add to Quote
-				</Button>
+				<div class="text-xs text-muted-foreground">per month</div>
 			</div>
 		</div>
 
@@ -421,6 +412,17 @@
 					</div>
 				</div>
 			</div>
+		</div>
+
+		<!-- ROW 4: Action Button -->
+		<div class="flex items-center justify-end px-6 py-4 border-t border-border">
+			<Button 
+				class="bg-datadog-purple hover:bg-datadog-purple/90"
+				on:click={addToQuote}
+				disabled={!ingestionProduct || !indexedProduct}
+			>
+				Add to Quote
+			</Button>
 		</div>
 
 		{#if !ingestionProduct || !indexedProduct}
