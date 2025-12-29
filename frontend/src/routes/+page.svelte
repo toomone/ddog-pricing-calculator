@@ -2014,6 +2014,8 @@
 {#if showLogsCalculator}
 	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
 	<div 
+		in:fade={{ duration: 150 }}
+		out:fade={{ duration: 100 }}
 		class="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
 		on:click|self={() => showLogsCalculator = false}
 		on:keydown={(e) => e.key === 'Escape' && (showLogsCalculator = false)}
@@ -2021,7 +2023,11 @@
 		aria-modal="true"
 		tabindex="-1"
 	>
-		<div class="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card shadow-2xl">
+		<div 
+			in:fly={{ y: 30, duration: 250, delay: 50 }}
+			out:fly={{ y: -20, duration: 150 }}
+			class="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border border-border bg-card shadow-2xl"
+		>
 			<!-- Close Button -->
 			<button
 				type="button"
