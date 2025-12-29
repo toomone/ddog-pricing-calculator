@@ -155,7 +155,7 @@
 								{:else if isPercentageBased}
 									{annualPercent}%
 								{:else}
-									{formatCurrency(annualTotal)}
+									{formatCurrency(annualTotal)}<span class="text-[10px] font-normal opacity-60">/mo</span>
 								{/if}
 							</div>
 							{#if selectedProduct && !isPercentageBased && annualPrice > 0}
@@ -181,7 +181,7 @@
 								{:else if isPercentageBased}
 									{monthlyPercent}%
 								{:else}
-									{formatCurrency(monthlyTotal)}
+									{formatCurrency(monthlyTotal)}<span class="text-[10px] font-normal opacity-60">/mo</span>
 								{/if}
 							</div>
 							{#if selectedProduct && !isPercentageBased && monthlyPrice > 0}
@@ -207,7 +207,7 @@
 								{:else if isPercentageBased}
 									{onDemandPercent}%
 								{:else}
-									{formatCurrency(onDemandTotal)}
+									{formatCurrency(onDemandTotal)}<span class="text-[10px] font-normal opacity-60">/mo</span>
 								{/if}
 							</div>
 							{#if selectedProduct && !isPercentageBased && onDemandPrice > 0}
