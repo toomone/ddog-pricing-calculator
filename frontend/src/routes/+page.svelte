@@ -1550,12 +1550,12 @@
 						
 						<!-- Collapsible description editor -->
 						{#if showDescriptionEditor}
-							<div class="mt-3" transition:slide={{ duration: 200 }}>
+							<div class="mt-4 -mx-6 px-6 py-4 border-t border-border bg-muted/30" transition:slide={{ duration: 200 }}>
 								<Textarea
 									bind:value={quoteDescription}
 									placeholder="Add a description for this quote (e.g., project name, purpose, notes...)"
-									class="min-h-[150px] resize-y"
-									rows={6}
+									class="w-full min-h-[120px] resize-y"
+									rows={5}
 								/>
 							</div>
 						{/if}
