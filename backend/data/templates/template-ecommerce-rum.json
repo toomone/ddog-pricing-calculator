@@ -5,8 +5,8 @@
   "region": "us",
   "billing_type": "annually",
   "items": [
-    {"product": "Real User Monitoring (RUM) - Measure", "quantity": 1000000},
-    {"product": "Session Replay (Add-On for RUM and Prodct Analytics)", "quantity": 100000},
+    {"product": "Real User Monitoring (RUM) - Measure", "quantity": 1000},
+    {"product": "Session Replay (Add-On for RUM and Prodct Analytics)", "quantity": 100},
     {"product": "APM Pro (APM and Data Streams Monitoring)", "quantity": 5},
     {"product": "Database Monitoring", "quantity": 2},
     {"product": "Logs - Ingestion", "quantity": 50},

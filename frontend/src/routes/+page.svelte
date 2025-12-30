@@ -2117,13 +2117,26 @@
 							p.product.toLowerCase().includes(item.product.toLowerCase()) ||
 							item.product.toLowerCase().includes(p.product.toLowerCase())
 						)}
+						{@const billingUnit = matchedProduct?.billing_unit || ''}
+						{@const multiplierMatch = billingUnit.match(/per\s+([\d,]+(?:\.\d+)?)\s*([KMB]?)\s*/i)}
+						{@const multiplier = multiplierMatch ? 
+							parseFloat(multiplierMatch[1].replace(/,/g, '')) * 
+							(multiplierMatch[2]?.toUpperCase() === 'K' ? 1000 : 
+							 multiplierMatch[2]?.toUpperCase() === 'M' ? 1000000 : 
+							 multiplierMatch[2]?.toUpperCase() === 'B' ? 1000000000 : 1) : 1}
+						{@const totalVolume = item.quantity * multiplier}
+						{@const unitName = billingUnit.replace(/per\s+[\d,]+[KMB]?\s*/i, '').replace(/,?\s*per month.*$/i, '').trim()}
 						<li class="flex items-center justify-between py-2 px-3 rounded-sm bg-muted/50 gap-4">
 							<span class="text-sm flex-1">{item.product}</span>
 							<div class="text-right shrink-0">
 								<span class="text-sm font-mono">× {item.quantity.toLocaleString()}</span>
-								{#if matchedProduct?.billing_unit}
+								{#if billingUnit && multiplier > 1}
 									<div class="text-xs text-muted-foreground">
-										{item.quantity.toLocaleString()} {matchedProduct.billing_unit}
+										= {totalVolume.toLocaleString()} {unitName}
+									</div>
+								{:else if billingUnit}
+									<div class="text-xs text-muted-foreground">
+										{unitName}
 									</div>
 								{/if}
 							</div>
