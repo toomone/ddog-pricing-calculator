@@ -37,7 +37,7 @@ Pre-built quote templates to jumpstart your estimates:
 
 ### 🔗 Share & Protect
 
-- **Public URLs** — Generate shareable links to collaborate on quotes (15-day retention)
+- **Public URLs** — Generate shareable links to collaborate on quotes (30-day retention)
 - **Password Protection** — Lock quotes with a password to prevent unauthorized edits
 - **Clone & Fork** — Anyone can clone a shared quote to create their own version
 - **Edit Mode** — Unlock protected quotes with the password to make changes

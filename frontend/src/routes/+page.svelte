@@ -1462,7 +1462,7 @@
 				{#if editingQuoteId}
 					<span class="text-xs font-medium text-datadog-green bg-datadog-green/10 px-2 py-0.5 rounded">Editing</span>
 				{/if}
-				<span class="text-sm text-muted-foreground">Public URL <span class="text-xs opacity-70">(expires in 15 days)</span>:</span>
+				<span class="text-sm text-muted-foreground">Public URL <span class="text-xs opacity-70">(expires in 30 days)</span>:</span>
 				<a 
 					href={displayUrl} 
 					target="_blank"
