@@ -13,6 +13,7 @@
 	import LogsIndexingCalculator from '$lib/components/LogsIndexingCalculator.svelte';
 	import ModeToggle from '$lib/components/ModeToggle.svelte';
 	import GuidedTour from '$lib/components/GuidedTour.svelte';
+	import CostDistributionChart from '$lib/components/CostDistributionChart.svelte';
 	import { fetchProducts, fetchMetadata, createQuote, updateQuote, fetchQuote, verifyQuotePassword, fetchRegions, fetchAllotments, initAllotments, syncPricing, fetchTemplates, fetchCategoryOrder, type Product, type PricingMetadata, type Region, type Allotment, type Template } from '$lib/api';
 	import { formatCurrency, parsePrice, formatNumber, isPercentagePrice, parsePercentage } from '$lib/utils';
 
@@ -1939,6 +1940,15 @@
 							{/if}
 						</div>
 					{/if}
+				</div>
+
+				<!-- Cost Distribution Chart -->
+				<div class="mt-6 pt-6 border-t border-border">
+					<h4 class="text-sm font-medium text-muted-foreground mb-4">Cost Distribution by Category</h4>
+					<CostDistributionChart 
+						{lines} 
+						billingType={showAnnual ? 'annually' : showMonthly ? 'monthly' : 'on_demand'} 
+					/>
 				</div>
 
 			</CardContent>
