@@ -1380,30 +1380,31 @@
 					<!-- Dropdown Menu -->
 					{#if shareMenuOpen}
 						<div transition:fade={{ duration: 100 }} class="absolute right-0 top-full mt-2 w-56 rounded-xl border border-border bg-card p-2 shadow-2xl z-50">
-							<button
-								type="button"
-								class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
-								on:click={openSaveModal}
-								disabled={saving}
-							>
-								{#if saving}
-									<svg class="h-4 w-4 animate-spin text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-										<path d="M21 12a9 9 0 11-6.219-8.56" />
-									</svg>
-								{:else if editingQuoteId}
-									<svg class="h-4 w-4 text-datadog-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-										<path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
-										<polyline points="17 21 17 13 7 13 7 21" />
-										<polyline points="7 3 7 8 15 8" />
-									</svg>
-								{:else}
-									<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-										<path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
-										<path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
-									</svg>
-								{/if}
-								<span>{saving ? 'Saving...' : editingQuoteId ? 'Save Changes' : 'Create Public URL (15 days)'}</span>
-							</button>
+						<button
+							type="button"
+							class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
+							title="Quotes are stored for 15 days before automatic deletion"
+							on:click={openSaveModal}
+							disabled={saving}
+						>
+							{#if saving}
+								<svg class="h-4 w-4 animate-spin text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<path d="M21 12a9 9 0 11-6.219-8.56" />
+								</svg>
+							{:else if editingQuoteId}
+								<svg class="h-4 w-4 text-datadog-green" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+									<polyline points="17 21 17 13 7 13 7 21" />
+									<polyline points="7 3 7 8 15 8" />
+								</svg>
+							{:else}
+								<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+									<path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+									<path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+								</svg>
+							{/if}
+							<span>{saving ? 'Saving...' : editingQuoteId ? 'Save Changes' : 'Create Public URL'}</span>
+						</button>
 							<button
 								type="button"
 								class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-muted"
@@ -2368,7 +2369,7 @@
 							<path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
 							<path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
 						</svg>
-						{editPassword ? 'Create Protected URL (15 days)' : 'Create Public URL (15 days)'}
+						{editPassword ? 'Create Protected URL' : 'Create Public URL'}
 					{/if}
 				</Button>
 			</div>
