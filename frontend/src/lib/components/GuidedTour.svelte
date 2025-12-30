@@ -109,7 +109,7 @@
 	<button
 		type="button"
 		on:click={resetTour}
-		class="fixed bottom-4 right-4 z-50 inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background shadow-lg transition-all hover:scale-105 hover:bg-foreground/90"
+		class="fixed bottom-20 right-4 z-50 inline-flex items-center gap-2 rounded-full bg-foreground px-4 py-2 text-sm font-medium text-background shadow-lg transition-all hover:scale-105 hover:bg-foreground/90"
 		title="Restart guided tour"
 	>
 		<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
