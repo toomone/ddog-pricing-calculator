@@ -31,16 +31,17 @@
 ### 🚀 Quick Start Templates
 
 Pre-built quote templates to jumpstart your estimates:
-- **Full Stack Website** — Frontend, backend, database, RUM & logs
-- **IoT Project** — Metrics, logs, incident management & on-call
-- **Kubernetes on AWS** — Container monitoring, cloud costs & log management
+- **E-commerce Website** — RUM, Session Replay, APM, DBM, Logs & Synthetic Tests (1M sessions/month)
+- **API Backend on Kubernetes** — Infrastructure, Containers, APM, Logs, Cloud Network & Profiler
+- **Serverless AWS Architecture** — Lambda, Data Streams, RDS, Logs, On-Call & CI Visibility
 
 ### 🔗 Share & Protect
 
-- **Public URLs** — Generate shareable links to collaborate on quotes
+- **Public URLs** — Generate shareable links to collaborate on quotes (15-day retention)
 - **Password Protection** — Lock quotes with a password to prevent unauthorized edits
 - **Clone & Fork** — Anyone can clone a shared quote to create their own version
 - **Edit Mode** — Unlock protected quotes with the password to make changes
+- **Quote Descriptions** — Add notes and context to your quotes
 
 ### 📄 Export & Print
 
@@ -57,12 +58,25 @@ Built-in calculator for log management costs:
 - **Flex Logs Support** — Add Flex Logs Starter or Storage with compute pricing notes
 - **Log Forwarding** — Include forwarding to custom destinations (S3, Azure, GCS)
 
+### 📊 Cost Insights
+
+- **Cost Distribution Chart** — Visual pie chart breakdown by product category
+- **Sticky Summary Footer** — Always-visible cost summary when scrolling
+- **Annual/Monthly Comparison** — Quick toggle between billing periods
+
 ### 🎨 User Experience
 
+- **Guided Tour** — Interactive onboarding for new users (powered by driver.js)
 - **Dark/Light Mode** — Toggle between themes with persistent preference
 - **Smooth Animations** — Fade and slide transitions throughout the interface
 - **Responsive Design** — Works beautifully on desktop and mobile
 - **Auto-sync Pricing** — Hourly background sync keeps pricing data fresh
+- **FAQ Page** — Common questions answered
+
+### 📈 Observability
+
+- **Datadog RUM** — Real User Monitoring for frontend performance
+- **OTLP Logging** — Backend logs shipped directly to Datadog (no agent required)
 
 ---
 
@@ -218,11 +232,18 @@ ddog-pricing-calculator/
 ├── frontend/
 │   ├── src/
 │   │   ├── lib/
-│   │   │   ├── components/   # Svelte components
-│   │   │   ├── api.ts        # API client
-│   │   │   └── utils.ts      # Utility functions
-│   │   └── routes/           # SvelteKit pages
-│   └── static/               # Static assets
+│   │   │   ├── components/      # Svelte components
+│   │   │   │   ├── GuidedTour.svelte        # Interactive onboarding
+│   │   │   │   ├── CostDistributionChart.svelte  # Pie chart
+│   │   │   │   ├── LogsIndexingCalculator.svelte # Log estimator
+│   │   │   │   └── ui/          # shadcn-svelte components
+│   │   │   ├── api.ts           # API client
+│   │   │   └── utils.ts         # Utility functions
+│   │   └── routes/
+│   │       ├── +page.svelte     # Main calculator
+│   │       ├── faq/             # FAQ page (markdown)
+│   │       └── quote/[id]/      # Shared quote view
+│   └── static/                  # Static assets
 └── render.yaml               # Render deployment config
 ```
 
@@ -243,6 +264,9 @@ ddog-pricing-calculator/
 - **[Tailwind CSS](https://tailwindcss.com/)** — Utility-first CSS
 - **[TypeScript](https://www.typescriptlang.org/)** — Type-safe JavaScript
 - **[mode-watcher](https://github.com/svecosystem/mode-watcher)** — Dark mode support
+- **[driver.js](https://driverjs.com/)** — Guided tour/onboarding
+- **[layerchart](https://layerchart.com/)** — Charting library
+- **[@datadog/browser-rum](https://docs.datadoghq.com/real_user_monitoring/)** — Real User Monitoring
 
 ### Deployment
 - **[Render](https://render.com/)** — Cloud hosting platform
@@ -281,6 +305,14 @@ Ship application logs directly to Datadog without an agent:
 | `DD_VERSION` | Version tag | `1.0.0` |
 
 If `DD_API_KEY` is not set, OTLP logging is disabled and logs only go to console.
+
+#### Datadog RUM (Frontend)
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PUBLIC_DD_ENV` | RUM environment tag (`dev` or `prod`) | `prod` |
+
+RUM is pre-configured with the application ID and client token. Set `PUBLIC_DD_ENV=dev` for local development.
 
 ---
 
