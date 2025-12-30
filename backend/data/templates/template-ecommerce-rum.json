@@ -1,0 +1,20 @@
+{
+  "id": "ecommerce-rum",
+  "name": "E-commerce Website",
+  "description": "Full observability for e-commerce with 1M sessions/month: RUM, Session Replay, APM, Database Monitoring, Logs, and Synthetic Tests",
+  "region": "us",
+  "billing_type": "annually",
+  "items": [
+    {"product": "Real User Monitoring (RUM) - Measure", "quantity": 1000000},
+    {"product": "Session Replay (Add-On for RUM and Prodct Analytics)", "quantity": 100000},
+    {"product": "APM Pro (APM and Data Streams Monitoring)", "quantity": 5},
+    {"product": "Database Monitoring", "quantity": 2},
+    {"product": "Logs - Ingestion", "quantity": 50},
+    {"product": "Logs - Indexed Log Events", "quantity": 15},
+    {"product": "Synthetic Browser Tests", "quantity": 10},
+    {"product": "Synthetic API Tests", "quantity": 20},
+    {"product": "Error Tracking (50-100K)", "quantity": 1}
+  ],
+  "created_at": "2025-01-01T00:00:00.000000"
+}
+

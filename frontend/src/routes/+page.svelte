@@ -83,6 +83,7 @@
 	let templates: Template[] = [];
 	let showTemplates = false;
 	let loadingTemplates = false;
+	let previewTemplate: Template | null = null;
 	
 	// Category order for sorting products
 	let categoryOrder: Record<string, number> = {};
@@ -1793,14 +1794,31 @@
 				{#if templates.length > 0 && showTemplates}
 					<div transition:slide={{ duration: 200 }} class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
 						{#each templates as template}
-							<button
-								type="button"
-								class="group flex flex-col items-start gap-1 rounded-sm border border-border p-4 transition-all hover:border-foreground/30 hover:bg-muted"
-								on:click={() => applyTemplate(template)}
-							>
-								<span class="font-medium text-sm group-hover:text-foreground">{template.name}</span>
-								<span class="text-xs text-muted-foreground text-left line-clamp-2">{template.description}</span>
-							</button>
+							<div class="group flex flex-col rounded-sm border border-border p-4 transition-all hover:border-foreground/30 hover:bg-muted">
+								<div class="flex items-start justify-between gap-2 mb-1">
+									<span class="font-medium text-sm group-hover:text-foreground">{template.name}</span>
+									<span class="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground shrink-0">
+										{template.items.length} products
+									</span>
+								</div>
+								<p class="text-xs text-muted-foreground text-left line-clamp-2 mb-3 flex-1">{template.description}</p>
+								<div class="flex gap-2 mt-auto">
+									<button
+										type="button"
+										class="flex-1 px-3 py-1.5 text-xs font-medium rounded-sm border border-border hover:bg-background transition-colors"
+										on:click={() => previewTemplate = template}
+									>
+										Preview
+									</button>
+									<button
+										type="button"
+										class="flex-1 px-3 py-1.5 text-xs font-medium rounded-sm bg-foreground text-background hover:bg-foreground/80 transition-colors"
+										on:click={() => applyTemplate(template)}
+									>
+										Add
+									</button>
+								</div>
+							</div>
 						{/each}
 					</div>
 				{/if}
@@ -2046,6 +2064,89 @@
 					showLogsCalculator = false;
 				}}
 			/>
+		</div>
+	</div>
+{/if}
+
+<!-- Template Preview Modal -->
+{#if previewTemplate}
+	<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+	<div 
+		in:fade={{ duration: 150 }}
+		out:fade={{ duration: 100 }}
+		class="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+		on:click|self={() => previewTemplate = null}
+		on:keydown={(e) => e.key === 'Escape' && (previewTemplate = null)}
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
+	>
+		<div 
+			in:fly={{ y: 30, duration: 250, delay: 50 }}
+			out:fly={{ y: -20, duration: 150 }}
+			class="relative w-full max-w-lg max-h-[80vh] overflow-hidden rounded-lg border border-border bg-card shadow-2xl flex flex-col"
+		>
+			<!-- Header -->
+			<div class="p-6 border-b border-border">
+				<button
+					type="button"
+					class="absolute right-4 top-4 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+					on:click={() => previewTemplate = null}
+				>
+					<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M18 6L6 18M6 6l12 12" />
+					</svg>
+				</button>
+				<div class="flex items-center gap-3">
+					<div class="flex h-9 w-9 items-center justify-center rounded-sm bg-muted">
+						<svg class="h-5 w-5 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M12 2L2 7l10 5 10-5-10-5z" />
+							<path d="M2 17l10 5 10-5" />
+							<path d="M2 12l10 5 10-5" />
+						</svg>
+					</div>
+					<div>
+						<h2 class="text-lg font-semibold">{previewTemplate.name}</h2>
+						<p class="text-sm text-muted-foreground">{previewTemplate.items.length} products included</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- Description -->
+			<div class="px-6 py-4 border-b border-border bg-muted/30">
+				<p class="text-sm text-muted-foreground">{previewTemplate.description}</p>
+			</div>
+
+			<!-- Product List -->
+			<div class="flex-1 overflow-y-auto p-6">
+				<h3 class="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Products</h3>
+				<ul class="space-y-2">
+					{#each previewTemplate.items as item}
+						<li class="flex items-center justify-between py-2 px-3 rounded-sm bg-muted/50">
+							<span class="text-sm">{item.product}</span>
+							<span class="text-sm font-mono text-muted-foreground">× {item.quantity.toLocaleString()}</span>
+						</li>
+					{/each}
+				</ul>
+			</div>
+
+			<!-- Footer -->
+			<div class="p-4 border-t border-border bg-muted/30 flex gap-3">
+				<button
+					type="button"
+					class="flex-1 px-4 py-2.5 text-sm font-medium rounded-sm border border-border hover:bg-background transition-colors"
+					on:click={() => previewTemplate = null}
+				>
+					Cancel
+				</button>
+				<button
+					type="button"
+					class="flex-1 px-4 py-2.5 text-sm font-medium rounded-sm bg-foreground text-background hover:bg-foreground/80 transition-colors"
+					on:click={() => { applyTemplate(previewTemplate); previewTemplate = null; }}
+				>
+					Add to Quote
+				</button>
+			</div>
 		</div>
 	</div>
 {/if}
