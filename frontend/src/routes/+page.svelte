@@ -1406,7 +1406,7 @@
 								<span>{saving ? 'Saving...' : editingQuoteId ? 'Save Changes' : 'Create Public URL'}</span>
 							</button>
 							{#if !editingQuoteId}
-								<span class="px-3 pb-2 text-xs text-muted-foreground">Stored for 15 days</span>
+								<span class="px-3 pb-2 text-xs text-muted-foreground">Stored for 30 days</span>
 							{/if}
 						</div>
 							<button
