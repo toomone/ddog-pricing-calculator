@@ -9,6 +9,7 @@
 	import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
+	import { Textarea } from '$lib/components/ui/textarea';
 	import QuoteLine from '$lib/components/QuoteLine.svelte';
 	import LogsIndexingCalculator from '$lib/components/LogsIndexingCalculator.svelte';
 	import ModeToggle from '$lib/components/ModeToggle.svelte';
@@ -1550,12 +1551,12 @@
 						<!-- Collapsible description editor -->
 						{#if showDescriptionEditor}
 							<div class="mt-3" transition:slide={{ duration: 200 }}>
-								<textarea
+								<Textarea
 									bind:value={quoteDescription}
-									placeholder="Add a description for this quote..."
-									class="w-full px-3 py-2 text-sm rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-									rows="2"
-								></textarea>
+									placeholder="Add a description for this quote (e.g., project name, purpose, notes...)"
+									class="min-h-[100px] resize-y"
+									rows={4}
+								/>
 							</div>
 						{/if}
 					</div>
