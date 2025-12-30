@@ -112,8 +112,8 @@ Calculate log costs with visual breakdowns.
 
 ```bash
 # Clone and run
-git clone https://github.com/toomone/ddog-pricing-calculator.git
-cd ddog-pricing-calculator
+git clone https://github.com/toomone/pricehound.git
+cd pricehound
 ./run.sh
 ```
 
