@@ -2,6 +2,13 @@
 	import { Button } from '$lib/components/ui/button';
 </script>
 
+<svelte:head>
+	<title>FAQ - PriceHound Datadog Pricing Calculator</title>
+	<meta name="description" content="Frequently asked questions about PriceHound, the free Datadog pricing calculator. Learn how it works, its limitations, and how to get the most out of it." />
+	<meta property="og:title" content="FAQ - PriceHound" />
+	<meta property="og:description" content="Frequently asked questions about the free Datadog pricing calculator." />
+</svelte:head>
+
 <div class="min-h-screen bg-background p-4 md:p-8">
 	<div class="mx-auto max-w-3xl">
 		<!-- Header with navigation -->
@@ -22,7 +29,7 @@
 		<!-- Footer -->
 		<footer class="mt-8 text-center text-xs text-muted-foreground">
 			<p>
-				PriceHound Datadog Pricing Calculator uses data sourced from
+				PriceHound uses data sourced from
 				<a href="https://www.datadoghq.com/pricing/list/" target="_blank" rel="noopener noreferrer" class="text-datadog-purple hover:underline">
 					Datadog Pricing
 				</a>

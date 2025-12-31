@@ -94,7 +94,10 @@
 </script>
 
 <svelte:head>
-	<title>Price Changes - PriceHound</title>
+	<title>Datadog Price Changes & History - PriceHound</title>
+	<meta name="description" content="Track Datadog pricing changes and allotment updates. View historical price modifications across all regions and products." />
+	<meta property="og:title" content="Datadog Price Changes - PriceHound" />
+	<meta property="og:description" content="Track Datadog pricing changes and allotment updates across all regions." />
 </svelte:head>
 
 <div class="space-y-6">

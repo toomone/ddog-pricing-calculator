@@ -1279,7 +1279,34 @@
 </script>
 
 <svelte:head>
-	<title>PriceHound - Datadog Usage Forecaster</title>
+	<title>PriceHound - Datadog Usage Forecaster & Pricing Calculator</title>
+	<meta name="description" content="Free Datadog pricing calculator. Estimate your Datadog costs, compare Pro vs Enterprise plans, add allotments, and create shareable quotes for your team." />
+	<meta property="og:title" content="PriceHound - Datadog Usage Forecaster" />
+	<meta property="og:description" content="Free Datadog pricing calculator. Estimate costs, compare plans, and create shareable quotes." />
+	{@html `<script type="application/ld+json">
+	{
+		"@context": "https://schema.org",
+		"@type": "WebApplication",
+		"name": "PriceHound",
+		"description": "Free Datadog pricing calculator and usage forecaster. Estimate costs, compare plans, and create shareable quotes.",
+		"url": "https://pricehound.io",
+		"applicationCategory": "BusinessApplication",
+		"operatingSystem": "Web Browser",
+		"offers": {
+			"@type": "Offer",
+			"price": "0",
+			"priceCurrency": "USD"
+		},
+		"featureList": [
+			"Datadog pricing estimation",
+			"Pro vs Enterprise plan comparison",
+			"Allotment calculations",
+			"Shareable quote URLs",
+			"CSV/JSON export",
+			"Multi-region support"
+		]
+	}
+	</script>`}
 </svelte:head>
 
 <svelte:window on:click={handleClickOutside} />
