@@ -55,6 +55,8 @@ yarn-error.log*
 
 # Data files (scraped pricing data, quotes, etc.)
 backend/data/**/*.json
+# But keep templates (needed for app to function)
+!backend/data/templates/*.json
 
 # Testing
 .coverage
