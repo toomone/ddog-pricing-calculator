@@ -5,6 +5,7 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import { PUBLIC_DD_ENV } from '$env/static/public';
+	import { APP_VERSION } from '$lib/version';
 
 	onMount(() => {
 		if (browser) {
@@ -15,6 +16,7 @@
 					site: 'datadoghq.com',
 					service: 'pricehound',
 					env: PUBLIC_DD_ENV || 'prod',
+					version: APP_VERSION,
 					sessionSampleRate: 100,
 					sessionReplaySampleRate: 100,
 					trackBfcacheViews: true,
