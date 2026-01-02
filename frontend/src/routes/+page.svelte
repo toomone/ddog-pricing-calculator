@@ -109,11 +109,7 @@
 			const catOrderA = categoryOrder[a.category || 'Other'] ?? 99;
 			const catOrderB = categoryOrder[b.category || 'Other'] ?? 99;
 			if (catOrderA !== catOrderB) return catOrderA - catOrderB;
-			// Then sort by product type (main products first, then addons)
-			const typeA = a.product_type === 'main' ? 0 : 1;
-			const typeB = b.product_type === 'main' ? 0 : 1;
-			if (typeA !== typeB) return typeA - typeB;
-			// Then sort alphabetically within category and type
+			// Then sort alphabetically within category
 			return a.product.localeCompare(b.product);
 		});
 

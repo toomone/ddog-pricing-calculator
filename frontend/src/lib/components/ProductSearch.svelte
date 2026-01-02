@@ -165,18 +165,14 @@
 							'relative flex w-full cursor-pointer select-none items-start rounded-md px-3 py-2 text-sm outline-none transition-colors text-left',
 							index === highlightedIndex
 								? 'bg-accent text-accent-foreground'
-								: 'hover:bg-accent/50 hover:text-accent-foreground',
-							product.product_type === 'addon' && 'pl-5'
+								: 'hover:bg-accent/50 hover:text-accent-foreground'
 						)}
 						on:mousedown|preventDefault={() => handleSelect(product)}
 						on:mouseenter={() => (highlightedIndex = index)}
 					>
 						<div class="flex flex-col items-start gap-0.5 w-full">
-							<span class={cn(
-								'text-left',
-								product.product_type === 'main' ? 'font-medium' : 'font-normal text-muted-foreground'
-							)}>{product.product}</span>
-							<span class="text-xs text-muted-foreground/70 text-left">{product.billing_unit}</span>
+							<span class="font-medium text-left">{product.product}</span>
+							<span class="text-xs text-muted-foreground text-left">{product.billing_unit}</span>
 						</div>
 					</button>
 				{/each}
