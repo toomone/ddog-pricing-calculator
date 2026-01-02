@@ -264,6 +264,12 @@
 	$: worstValueLabel = worstValueOption?.key === 'annual' ? 'annual' : worstValueOption?.key === 'monthly' ? 'monthly' : 'on-demand';
 
 	onMount(async () => {
+		// Restore saved region preference
+		const savedRegion = localStorage.getItem('pricehound_region');
+		if (savedRegion && ['us', 'us1-fed', 'eu1', 'ap1', 'ap2'].includes(savedRegion)) {
+			selectedRegion = savedRegion;
+		}
+		
 		await loadRegions();
 		await loadAllotments();
 		await loadProducts();
@@ -638,6 +644,9 @@
 	}
 
 	async function handleRegionChange() {
+		// Save region preference to localStorage
+		localStorage.setItem('pricehound_region', selectedRegion);
+		
 		// Reset metadata to show loading state
 		metadata = null;
 		
