@@ -122,19 +122,10 @@
 		</div>
 
 		<!-- ROW 2: Summary -->
-		<div class="flex items-center justify-between px-6 py-3 border-b border-border">
-			<!-- Left: Natural language summary -->
+		<div class="px-6 py-3 border-b border-border">
 			<p class="text-[13px] text-muted-foreground">
-				From <span class="font-mono font-medium text-foreground">{ingestedLogsGB} GB</span>/mo retained <span class="font-mono font-medium text-foreground">{retentionDays} days</span>, indexing <span class="font-mono font-medium text-foreground">{indexingPercentage}%</span> gives you <span class="font-mono font-medium text-foreground">{indexedLogsInMillions.toFixed(1)}M</span> searchable log events{#if enableFlexStarter || enableFlexStorage || enableForwarding} + extras{/if}.
+				From <span class="font-mono font-medium text-foreground">{ingestedLogsGB} GB</span>/mo, indexing <span class="font-mono font-medium text-foreground">{indexingPercentage}%</span> gives you <span class="font-mono font-medium text-foreground">{indexedLogsInMillions.toFixed(1)}M</span> searchable events{#if enableFlexStarter || enableFlexStorage || enableForwarding} + extras{/if} for <span class="font-mono font-medium text-foreground">{retentionDays} days</span> at <span class="font-mono font-bold text-foreground text-base">{formatCurrency(totalMonthlyCost)}</span>/mo.
 			</p>
-
-			<!-- Right: Total -->
-			<div class="text-right shrink-0 ml-4">
-				<div class="text-2xl font-bold font-mono">
-					{formatCurrency(totalMonthlyCost)}
-				</div>
-				<div class="text-xs text-muted-foreground">per month</div>
-			</div>
 		</div>
 
 		<!-- ROW 3: Tabs -->
