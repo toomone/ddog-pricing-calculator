@@ -9,5 +9,5 @@
  * This version is sent to Datadog RUM for tracking and filtering.
  * Update this file when releasing new versions.
  */
-export const APP_VERSION = '1.4.0';
+export const APP_VERSION = '1.5.0';
 

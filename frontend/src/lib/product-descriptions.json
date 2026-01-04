@@ -1,0 +1,379 @@
+{
+  "a2feb43e353a": {
+    "name": "Infrastructure Pro",
+    "description": "Monitor hosts, containers, and processes in real-time. Get full visibility into your infrastructure health and performance."
+  },
+  "3ba3107a08f0": {
+    "name": "Infrastructure Enterprise",
+    "description": "Enterprise-grade infrastructure monitoring with advanced features. Includes machine learning-based anomaly detection and forecasting."
+  },
+  "c3ac091b3b12": {
+    "name": "Infrastructure DevSecOps Pro",
+    "description": "Infrastructure monitoring combined with security posture management. Monitor hosts while detecting misconfigurations and compliance issues."
+  },
+  "41721fa9e184": {
+    "name": "Infrastructure DevSecOps Enterprise",
+    "description": "Full infrastructure and security monitoring with threat detection. Includes workload protection and advanced security analytics."
+  },
+  "e18ee40ccffe": {
+    "name": "Container Monitoring",
+    "description": "Track container metrics, resource usage, and orchestration. Optimize container performance and identify resource bottlenecks."
+  },
+  "1284f2fa45a3": {
+    "name": "Container Monitoring",
+    "description": "On-demand container monitoring billed per container hour. Ideal for ephemeral workloads and burst scaling scenarios."
+  },
+  "cc7ca9648401": {
+    "name": "Custom Metrics",
+    "description": "Send custom application metrics to Datadog. Track any business KPI or technical metric specific to your application."
+  },
+  "7dcbb4c88af0": {
+    "name": "Ingested Custom Metrics",
+    "description": "Pay only for metrics you ingest without indexing. Cost-effective option for high-cardinality metric collection."
+  },
+  "1c1562b3039e": {
+    "name": "Custom Events",
+    "description": "Send custom events from your applications to Datadog. Correlate business events with infrastructure and application metrics."
+  },
+  "2e3d98c5f057": {
+    "name": "Fargate (Infra)",
+    "description": "Monitor AWS Fargate tasks and containers. Get visibility into serverless container workloads without managing infrastructure."
+  },
+  "7f0be2199ae2": {
+    "name": "IoT",
+    "description": "Monitor IoT devices and edge computing infrastructure. Track device health, connectivity, and performance at scale."
+  },
+  "034897b3e125": {
+    "name": "Cloud Network Monitoring",
+    "description": "Visualize network traffic between cloud resources. Identify network bottlenecks and optimize cloud connectivity."
+  },
+  "9dc70e7997d5": {
+    "name": "Network Device Monitoring",
+    "description": "Monitor network switches, routers, and firewalls. Collect SNMP metrics and track network device health."
+  },
+  "339d4002fee8": {
+    "name": "Wireless Access Point Monitoring",
+    "description": null
+  },
+  "f8b4f446e2ec": {
+    "name": "NetFlow Monitoring",
+    "description": "Analyze network flow data for traffic patterns. Understand bandwidth usage and detect network anomalies."
+  },
+  "1f1de38ce8c5": {
+    "name": "NetFlow Monitoring",
+    "description": "NetFlow monitoring with 30-day retention. Extended history for compliance and trend analysis."
+  },
+  "88bbbffa4c39": {
+    "name": "NetFlow Monitoring",
+    "description": "NetFlow monitoring with 60-day retention. Long-term network traffic analysis and reporting."
+  },
+  "6ee0fc08c5fd": {
+    "name": "NetFlow Monitoring",
+    "description": "NetFlow monitoring with 90-day retention. Comprehensive network visibility for enterprise compliance."
+  },
+  "7dc8a69b5717": {
+    "name": "Serverless Workload Monitoring - Apps",
+    "description": "Monitor serverless applications running on platforms like Lambda. Track cold starts, invocations, and errors."
+  },
+  "093155fe74fa": {
+    "name": "Serverless Workload Monitoring - Functions",
+    "description": "Monitor individual serverless functions. Track execution time, memory usage, and error rates per function."
+  },
+  "dc64666edb45": {
+    "name": "Serverless Application APM",
+    "description": "Distributed tracing for serverless applications. Trace requests across Lambda functions and services."
+  },
+  "a2168f317bd3": {
+    "name": "Serverless Functions APM",
+    "description": "APM tracing for serverless function invocations. Debug performance issues across your serverless architecture."
+  },
+  "34d42dbe76ae": {
+    "name": "Cloud Cost Management",
+    "description": "Track and optimize cloud spending across providers. Identify cost anomalies and allocate expenses by team or service."
+  },
+  "ff76468b12e5": {
+    "name": "Logs - Ingestion",
+    "description": "Ingest logs from any source into Datadog. Centralize all your log data for analysis and correlation."
+  },
+  "ca2fde8ab46f": {
+    "name": "Logs - Indexed Log Events",
+    "description": "Index logs for fast searching and analysis. 3-day retention for short-term debugging and investigation."
+  },
+  "d636203d6f2b": {
+    "name": "Logs - Indexed Log Events",
+    "description": "Indexed logs with 7-day retention. Balance between cost and investigation timeframe."
+  },
+  "db4c605bbc95": {
+    "name": "Logs - Indexed Log Events",
+    "description": "Indexed logs with 15-day retention. Extended retention for compliance and trend analysis."
+  },
+  "2ba9369bc570": {
+    "name": "Logs - Indexed Log Events",
+    "description": "Indexed logs with 30-day retention. Long-term log storage for auditing and historical analysis."
+  },
+  "69063597e52c": {
+    "name": "Flex Logs Storage",
+    "description": "Cost-effective log archival with on-demand rehydration. Store logs affordably and query when needed."
+  },
+  "4629fda87c66": {
+    "name": "Flex Logs Starter",
+    "description": "Long-term log storage with 6-15 month retention. Ideal for compliance and historical analysis requirements."
+  },
+  "b9be186aec2c": {
+    "name": "Logs - Forwarding to Custom Destinations",
+    "description": "Forward logs to external destinations like S3 or Splunk. Maintain existing log workflows while using Datadog."
+  },
+  "9560f10d5aab": {
+    "name": "Sensitive Data Scanner",
+    "description": "Automatically detect and redact sensitive data in logs. Protect PII and comply with data privacy regulations."
+  },
+  "0faddceec17f": {
+    "name": "Audit Trail",
+    "description": "Track all user actions and API calls in Datadog. Maintain compliance with security audit requirements."
+  },
+  "06f729d5c599": {
+    "name": "Observability Pipelines",
+    "description": "Transform, route, and control your telemetry data. Reduce costs by filtering data before it reaches destinations."
+  },
+  "88a18f747afb": {
+    "name": "Observability Pipelines Plus",
+    "description": null
+  },
+  "cdf4c8acc0ec": {
+    "name": "APM",
+    "description": "Distributed tracing and application performance monitoring. Trace requests across services to identify bottlenecks."
+  },
+  "9037fb7521b2": {
+    "name": "APM Ingestion",
+    "description": "Ingest trace data into Datadog APM. Collect spans from all your services for analysis."
+  },
+  "39d0e3a55334": {
+    "name": "APM - Indexed Spans",
+    "description": "Index spans for detailed trace analysis. 7-day retention for debugging application issues."
+  },
+  "efebf7d0a731": {
+    "name": "APM - Indexed Spans",
+    "description": "Indexed spans with 15-day retention. Extended trace history for performance trend analysis."
+  },
+  "fd4cd99b3744": {
+    "name": "APM - Indexed Spans",
+    "description": "Indexed spans with 30-day retention. Long-term trace storage for compliance and optimization."
+  },
+  "a09bbb722b5c": {
+    "name": "Fargate (APM)",
+    "description": "APM tracing for AWS Fargate tasks. Monitor serverless container application performance."
+  },
+  "b56961fb7fec": {
+    "name": "APM Pro (APM and Data Streams Monitoring)",
+    "description": "APM with Data Streams Monitoring included. Track message queues and streaming pipelines alongside traces."
+  },
+  "ee5e36f94333": {
+    "name": "APM Enterprise (APM, Data Streams Monitoring, Continuous Profiler)",
+    "description": "Complete APM suite with profiling included. Identify code-level performance issues with always-on profiling."
+  },
+  "bb034997b6af": {
+    "name": "Fargate (APM Enterprise)",
+    "description": "Full APM Enterprise for Fargate tasks. Comprehensive application monitoring for serverless containers."
+  },
+  "49da745ec651": {
+    "name": "Universal Service Monitoring",
+    "description": "Auto-discover and monitor all services without code changes. Get instant visibility using eBPF technology."
+  },
+  "4335a2769d9e": {
+    "name": "Data Streams Monitoring",
+    "description": "Monitor Kafka, RabbitMQ, and other message queues. Track end-to-end latency through streaming pipelines."
+  },
+  "d491c490c08e": {
+    "name": "Continuous Profiler",
+    "description": "Always-on code profiling with minimal overhead. Find CPU and memory hotspots in production code."
+  },
+  "7f558815879a": {
+    "name": "Fargate (Continuous Profiler)",
+    "description": "Continuous profiling for Fargate tasks. Profile code performance in serverless containers."
+  },
+  "ef908b80f876": {
+    "name": "Continuous Profiler - Containers",
+    "description": "Per-container profiling for detailed performance analysis. Profile individual containers in your cluster."
+  },
+  "15b9f298d574": {
+    "name": "Continuous Profiler - Containers",
+    "description": "On-demand container profiling billed hourly. Ideal for ephemeral workloads and batch jobs."
+  },
+  "27edcf50c1e4": {
+    "name": "Database Monitoring",
+    "description": "Monitor database query performance and explain plans. Identify slow queries and optimize database efficiency."
+  },
+  "0fc237bb2388": {
+    "name": "Data Jobs Monitoring",
+    "description": "Monitor Spark, Databricks, and data pipeline jobs. Track job execution, failures, and resource usage."
+  },
+  "f0a73b6bcff2": {
+    "name": "Pipeline Visibility",
+    "description": "Monitor CI/CD pipelines and deployments. Track build times, failures, and deployment frequency."
+  },
+  "bde3657ac280": {
+    "name": "Test Optimization",
+    "description": "Identify flaky tests and optimize test suites. Reduce CI time by intelligently running only necessary tests."
+  },
+  "6eec176f9f8a": {
+    "name": "Cloud Security Management (CSM) Pro",
+    "description": "Cloud security posture management and compliance. Detect misconfigurations across AWS, Azure, and GCP."
+  },
+  "ea594db72b75": {
+    "name": "Cloud Security Management (CSM) Pro Containers",
+    "description": "CSM Pro for containerized workloads. Secure your container infrastructure with posture management."
+  },
+  "41c07962f677": {
+    "name": "Cloud Security Management (CSM) Pro Containers",
+    "description": "On-demand CSM Pro for containers billed hourly. Flexible security for ephemeral container workloads."
+  },
+  "98770a518711": {
+    "name": "Cloud Security Management (CSM) Enterprise",
+    "description": "Enterprise security with threat detection and workload protection. Complete cloud security solution."
+  },
+  "a2399d0e9c75": {
+    "name": "Cloud Security Management (CSM) Enterprise Containers",
+    "description": "Enterprise security for containers with threat detection. Protect containerized applications at runtime."
+  },
+  "028acf1f0be1": {
+    "name": "Cloud Security Management (CSM) Enterprise Containers",
+    "description": "On-demand CSM Enterprise for containers. Hourly billing for flexible container security."
+  },
+  "1623b6920f5a": {
+    "name": "Workload Protection",
+    "description": "Runtime threat detection and file integrity monitoring. Protect workloads against attacks and malware."
+  },
+  "d9b61e12e0ee": {
+    "name": "Workload Protection Containers",
+    "description": "Runtime protection for containers. Detect threats and anomalies in containerized workloads."
+  },
+  "dd178f8f7a39": {
+    "name": "Workload Protection Containers",
+    "description": "On-demand container workload protection. Hourly billing for flexible security coverage."
+  },
+  "62fb81c594c1": {
+    "name": "Fargate (Workload Protection)",
+    "description": "Workload protection for Fargate tasks. Secure serverless containers with runtime threat detection."
+  },
+  "0159150caa07": {
+    "name": "App and API Protection",
+    "description": "Protect applications from attacks like SQL injection and XSS. Real-time application security monitoring."
+  },
+  "185b6f169822": {
+    "name": "Fargate (App and API Protection)",
+    "description": "Application security for Fargate tasks. Protect serverless container apps from web attacks."
+  },
+  "632bdad9530d": {
+    "name": "Serverless App and API Protection",
+    "description": "Application security for serverless functions. Protect Lambda and similar functions from attacks."
+  },
+  "7de43bcd6a13": {
+    "name": "Cloud SIEM",
+    "description": "Security information and event management. Detect threats by analyzing security logs at scale."
+  },
+  "34abe0dfc504": {
+    "name": "Runtime Software Composition Analysis",
+    "description": "Detect vulnerable libraries in running applications. Prioritize CVEs based on actual runtime exposure."
+  },
+  "2073fa3364a8": {
+    "name": "Static Software Composition Analysis",
+    "description": "Scan code repositories for vulnerable dependencies. Shift security left in your development pipeline."
+  },
+  "b2e9445274a4": {
+    "name": "Runtime Code Analysis (IAST)",
+    "description": "Interactive application security testing in runtime. Find vulnerabilities during application execution."
+  },
+  "398a616e4a0a": {
+    "name": "Static Code Analysis (SAST)",
+    "description": "Static analysis to find security flaws in code. Identify vulnerabilities before deployment."
+  },
+  "c9aadfcd6597": {
+    "name": "Code Security Bundle",
+    "description": "Complete code security with SAST and SCA. Comprehensive vulnerability detection in your codebase."
+  },
+  "adf592d6b28a": {
+    "name": "Product Analytics",
+    "description": "Understand user behavior and product usage. Track feature adoption and user journeys with session data."
+  },
+  "764a630a6b8a": {
+    "name": "Real User Monitoring (RUM) - Measure",
+    "description": "Measure frontend performance and Core Web Vitals. Track page load times and user experience metrics."
+  },
+  "5b0397603963": {
+    "name": "Real User Investigate (RUM) - Investigate",
+    "description": "Deep dive into user sessions with detailed data. Debug frontend issues with full session context."
+  },
+  "3eeaecfce691": {
+    "name": "Session Replay (Add-On for RUM and Product Analytics)",
+    "description": "Record and replay user sessions visually. See exactly what users experienced in your application."
+  },
+  "3d5058e44b98": {
+    "name": "Synthetic API Tests",
+    "description": "Proactively test API endpoints from global locations. Catch API issues before users are affected."
+  },
+  "0dcd1bfb220d": {
+    "name": "Synthetic Browser Tests",
+    "description": "Simulate user journeys with browser tests. Test critical workflows and catch regressions automatically."
+  },
+  "f542d3c09315": {
+    "name": "Mobile App Testing",
+    "description": "Test mobile applications on real devices. Ensure mobile app quality across iOS and Android."
+  },
+  "e836d0c8b81b": {
+    "name": "Parallel Testing",
+    "description": "Run multiple synthetic tests simultaneously. Speed up test execution with parallel runs."
+  },
+  "ece671e9539e": {
+    "name": "On-Call",
+    "description": "Manage on-call schedules and escalations. Ensure the right person is alerted at the right time."
+  },
+  "63894d3a39fc": {
+    "name": "Incident Management",
+    "description": "Coordinate incident response and communication. Track incidents from detection to resolution."
+  },
+  "1a79bfcb8100": {
+    "name": "Incident Response",
+    "description": "Advanced incident management with post-mortems. Learn from incidents to prevent future issues."
+  },
+  "926569c9fa91": {
+    "name": "Event Management",
+    "description": "Correlate events to reduce alert noise. Group related alerts into actionable incidents."
+  },
+  "184eb0df7ab4": {
+    "name": "Workflow Automation",
+    "description": "Automate responses to alerts and events. Trigger remediation actions automatically."
+  },
+  "9a49346976de": {
+    "name": "Error Tracking (1-50K)",
+    "description": "Track and group application errors automatically. Reduce noise and focus on impactful issues."
+  },
+  "19bbf896760c": {
+    "name": "Error Tracking (50-100K)",
+    "description": "Error tracking for higher volume applications. Tiered pricing for 50-100K monthly errors."
+  },
+  "a7a83ce49b70": {
+    "name": "Error Tracking (100-500K)",
+    "description": "Error tracking for high-volume applications. Cost-effective pricing at 100-500K monthly errors."
+  },
+  "44dc726aff1d": {
+    "name": "Error Tracking (500K-10M)",
+    "description": "Enterprise error tracking at scale. Volume pricing for 500K-10M monthly errors."
+  },
+  "5f4b0f42fc27": {
+    "name": "Error Tracking (10M-20M)",
+    "description": "High-volume error tracking for large applications. Optimized pricing at 10-20M monthly errors."
+  },
+  "9a206e5b74ee": {
+    "name": "Error Tracking (20M+)",
+    "description": "Enterprise-scale error tracking. Best rates for applications with 20M+ monthly errors."
+  },
+  "e18e685855f7": {
+    "name": "App Builder",
+    "description": "Build internal tools and dashboards without code. Create custom apps using Datadog data."
+  },
+  "176d30c07677": {
+    "name": "Bits AI SRE Investigations",
+    "description": "AI-powered incident investigation assistant. Automatically analyze and correlate data during incidents."
+  }
+}
+

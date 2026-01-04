@@ -19,6 +19,16 @@
 	import { formatCurrency, parsePrice, formatNumber, isPercentagePrice, parsePercentage } from '$lib/utils';
 	import { APP_VERSION } from '$lib/version';
 	import { trackQuoteShared, trackJsonImported, trackJsonExported, trackCsvExported, trackPdfDownloaded, trackPricingSync } from '$lib/rum';
+	import productDescriptionsData from '$lib/product-descriptions.json';
+
+	// Type for product descriptions
+	const productDescriptions = productDescriptionsData as Record<string, { name: string; description: string | null }>;
+
+	// Helper to get product description by ID
+	function getProductDescription(productId: string | undefined): string | null {
+		if (!productId) return null;
+		return productDescriptions[productId]?.description ?? null;
+	}
 
 	interface LineItem {
 		id: string;
@@ -2343,6 +2353,7 @@
 						{@const totalVolume = item.quantity * multiplier}
 						{@const unitName = billingUnit.replace(/per\s+[\d,]+[KMB]?\s*/i, '').replace(/,?\s*per month.*$/i, '').trim()}
 						{@const isSelected = selectedTemplateItems.has(index)}
+						{@const productDesc = getProductDescription(matchedProduct?.id)}
 						<li class="flex items-center gap-3 py-2 px-3 rounded-sm transition-colors {isSelected ? 'bg-muted/50' : 'bg-muted/20 opacity-60'}">
 							<input 
 								type="checkbox" 
@@ -2351,6 +2362,17 @@
 								class="h-4 w-4 rounded border-border accent-foreground shrink-0"
 							/>
 							<span class="text-sm flex-1 {isSelected ? '' : 'line-through'}">{item.product}</span>
+							{#if productDesc}
+								<span class="group relative shrink-0">
+									<svg class="h-4 w-4 text-muted-foreground/50 hover:text-muted-foreground cursor-help transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+										<circle cx="12" cy="12" r="10" />
+										<path d="M12 16v-4M12 8h.01" />
+									</svg>
+									<span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs text-background bg-foreground rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none w-64 text-center z-50">
+										{productDesc}
+									</span>
+								</span>
+							{/if}
 							<div class="text-right shrink-0">
 								<span class="text-sm font-mono">× {item.quantity.toLocaleString()}</span>
 								{#if billingUnit && multiplier > 1}
