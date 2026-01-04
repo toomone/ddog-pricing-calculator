@@ -2,11 +2,18 @@
 	import { cn } from '$lib/utils';
 	import { createEventDispatcher } from 'svelte';
 	import type { Product } from '$lib/api';
+	import productDescriptions from '$lib/product-descriptions.json';
 
 	export let products: Product[] = [];
 	export let selectedProduct: Product | null = null;
 	export let placeholder: string = 'Search products...';
 	export let id: string | undefined = undefined;
+
+	function getProductDescription(productId: string | undefined): string | null {
+		if (!productId) return null;
+		const desc = (productDescriptions as any)[productId];
+		return desc?.description || null;
+	}
 
 	let searchQuery = selectedProduct?.product || '';
 	let isOpen = false;
@@ -159,6 +166,7 @@
 				<!-- Products in this category -->
 				{#each group.products as product}
 					{@const index = flatProducts.indexOf(product)}
+					{@const productDesc = getProductDescription(product.id)}
 					<button
 						type="button"
 						class={cn(
@@ -171,7 +179,19 @@
 						on:mouseenter={() => (highlightedIndex = index)}
 					>
 						<div class="flex flex-col items-start gap-0.5 w-full">
-							<span class="font-medium text-left">{product.product}</span>
+							<span class="font-medium text-left flex items-center gap-1.5">
+								{product.product}
+								{#if productDesc}
+									<span class="group/info relative inline-flex">
+										<svg class="h-3.5 w-3.5 text-muted-foreground/50 hover:text-muted-foreground transition-colors" viewBox="0 0 24 24" fill="currentColor">
+											<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+										</svg>
+										<span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs font-normal text-background bg-foreground rounded-md shadow-lg opacity-0 group-hover/info:opacity-100 transition-opacity pointer-events-none w-64 text-center z-[10000]">
+											{productDesc}
+										</span>
+									</span>
+								{/if}
+							</span>
 							<span class="text-xs text-muted-foreground text-left">{product.billing_unit}</span>
 						</div>
 					</button>
