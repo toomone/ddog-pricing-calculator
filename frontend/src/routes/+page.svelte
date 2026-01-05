@@ -1646,11 +1646,11 @@
 			</div>
 			
 			<!-- Stacks Grid - One row visible, scroll for more -->
-			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[3.5rem] overflow-y-auto pr-1">
+			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[5rem] overflow-y-auto pr-1">
 				<!-- Start from Scratch -->
 				<button
 					type="button"
-					class="flex items-center gap-3 p-2.5 rounded-md border-2 border-dashed border-border hover:border-foreground/30 bg-background hover:bg-muted/30 transition-all text-left group"
+					class="flex items-start gap-3 p-2.5 rounded-md border-2 border-dashed border-border hover:border-foreground/30 bg-background hover:bg-muted/30 transition-all text-left group min-h-[4rem]"
 					on:click={() => {
 						const searchInput = document.querySelector('input[placeholder="Search products..."]');
 						if (searchInput instanceof HTMLInputElement) searchInput.focus();
@@ -1662,15 +1662,15 @@
 						</svg>
 					</div>
 					<div class="min-w-0">
-						<div class="text-xs font-medium truncate">Start from scratch</div>
-						<div class="text-[10px] text-muted-foreground truncate">Build your own</div>
+						<div class="text-xs font-medium">Start from scratch</div>
+						<div class="text-[10px] text-muted-foreground leading-tight mt-0.5">Build your own quote</div>
 					</div>
 				</button>
 				
 				<!-- Logs Calculator -->
 				<button
 					type="button"
-					class="flex items-center gap-3 p-2.5 rounded-md border border-border hover:border-datadog-purple/50 bg-background hover:bg-datadog-purple/5 transition-all text-left group"
+					class="flex items-start gap-3 p-2.5 rounded-md border border-border hover:border-datadog-purple/50 bg-background hover:bg-datadog-purple/5 transition-all text-left group min-h-[4rem]"
 					on:click={() => showLogsCalculator = true}
 				>
 					<div class="flex items-center justify-center h-8 w-8 rounded-md bg-datadog-purple/10 shrink-0">
@@ -1680,8 +1680,8 @@
 						</svg>
 					</div>
 					<div class="min-w-0">
-						<div class="text-xs font-medium truncate">Logs Calculator</div>
-						<div class="text-[10px] text-muted-foreground truncate">Estimate log costs</div>
+						<div class="text-xs font-medium">Logs Calculator</div>
+						<div class="text-[10px] text-muted-foreground leading-tight mt-0.5">Estimate indexing costs</div>
 					</div>
 				</button>
 				
@@ -1689,10 +1689,10 @@
 				{#each filteredTemplates as template (template.id)}
 					<button
 						type="button"
-						class="relative flex items-center gap-3 p-2.5 rounded-md border border-border hover:border-foreground/30 bg-background hover:bg-muted/30 transition-all text-left"
+						class="relative flex items-start gap-3 p-2.5 rounded-md border border-border hover:border-foreground/30 bg-background hover:bg-muted/30 transition-all text-left min-h-[4rem]"
 						on:click={() => previewTemplate = template}
 					>
-						<span class="absolute -top-1.5 -right-1.5 flex items-center justify-center h-5 w-5 rounded-full bg-datadog-purple text-[10px] font-medium text-white">
+						<span class="absolute top-2 right-2 flex items-center justify-center h-5 min-w-5 px-1.5 rounded-full bg-datadog-purple text-[10px] font-medium text-white">
 							{template.items.length}
 						</span>
 						<div class="flex items-center justify-center h-8 w-8 rounded-md bg-muted shrink-0">
@@ -1702,9 +1702,9 @@
 								<path d="M2 17l10 5 10-5" />
 							</svg>
 						</div>
-						<div class="min-w-0">
-							<div class="text-xs font-medium truncate">{template.name}</div>
-							<div class="text-[10px] text-muted-foreground truncate">{template.description || 'Example stack'}</div>
+						<div class="min-w-0 pr-6">
+							<div class="text-xs font-medium">{template.name}</div>
+							<div class="text-[10px] text-muted-foreground leading-tight mt-0.5">{template.description || 'Example stack'}</div>
 						</div>
 					</button>
 				{/each}
