@@ -170,7 +170,7 @@
 					<button
 						type="button"
 						class={cn(
-							'relative flex w-full cursor-pointer select-none items-start rounded-md px-3 py-2 text-sm outline-none transition-colors text-left',
+							'group/item relative flex w-full cursor-pointer select-none items-start rounded-md px-3 py-2 text-sm outline-none transition-colors text-left',
 							index === highlightedIndex
 								? 'bg-accent text-accent-foreground'
 								: 'hover:bg-accent/50 hover:text-accent-foreground'
@@ -179,20 +179,11 @@
 						on:mouseenter={() => (highlightedIndex = index)}
 					>
 						<div class="flex flex-col items-start gap-0.5 w-full">
-							<span class="font-medium text-left flex items-center gap-1.5">
-								{product.product}
-								{#if productDesc}
-									<span class="group/info relative inline-flex">
-										<svg class="h-3.5 w-3.5 text-muted-foreground/50 hover:text-muted-foreground transition-colors" viewBox="0 0 24 24" fill="currentColor">
-											<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-										</svg>
-										<span class="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-3 py-2 text-xs font-normal text-background bg-foreground rounded-md shadow-lg opacity-0 group-hover/info:opacity-100 transition-opacity pointer-events-none w-64 text-center z-[10000] after:content-[''] after:absolute after:bottom-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-b-foreground">
-											{productDesc}
-										</span>
-									</span>
-								{/if}
-							</span>
+							<span class="font-medium text-left">{product.product}</span>
 							<span class="text-xs text-muted-foreground text-left">{product.billing_unit}</span>
+							{#if productDesc}
+								<span class="text-[10px] text-muted-foreground/70 text-left hidden group-hover/item:block mt-1 leading-relaxed">{productDesc}</span>
+							{/if}
 						</div>
 					</button>
 				{/each}
