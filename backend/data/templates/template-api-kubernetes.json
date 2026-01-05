@@ -2,7 +2,6 @@
   "id": "api-kubernetes",
   "name": "API Backend on Kubernetes",
   "description": "Full K8s observability for API microservices: Infrastructure, Containers, APM, Logs, Cloud Network Monitoring, and Profiling",
-  "region": "us",
   "billing_type": "annually",
   "items": [
     {"product": "Infrastructure Pro", "quantity": 20},

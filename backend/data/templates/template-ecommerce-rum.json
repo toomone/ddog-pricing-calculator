@@ -2,7 +2,6 @@
   "id": "ecommerce-rum",
   "name": "E-commerce Website",
   "description": "Full observability for e-commerce with 1M sessions/month: RUM, Session Replay, APM, Database Monitoring, Logs, and Synthetic Tests",
-  "region": "us",
   "billing_type": "annually",
   "items": [
     {"product": "Real User Monitoring (RUM) - Measure", "quantity": 1000},

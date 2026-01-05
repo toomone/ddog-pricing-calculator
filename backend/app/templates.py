@@ -174,7 +174,6 @@ def _dict_to_template(data: dict) -> Template:
         id=data["id"],
         name=data["name"],
         description=data.get("description", ""),
-        region=data.get("region", "us"),
         billing_type=data.get("billing_type", "annually"),
         items=[TemplateItem(**item) for item in data.get("items", [])],
         created_at=data.get("created_at", "")
