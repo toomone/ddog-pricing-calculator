@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
 	import { createEventDispatcher } from 'svelte';
-	import { slide } from 'svelte/transition';
 	import type { Product } from '$lib/api';
 	import productDescriptions from '$lib/product-descriptions.json';
 
@@ -180,16 +179,20 @@
 						on:mouseenter={() => (highlightedIndex = index)}
 					>
 						<div class="flex flex-col items-start gap-0.5 w-full">
-							<span class="font-medium text-left">{product.product}</span>
+							<span class="font-medium text-left flex items-center gap-1.5">
+								{product.product}
+								{#if productDesc}
+									<span class="group/info relative inline-flex shrink-0">
+										<svg class="h-3.5 w-3.5 text-muted-foreground/50 hover:text-muted-foreground transition-colors cursor-help" viewBox="0 0 24 24" fill="currentColor">
+											<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+										</svg>
+										<span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-xs text-background bg-foreground rounded-md shadow-lg opacity-0 group-hover/info:opacity-100 transition-opacity pointer-events-none w-64 text-center z-[99999] whitespace-normal after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-foreground">
+											{productDesc}
+										</span>
+									</span>
+								{/if}
+							</span>
 							<span class="text-xs text-muted-foreground text-left">{product.billing_unit}</span>
-							{#if productDesc && index === highlightedIndex}
-								<span 
-									transition:slide={{ duration: 150 }}
-									class="text-[10px] text-muted-foreground/70 text-left mt-1 leading-relaxed"
-								>
-									{productDesc}
-								</span>
-							{/if}
 						</div>
 					</button>
 				{/each}
