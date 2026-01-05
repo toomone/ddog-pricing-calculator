@@ -1645,8 +1645,8 @@
 				</div>
 			</div>
 			
-			<!-- Stacks Grid - Single row -->
-			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+			<!-- Stacks Grid - One row visible, scroll for more -->
+			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-28 overflow-y-auto pr-1">
 				<!-- Start from Scratch -->
 				<button
 					type="button"
@@ -1681,8 +1681,8 @@
 					<div class="text-[10px] text-muted-foreground mt-0.5">Estimate log costs</div>
 				</button>
 				
-				<!-- Example Stacks (limit to 3 for single row) -->
-				{#each filteredTemplates.slice(0, 3) as template (template.id)}
+				<!-- Example Stacks -->
+				{#each filteredTemplates as template (template.id)}
 					<button
 						type="button"
 						class="p-3 rounded-lg border border-border hover:border-foreground/30 bg-background hover:bg-muted/30 transition-all text-left"
@@ -1704,17 +1704,6 @@
 					<div class="col-span-full p-3 flex items-center justify-center text-xs text-muted-foreground">
 						No stacks match "{stackFilter}"
 					</div>
-				{/if}
-				
-				{#if filteredTemplates.length > 3}
-					<button
-						type="button"
-						class="p-3 rounded-lg border border-dashed border-border hover:border-foreground/30 bg-background hover:bg-muted/30 transition-all text-left flex flex-col items-center justify-center"
-						on:click={() => showTemplates = true}
-					>
-						<div class="text-xs font-medium text-muted-foreground">+{filteredTemplates.length - 3} more</div>
-						<div class="text-[10px] text-muted-foreground/70">View all stacks</div>
-					</button>
 				{/if}
 			</div>
 		</div>
@@ -2005,80 +1994,19 @@
 				</div>
 
 				<div class="mt-4">
-					<div id="action-buttons" class="inline-flex rounded-sm border border-border overflow-hidden">
-						<button
-							type="button"
-							class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-muted"
-							on:click={addLine}
-						>
-							<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-								<path d="M12 5v14M5 12h14" />
-							</svg>
-							Add Product
-						</button>
-						<button
-							type="button"
-							class="inline-flex items-center gap-2 px-3 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted border-l border-border transition-colors {showLogsCalculator ? 'bg-muted text-foreground' : ''}"
-							on:click={() => showLogsCalculator = !showLogsCalculator}
-							title="Logging Without Limits"
-						>
-							<svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-								<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-								<polyline points="14 2 14 8 20 8" />
-								<line x1="16" y1="13" x2="8" y2="13" />
-								<line x1="16" y1="17" x2="8" y2="17" />
-							</svg>
-							<span class="hidden sm:inline">Logging Without <br/> Limits</span>
-						</button>						
-						{#if templates.length > 0}
-							<button
-								type="button"
-								class="inline-flex items-center gap-2 px-3 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted border-l border-border transition-colors"
-								on:click={() => showTemplates = !showTemplates}
-							>
-								<svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-									<path d="M12 2L2 7l10 5 10-5-10-5z" />
-									<path d="M2 17l10 5 10-5" />
-									<path d="M2 12l10 5 10-5" />
-								</svg>
-								<span class="hidden sm:inline">Predefined <br/> Stack</span>
-								<svg 
-									class="h-3 w-3 transition-transform {showTemplates ? 'rotate-180' : ''}" 
-									viewBox="0 0 24 24" 
-									fill="none" 
-									stroke="currentColor" 
-									stroke-width="2"
-								>
-									<path d="M6 9l6 6 6-6" />
-								</svg>
-							</button>
-						{/if}
-					</div>
+					<button
+						id="action-buttons"
+						type="button"
+						class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-sm border border-border transition-colors hover:bg-muted"
+						on:click={addLine}
+					>
+						<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+							<path d="M12 5v14M5 12h14" />
+						</svg>
+						Add Product
+					</button>
 				</div>
 
-				<!-- Templates Dropdown -->
-				{#if templates.length > 0 && showTemplates}
-					<div transition:slide={{ duration: 200 }} class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
-						{#each templates as template}
-							<div class="group flex flex-col rounded-sm border border-border p-4 transition-all hover:border-foreground/30 hover:bg-muted">
-								<div class="flex items-start justify-between gap-2 mb-1">
-									<span class="font-medium text-sm group-hover:text-foreground">{template.name}</span>
-									<span class="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground shrink-0">
-										{template.items.length} products
-									</span>
-								</div>
-								<p class="text-xs text-muted-foreground text-left line-clamp-2 mb-3 flex-1">{template.description}</p>
-								<button
-									type="button"
-									class="w-full mt-auto px-3 py-1.5 text-xs font-medium rounded-sm border border-border hover:bg-background transition-colors"
-									on:click={() => previewTemplate = template}
-								>
-									Preview Products
-								</button>
-							</div>
-						{/each}
-					</div>
-				{/if}
 			{/if}
 		</CardContent>
 	</Card>
