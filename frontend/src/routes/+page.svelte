@@ -1618,6 +1618,97 @@
 		{/if}
 	{/if}
 
+	<!-- Get Started Section - shown when quote is empty -->
+	{#if validLines.length === 0 && !loading}
+		<div class="mb-6 p-5 rounded-xl border border-border bg-card shadow-sm" transition:slide={{ duration: 200 }}>
+			<div class="flex items-center justify-between mb-4">
+				<div>
+					<h3 class="text-sm font-semibold flex items-center gap-2">
+						<svg class="h-4 w-4 text-datadog-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+						</svg>
+						Get Started
+					</h3>
+					<p class="text-xs text-muted-foreground mt-0.5">Pick an example stack or build from scratch</p>
+				</div>
+				<div class="relative">
+					<svg class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<circle cx="11" cy="11" r="8" />
+						<path d="m21 21-4.35-4.35" />
+					</svg>
+					<input
+						type="text"
+						bind:value={stackFilter}
+						placeholder="Filter stacks..."
+						class="h-8 w-40 rounded-md border border-border bg-background pl-8 pr-3 text-xs placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring"
+					/>
+				</div>
+			</div>
+			
+			<!-- Stacks Grid - Vertical scroll -->
+			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-64 overflow-y-auto pr-1">
+				<!-- Start from Scratch -->
+				<button
+					type="button"
+					class="p-3 rounded-lg border-2 border-dashed border-border hover:border-foreground/30 bg-background hover:bg-muted/30 transition-all text-left group"
+					on:click={() => {
+						const searchInput = document.querySelector('input[placeholder="Search products..."]');
+						if (searchInput instanceof HTMLInputElement) searchInput.focus();
+					}}
+				>
+					<div class="flex items-center justify-center h-8 w-8 rounded-md bg-muted mb-2 group-hover:bg-foreground/10 transition-colors">
+						<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<path d="M12 5v14M5 12h14" />
+						</svg>
+					</div>
+					<div class="text-xs font-medium">Start from scratch</div>
+					<div class="text-[10px] text-muted-foreground mt-0.5">Build your own</div>
+				</button>
+				
+				<!-- Logs Calculator -->
+				<button
+					type="button"
+					class="p-3 rounded-lg border border-border hover:border-datadog-purple/50 bg-background hover:bg-datadog-purple/5 transition-all text-left group"
+					on:click={() => showLogsCalculator = true}
+				>
+					<div class="flex items-center justify-center h-8 w-8 rounded-md bg-datadog-purple/10 mb-2">
+						<svg class="h-4 w-4 text-datadog-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<rect x="4" y="2" width="16" height="20" rx="2" />
+							<path d="M8 6h8M8 10h8M8 14h4" />
+						</svg>
+					</div>
+					<div class="text-xs font-medium">Logs Calculator</div>
+					<div class="text-[10px] text-muted-foreground mt-0.5">Estimate log costs</div>
+				</button>
+				
+				<!-- Example Stacks -->
+				{#each filteredTemplates as template (template.id)}
+					<button
+						type="button"
+						class="p-3 rounded-lg border border-border hover:border-foreground/30 bg-background hover:bg-muted/30 transition-all text-left"
+						on:click={() => previewTemplate = template}
+					>
+						<div class="flex items-center justify-center h-8 w-8 rounded-md bg-muted mb-2">
+							<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M22 12l-10 5-10-5" />
+								<path d="M22 7l-10 5-10-5 10-5 10 5z" />
+								<path d="M2 17l10 5 10-5" />
+							</svg>
+						</div>
+						<div class="text-xs font-medium truncate">{template.name}</div>
+						<div class="text-[10px] text-muted-foreground mt-0.5">{template.items.length} products</div>
+					</button>
+				{/each}
+				
+				{#if filteredTemplates.length === 0 && stackFilter !== ''}
+					<div class="col-span-full p-3 flex items-center justify-center text-xs text-muted-foreground">
+						No stacks match "{stackFilter}"
+					</div>
+				{/if}
+			</div>
+		</div>
+	{/if}
+
 	<!-- Quote Lines -->
 	<Card class="mb-6 overflow-visible relative z-10">
 		<CardHeader>
@@ -1792,97 +1883,6 @@
 					</svg>
 				</div>
 			{:else}
-				<!-- Example Stacks Section - shown when quote is empty -->
-				{#if validLines.length === 0}
-					<div class="mb-6 p-5 rounded-xl border border-border bg-gradient-to-br from-muted/30 to-muted/10" transition:slide={{ duration: 200 }}>
-						<div class="flex items-center justify-between mb-4">
-							<div>
-								<h3 class="text-sm font-semibold flex items-center gap-2">
-									<svg class="h-4 w-4 text-datadog-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-										<path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-									</svg>
-									Get Started
-								</h3>
-								<p class="text-xs text-muted-foreground mt-0.5">Pick an example stack or build from scratch</p>
-							</div>
-							<div class="relative">
-								<svg class="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-									<circle cx="11" cy="11" r="8" />
-									<path d="m21 21-4.35-4.35" />
-								</svg>
-								<input
-									type="text"
-									bind:value={stackFilter}
-									placeholder="Filter stacks..."
-									class="h-8 w-40 rounded-md border border-border bg-background pl-8 pr-3 text-xs placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring"
-								/>
-							</div>
-						</div>
-						
-						<!-- Stacks Grid - Vertical scroll -->
-						<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-64 overflow-y-auto pr-1">
-							<!-- Start from Scratch -->
-							<button
-								type="button"
-								class="p-3 rounded-lg border-2 border-dashed border-border hover:border-foreground/30 bg-background hover:bg-muted/30 transition-all text-left group"
-								on:click={() => {
-									const searchInput = document.querySelector('input[placeholder="Search products..."]');
-									if (searchInput instanceof HTMLInputElement) searchInput.focus();
-								}}
-							>
-								<div class="flex items-center justify-center h-8 w-8 rounded-md bg-muted mb-2 group-hover:bg-foreground/10 transition-colors">
-									<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-										<path d="M12 5v14M5 12h14" />
-									</svg>
-								</div>
-								<div class="text-xs font-medium">Start from scratch</div>
-								<div class="text-[10px] text-muted-foreground mt-0.5">Build your own</div>
-							</button>
-							
-							<!-- Logs Calculator -->
-							<button
-								type="button"
-								class="p-3 rounded-lg border border-border hover:border-datadog-purple/50 bg-background hover:bg-datadog-purple/5 transition-all text-left group"
-								on:click={() => showLogsCalculator = true}
-							>
-								<div class="flex items-center justify-center h-8 w-8 rounded-md bg-datadog-purple/10 mb-2">
-									<svg class="h-4 w-4 text-datadog-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-										<rect x="4" y="2" width="16" height="20" rx="2" />
-										<path d="M8 6h8M8 10h8M8 14h4" />
-									</svg>
-								</div>
-								<div class="text-xs font-medium">Logs Calculator</div>
-								<div class="text-[10px] text-muted-foreground mt-0.5">Estimate log costs</div>
-							</button>
-							
-							<!-- Example Stacks -->
-							{#each filteredTemplates as template (template.id)}
-								<button
-									type="button"
-									class="p-3 rounded-lg border border-border hover:border-foreground/30 bg-background hover:bg-muted/30 transition-all text-left"
-									on:click={() => previewTemplate = template}
-								>
-									<div class="flex items-center justify-center h-8 w-8 rounded-md bg-muted mb-2">
-										<svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-											<path d="M22 12l-10 5-10-5" />
-											<path d="M22 7l-10 5-10-5 10-5 10 5z" />
-											<path d="M2 17l10 5 10-5" />
-										</svg>
-									</div>
-									<div class="text-xs font-medium truncate">{template.name}</div>
-									<div class="text-[10px] text-muted-foreground mt-0.5">{template.items.length} products</div>
-								</button>
-							{/each}
-							
-							{#if filteredTemplates.length === 0 && stackFilter !== ''}
-								<div class="col-span-full p-3 flex items-center justify-center text-xs text-muted-foreground">
-									No stacks match "{stackFilter}"
-								</div>
-							{/if}
-						</div>
-					</div>
-				{/if}
-				
 				<div class="space-y-4 overflow-visible">
 					<!-- Grouped lines by category -->
 					{#each groupedLines.sortedCategories as category (category)}
