@@ -1645,8 +1645,8 @@
 				</div>
 			</div>
 			
-			<!-- Stacks Grid - Vertical scroll -->
-			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-64 overflow-y-auto pr-1">
+			<!-- Stacks Grid - Single row -->
+			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
 				<!-- Start from Scratch -->
 				<button
 					type="button"
@@ -1681,8 +1681,8 @@
 					<div class="text-[10px] text-muted-foreground mt-0.5">Estimate log costs</div>
 				</button>
 				
-				<!-- Example Stacks -->
-				{#each filteredTemplates as template (template.id)}
+				<!-- Example Stacks (limit to 3 for single row) -->
+				{#each filteredTemplates.slice(0, 3) as template (template.id)}
 					<button
 						type="button"
 						class="p-3 rounded-lg border border-border hover:border-foreground/30 bg-background hover:bg-muted/30 transition-all text-left"
@@ -1704,6 +1704,17 @@
 					<div class="col-span-full p-3 flex items-center justify-center text-xs text-muted-foreground">
 						No stacks match "{stackFilter}"
 					</div>
+				{/if}
+				
+				{#if filteredTemplates.length > 3}
+					<button
+						type="button"
+						class="p-3 rounded-lg border border-dashed border-border hover:border-foreground/30 bg-background hover:bg-muted/30 transition-all text-left flex flex-col items-center justify-center"
+						on:click={() => showTemplates = true}
+					>
+						<div class="text-xs font-medium text-muted-foreground">+{filteredTemplates.length - 3} more</div>
+						<div class="text-[10px] text-muted-foreground/70">View all stacks</div>
+					</button>
 				{/if}
 			</div>
 		</div>
