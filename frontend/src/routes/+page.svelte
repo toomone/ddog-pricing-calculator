@@ -2321,10 +2321,10 @@
 			<!-- Product List -->
 			<div class="flex-1 overflow-y-auto p-6">
 				<div class="flex items-center justify-between mb-3">
-					<div class="flex items-center gap-3">
+					<div class="flex items-center gap-2">
 						<h3 class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Products</h3>
-						<span class="text-[10px] px-2 py-0.5 rounded-full {showAnnual ? 'bg-datadog-green/20 text-datadog-green' : showMonthly ? 'bg-datadog-blue/20 text-datadog-blue' : 'bg-datadog-orange/20 text-datadog-orange'}">
-							{showAnnual ? 'Annual' : showMonthly ? 'Monthly' : 'On-demand'} pricing
+						<span class="text-[10px] text-muted-foreground/70">
+							(prices for {showAnnual ? 'annual' : showMonthly ? 'monthly' : 'on-demand'} billing)
 						</span>
 					</div>
 					<label class="flex items-center gap-2 cursor-pointer text-xs text-muted-foreground hover:text-foreground transition-colors">
