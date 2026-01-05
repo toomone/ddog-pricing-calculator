@@ -2347,6 +2347,16 @@
 						{@const productDesc = getProductDescription(matchedProduct?.id)}
 						{@const unitPrice = matchedProduct?.billed_annually ? parseFloat(matchedProduct.billed_annually.replace(/[$,]/g, '')) : 0}
 						{@const lineTotal = unitPrice * item.quantity}
+						{@const billingUnit = matchedProduct?.billing_unit || ''}
+						{@const multiplierMatch = billingUnit.match(/per\s+([\d,]+(?:\.\d+)?)\s*([KMB]?)\s/i) || billingUnit.match(/per\s+(million)\s/i)}
+						{@const multiplier = multiplierMatch ? 
+							(multiplierMatch[1]?.toLowerCase() === 'million' ? 1000000 :
+							parseFloat(multiplierMatch[1].replace(/,/g, '')) * 
+							(multiplierMatch[2]?.toUpperCase() === 'K' ? 1000 : 
+							 multiplierMatch[2]?.toUpperCase() === 'M' ? 1000000 : 
+							 multiplierMatch[2]?.toUpperCase() === 'B' ? 1000000000 : 1)) : 1}
+						{@const totalVolume = item.quantity * multiplier}
+						{@const unitName = billingUnit.replace(/per\s+[\d,]+\s*[KMB]?\s*/i, '').replace(/per\s+million\s*/i, '').replace(/,?\s*per month.*$/i, '').replace(/\([^)]*\)/g, '').trim()}
 						<li class="flex items-center gap-3 py-2 transition-colors {isSelected ? '' : 'opacity-40'}">
 							<input 
 								type="checkbox" 
@@ -2367,7 +2377,9 @@
 									</span>
 								{/if}
 							</span>
-							<span class="text-xs text-muted-foreground shrink-0">× {item.quantity.toLocaleString()}</span>
+							<span class="text-xs text-muted-foreground shrink-0">
+								× {item.quantity.toLocaleString()}{#if multiplier > 1} <span class="text-muted-foreground/70">= {totalVolume.toLocaleString()} {unitName}</span>{/if}
+							</span>
 							<span class="text-xs font-mono shrink-0 w-20 text-right {isSelected ? '' : 'text-muted-foreground'}">
 								{#if lineTotal > 0}
 									${lineTotal.toLocaleString()}
