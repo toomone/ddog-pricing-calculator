@@ -1619,7 +1619,7 @@
 	{/if}
 
 	<!-- Get Started Section - shown when quote is empty -->
-	{#if validLines.length === 0 && !loading}
+	{#if !loading}
 		<div class="mb-6 p-5 rounded-lg border border-border bg-card shadow-sm" transition:slide={{ duration: 200 }}>
 			<div class="flex items-center justify-between mb-4">
 				<div>
