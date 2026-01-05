@@ -459,7 +459,8 @@
 			// Filter out empty lines (no product selected) before appending
 			const existingValidLines = lines.filter(l => l.product !== null);
 			lines = [...existingValidLines, ...newLines];
-			toast.success(`Added ${newLines.length} products from "${template.name}"`);
+			const productCount = newLines.filter(l => !l.isAllotment).length;
+			toast.success(`Added ${productCount} products from "${template.name}"`);
 		} else {
 			toast.error('Could not match any products from the template');
 		}
