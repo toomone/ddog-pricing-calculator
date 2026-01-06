@@ -9,5 +9,5 @@ Format: MAJOR.MINOR.PATCH
 This version is sent to Datadog for tracking and filtering.
 Keep this in sync with frontend/src/lib/version.ts
 """
-APP_VERSION = "1.8.1"
+APP_VERSION = "1.8.2"
 
