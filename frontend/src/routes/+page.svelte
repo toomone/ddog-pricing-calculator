@@ -1646,7 +1646,7 @@
 			</div>
 			
 			<!-- Stacks Grid - One row visible, scroll for more -->
-			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[6rem] overflow-y-auto pr-1">
+			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[6.5rem] overflow-y-auto pr-1">
 				<!-- Start from Scratch -->
 				<button
 					type="button"
